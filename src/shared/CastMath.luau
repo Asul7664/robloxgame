@@ -28,16 +28,18 @@ local function spline(keys,time)
 end
 function Cast.Frame(stage,elapsed,power,config)
     power=clamp(power or 0,0,1)
-    local windup=config.WindupSeconds or .045
-    local strokeEnd=config.StrokeEndSeconds or .34
+    local windup=config.WindupSeconds or .10
+    local strokeEnd=config.StrokeEndSeconds or .42
     local out=lerp(REST,REST,0)
     if stage=='Charging' then out=charged(power)
     elseif stage=='Casting' then
         local start=charged(power)
-        local load=lerp(start,start,0);load.Pitch=math.min(-3,load.Pitch+4);load.Twist=load.Twist-2
+        -- A quick click still shows a backswing. Start at the actual charging
+        -- pose, then load the rod before releasing; power affects the catch.
+        local load=charged(math.max(.55,power));load.Pitch=math.min(-3,load.Pitch+4);load.Twist=load.Twist-2
         local follow={X=.15,Y=.06,Z=-1.78,Pitch=-77,Yaw=0,Roll=0,Lean=-8,Twist=4,Drop=.04,ShiftX=0,ShiftZ=-.04}
         out=spline({{T=0,P=start},{T=windup,P=load},{T=strokeEnd,P=follow},
-            {T=config.SettleSeconds or .66,P=REST}},elapsed)
+            {T=config.SettleSeconds or .74,P=REST}},elapsed)
     elseif stage=='Waiting' then out.Pitch=out.Pitch+math.sin(elapsed*1.55)*.85
     elseif stage=='Bite' then out.Pitch=out.Pitch+math.sin(elapsed*10)*1.4
     elseif stage=='Reeling' then out.Pitch=-61+math.sin(elapsed*3.5)*1.0;out.Lean=-6;out.Drop=.035

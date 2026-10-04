@@ -103,6 +103,8 @@ local function jointName(part,fallback)
     local names={LowerTorso='Root',UpperTorso='Waist',Head='Neck',Torso='RootJoint'}
     if names[part.Name]then return names[part.Name]end
     for _,side in ipairs({'Right','Left'})do
+        if part.Name==side..' Arm'then return side..' Shoulder'end
+        if part.Name==side..' Leg'then return side..' Hip'end
         local types={UpperArm='Shoulder',LowerArm='Elbow',Hand='Wrist',UpperLeg='Hip',LowerLeg='Knee',Foot='Ankle'}
         for body,joint in pairs(types)do if part.Name==side..body then return side..joint end end
     end
@@ -186,7 +188,20 @@ function Rig:_clearArm(part,frame)
     end
     return true
 end
-function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage)
+function Rig:_armPenalty(part,frame)
+    local penalty=0
+    for _,body in ipairs(self.ArmBodies)do
+        if Clearance.Overlap(frame,part.Size*.5,self:_world(body),body.Size*.5,.02)then
+            local relative=self:_world(body):ToObjectSpace(frame)
+            local half=part.Size*.5
+            local extent=math.abs(relative.RightVector.Z)*half.X
+                +math.abs(relative.UpVector.Z)*half.Y+math.abs(relative.LookVector.Z)*half.Z
+            penalty+=math.max(.01,body.Size.Z*.5+extent+relative.Position.Z)
+        end
+    end
+    return penalty
+end
+function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage,recovery)
     if not shoulder or not elbow or not wrist then return end
     local S=(self:_world(shoulder.Part0)*shoulder.C0).Position
     local target=(handCF*wrist.C1).Position
@@ -203,7 +218,7 @@ function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage)
     local along=(a*a-b*b+d*d)/(2*d)
     local height=math.sqrt(math.max(0,a*a-along*along))
     local palm=CFrame.new(T)*rot(handCF)*CFrame.new(-wrist.C1.Position)
-    if side and not self:_clearArm(wrist.Part1,palm)then return nil end
+    if side and not recovery and not self:_clearArm(wrist.Part1,palm)then return nil end
     local previous=side and self.ElbowDirections[side]
     if previous then
         previous=self.Root.CFrame:VectorToWorldSpace(previous)
@@ -220,8 +235,9 @@ function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage)
             local normal=axis:Cross(direction).Unit
             local upper=segment(shoulder.C1.Position,elbow.C0.Position,S,E,normal)
             local lower=segment(elbow.C1.Position,wrist.C0.Position,E,T,normal)
-            if not side or self:_clearArm(elbow.Part1,lower)then
-                return {Shoulder=upper,Elbow=lower,Wrist=palm,Bend=self.Root.CFrame:VectorToObjectSpace(direction)}
+            if not side or recovery or self:_clearArm(elbow.Part1,lower)then
+                return {Shoulder=upper,Elbow=lower,Wrist=palm,Bend=self.Root.CFrame:VectorToObjectSpace(direction),
+                    ContactPenalty=recovery and (self:_armPenalty(elbow.Part1,lower)+self:_armPenalty(wrist.Part1,palm))or 0}
             end
         end
     end
@@ -229,6 +245,37 @@ function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage)
     -- gradually back toward it instead of switching elbow-circle branches.
     local preferred=previous and previous:Lerp(bend,self.ElbowAlpha or 1)or bend
     preferred=radialDirection(preferred,bend)
+    if recovery then
+        -- MeshPart boxes can overlap even when the visible mesh does not.
+        -- Rank those boxes instead of dropping both hands and the cast.
+        local best,bestCost
+        local reference=previous or bend
+        local limited=previous~=nil
+        local function consider(direction)
+            if limited and direction:Dot(previous)<math.cos(math.rad(20))then return end
+            local pose=solve(direction)
+            if pose then
+                local cost=pose.ContactPenalty*8+(1-direction:Dot(reference))
+                if not bestCost or cost<bestCost then best=pose;bestCost=cost end
+            end
+        end
+        consider(preferred)
+        if previous then consider(previous)end
+        for _,angle in ipairs({0,15,-15,30,-30,45,-45,60,-60,90,-90,120,-120,150,-150,180})do
+            local radians=math.rad(angle)
+            consider(bend*math.cos(radians)+axis:Cross(bend)*math.sin(radians))
+        end
+        if not best and limited then
+            -- Only the shoulder-side/height rules may require another arc;
+            -- overlapping mesh boxes alone must not make the elbow jump.
+            limited=false
+            for _,angle in ipairs({0,15,-15,30,-30,45,-45,60,-60,90,-90,120,-120,150,-150,180})do
+                local radians=math.rad(angle)
+                consider(bend*math.cos(radians)+axis:Cross(bend)*math.sin(radians))
+            end
+        end
+        return best
+    end
     local pose=solve(preferred)
     if pose then return pose end
     if previous then pose=solve(previous);if pose then return pose end end
@@ -326,20 +373,22 @@ function Rig:_safeRod(desired,finalPose,stage)
         self.RodCacheStage=stage;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
     end
     local previousDesired,correction=self.LastDesiredLocal,self.RodCorrectionLocal
-    local function accepted(candidate,poses)
+    local function accepted(candidate,poses,recovery)
         -- Record only the final jointly safe result, never a rejected trial.
         self.LastDesiredLocal=desiredLocal
         self.RodCorrectionLocal=root:ToObjectSpace(candidate)*desiredLocal:Inverse()
+        self.ArmContactFallback=recovery==true
+        self.Visual:SetAttribute('PoseStatus',recovery and 'TwoHandMeshFallback'or 'TwoHand')
         return candidate,poses
     end
-    local function safe(candidate)
+    local function safe(candidate,recovery)
         candidate=self:_fitRod(candidate)
         if candidate and Clearance.Check(candidate,self.RodShapes,self.BodyParts,function(part)return self:_world(part)end,.06)then
             local poses={}
             if self.R15 then
                 for _,side in ipairs({'Right','Left'})do
                     poses[side]=self:_solveLimb(self.Joints[side..'Shoulder'],self.Joints[side..'Elbow'],self.Joints[side..'Wrist'],
-                        self:_grip(side,candidate),self:_armPole(side,stage),side,stage)
+                        self:_grip(side,candidate),self:_armPole(side,stage),side,stage,recovery)
                     if not poses[side]then return nil end
                 end
             end
@@ -347,6 +396,13 @@ function Rig:_safeRod(desired,finalPose,stage)
         end
     end
     local fitted,poses
+    if self.ArmContactFallback then
+        -- Once a mesh needs this path, do not repeat the failed box search
+        -- every frame. Reach and complete rod/body clearance still run.
+        local corrected=correction and correction:Lerp(CFrame.new(),self.ElbowAlpha or 1)or CFrame.new()
+        fitted,poses=safe(root*corrected*desiredLocal,true)
+        if fitted then return accepted(fitted,poses,true)end
+    end
     if previousDesired and self.LastRodLocal
         and (desiredLocal.Position-previousDesired.Position).Magnitude<.00001
         and (desiredLocal.RightVector-previousDesired.RightVector).Magnitude<.00001
@@ -414,6 +470,19 @@ function Rig:_safeRod(desired,finalPose,stage)
         fitted,poses=safe(root*self.LastRodLocal)
         if fitted then return accepted(fitted,poses)end
     end
+    if self.R15 then
+        local best,bestPoses,bestCost
+        for _,candidate in ipairs({desired,finalPose or desired,
+            root*CFrame.new(0,.25,-.15)*root:ToObjectSpace(desired)})do
+            local candidateFrame,candidatePoses=safe(candidate,true)
+            if candidateFrame then
+                local cost=candidatePoses.Right.ContactPenalty+candidatePoses.Left.ContactPenalty
+                    +(candidateFrame.Position-desired.Position).Magnitude*.1
+                if not bestCost or cost<bestCost then best=candidateFrame;bestPoses=candidatePoses;bestCost=cost end
+            end
+        end
+        if best then return accepted(best,bestPoses,true)end
+    end
     return nil
 end
 
@@ -422,6 +491,8 @@ function Rig:_deactivate()
     self.FootTargets=nil;self.LastFrame=nil;self.LastRod=nil;self.PreviousStage=nil;self.Transition=nil
     self.ElbowDirections={};self.EntryRod=nil;self.LastRodLocal=nil
     self.RodCacheStage=nil;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
+    self.ArmContactFallback=nil
+    self.Visual:SetAttribute('PoseStatus','Native')
     for _,o in ipairs(self.OriginalParts)do if o.Part.Parent then o.Part.LocalTransparencyModifier=o.Alpha end end
     for _,part in ipairs(self.VisibleParts)do if part.Parent then part.LocalTransparencyModifier=1 end end
     -- Invisible clone tip follows the native Tool when fishing while moving.
@@ -447,6 +518,9 @@ function Rig:Step(stage,t,power,config,dt)
     self.Cache={}
     self.ElbowAlpha=1-math.exp(-12*dt)
     local f=Cast.Frame(stage,t,power,config)
+    if stage~=self.PreviousStage and (stage=='Charging'or stage=='Casting')then
+        self.Transition=nil
+    end
     if active and stage~=self.PreviousStage and self.LastFrame and stage~='Charging' and stage~='Casting' then
         self.Transition={From=self.LastFrame,Age=0}
     end
