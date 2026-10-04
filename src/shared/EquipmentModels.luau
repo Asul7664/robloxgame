@@ -69,7 +69,8 @@ function Models.Rod(id,preview)
     if wood then local orb=part(tool,"TipOrb",Vector3.new(0.19,0.19,0.19),CFrame.new(0,top-0.05,0),{111,240,227},Enum.Material.Neon);orb.Shape=Enum.PartType.Ball end
     local tip=Instance.new("Attachment");tip.Name="Tip";tip.Position=Vector3.new(0,top,0);tip.Parent=h
     local right=Instance.new("Attachment");right.Name="CastMainGrip"
-    right.CFrame=CFrame.new(0,-0.25,0)*CFrame.Angles(0,0,math.rad(-65));right.Parent=h
+    -- Bring the reel hand slightly toward the support hand without merging grips.
+    right.CFrame=CFrame.new(0,-0.15,0)*CFrame.Angles(0,0,math.rad(-65));right.Parent=h
     local left=Instance.new("Attachment");left.Name="CastSupportGrip"
     -- The left support hand is ahead of the right main/reel hand.
     left.CFrame=CFrame.new(0,0.25,0)*CFrame.Angles(0,0,math.rad(65));left.Parent=h

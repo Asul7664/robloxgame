@@ -201,20 +201,14 @@ function Rig:_armPenalty(part,frame)
     end
     return penalty
 end
-function Rig:_shoulderPosition(shoulder,side)
-    local origin=(self:_world(shoulder.Part0)*shoulder.C0).Position
-    if side~='Right'then return origin end
-    -- Protract the shoulder as well as rotating the arm. A pole alone leaves
-    -- the upper arm pinned to the chest, particularly on short/wide avatars.
-    -- Fade in with the shared rod pose. This is a temporary joint Transform;
-    -- C0/C1 and attachments stay intact and native walking restores them.
-    local torso=shoulder.Part0
-    return origin+self.Root.CFrame:VectorToWorldSpace(
-        Vector3.new(torso.Size.X*.045,0,-torso.Size.Z*.28)*self.Weight)
+function Rig:_shoulderPosition(shoulder)
+    -- Use the avatar's own attachment on both sides. Only rotation changes;
+    -- an extra right-side translation made that shoulder look detached.
+    return (self:_world(shoulder.Part0)*shoulder.C0).Position
 end
 function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage,recovery)
     if not shoulder or not elbow or not wrist then return end
-    local S=self:_shoulderPosition(shoulder,side)
+    local S=self:_shoulderPosition(shoulder)
     local target=(handCF*wrist.C1).Position
     local a=(elbow.C0.Position-shoulder.C1.Position).Magnitude
     local b=(wrist.C0.Position-elbow.C1.Position).Magnitude
@@ -318,15 +312,10 @@ end
 function Rig:_armPole(side,stage)
     local shoulder,elbow=self.Joints[side..'Shoulder'],self.Joints[side..'Elbow']
     local scale=(elbow.C0.Position-shoulder.C1.Position).Magnitude/1.2
-    if side=='Right'then
-        -- Start at the actual shoulder: multiplying a root-local X by arm
-        -- length used to move the pole INSIDE a wide avatar's chest.
-        local origin=self:_shoulderPosition(shoulder,side)
-        return origin+self.Root.CFrame:VectorToWorldSpace(Vector3.new(1.25,-.85,-1.35)*scale)
-    end
-    -- Stage-specific rod targets drive the cast. Keep both elbow preferences
-    -- in front throughout instead of pulling a charging elbow behind the chest.
-    return self.Root.CFrame*(Vector3.new(-1.25,.45,-1.50)*scale)
+    -- Mirror the existing left-arm preference for the right arm instead of
+    -- giving it a separate outward/downward bend. Grip reach stays exact.
+    local sign=side=='Right'and 1 or -1
+    return self.Root.CFrame*(Vector3.new(sign*1.25,.45,-1.50)*scale)
 end
 function Rig:_grasp(side,rodCF)
     local name=side=='Right' and 'CastMainGrip' or 'CastSupportGrip'
@@ -350,7 +339,7 @@ function Rig:_fitRod(rodCF)
         for _,side in ipairs({'Right','Left'})do
             local j=self.Joints[side..' Shoulder']
             if not j then return nil end
-            local S=self:_shoulderPosition(j,side)
+            local S=self:_shoulderPosition(j)
             local localEnd=Vector3.new(0,-j.Part1.Size.Y*.46,0)
             local length=(localEnd-j.C1.Position).Magnitude
             ranges[#ranges+1]={length,length}
@@ -360,7 +349,7 @@ function Rig:_fitRod(rodCF)
         for _,side in ipairs({'Right','Left'})do
             local a,b,c=self.Joints[side..'Shoulder'],self.Joints[side..'Elbow'],self.Joints[side..'Wrist']
             if not a or not b or not c then return nil end
-            local S=self:_shoulderPosition(a,side)
+            local S=self:_shoulderPosition(a)
             local T=(self:_grip(side,rodCF)*c.C1).Position
             local upper=(b.C0.Position-a.C1.Position).Magnitude
             local lower=(c.C0.Position-b.C1.Position).Magnitude
@@ -572,9 +561,8 @@ function Rig:Step(stage,t,power,config,dt)
     for _,target in ipairs(self.LegTargets or {})do
         self:_place(target.Joint,root*target.Frame,1)
     end
-    -- Bring the shared grip slightly right, forward and up so the protracted
-    -- right shoulder can open its elbow without either hand missing the rod.
-    local finalPose=root*CFrame.new(.25,.35,-.40)*Cast.RodFrame(f)
+    -- Centre the shared grip between the arms, with clearance ahead of the chest.
+    local finalPose=root*CFrame.new(0,.35,-.40)*Cast.RodFrame(f)
     local desired=finalPose
     -- The hidden native RightGrip follows our posed hand after the first
     -- simulation. Sampling it again would feed that rotation back into IK.
@@ -594,7 +582,7 @@ function Rig:Step(stage,t,power,config,dt)
         for _,side in ipairs({'Right','Left'})do
             local j=self.Joints[side..' Shoulder']
             if j then
-                local S=self:_shoulderPosition(j,side)
+                local S=self:_shoulderPosition(j)
                 local target=self:_grasp(side,rodCF).Position
                 local localEnd=Vector3.new(0,-j.Part1.Size.Y*.46,0)
                 local length=(localEnd-j.C1.Position).Magnitude
