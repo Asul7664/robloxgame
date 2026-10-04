@@ -1,0 +1,162 @@
+[
+  {
+    "species": "bobrito",
+    "input": "bobrito.png",
+    "input_sha256": "f1b6b5f32e9a9c2b475ec8fbf81823b591b4360aff4bacd4dd5a83d908563698",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "2bc57b906cd8de5b24705e38bd6f9c0cc9c574a9344fa459483aefbbe2f3a6d7",
+    "module": "bobrito.luau"
+  },
+  {
+    "species": "bombombini",
+    "input": "bombombini.png",
+    "input_sha256": "5684ae9419399c26b6c3bef146a32ea71ded20f3657a60a8613c018fa87ede54",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "c62b5c90b415e326c1e75100e7a6a7c9a90cace3760f93cf74fbc9caf440ec36",
+    "module": "bombombini.luau"
+  },
+  {
+    "species": "chimpanzini",
+    "input": "chimpanzini.png",
+    "input_sha256": "a53a13d3c6f4ecc377b6fac52ec6d52007689ee337ed42b97196deb082639932",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": false,
+    "module_sha256": "5d8a7e1f7f59150a941fd48722056c4fbd2c725aa6a3a4f6bc78a0ef059316c9",
+    "module": "chimpanzini.luau"
+  },
+  {
+    "species": "chipichapa",
+    "input": "chipichapa.png",
+    "input_sha256": "6e6740c102c52204c0044f02a87c116f940423ce290a962e793fc507f2051540",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "bc4a6f9dc10f1d876ebb00705e95d55a3573689f2d784a9d4f5a778f6ef7af38",
+    "module": "chipichapa.luau"
+  },
+  {
+    "species": "floppa",
+    "input": "floppa.png",
+    "input_sha256": "6996c35117b5f9d26945b47294e29f72b670b60f56e269d246100d1be9286c27",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "6038ec51ad8d6df9cc56dfc239594454124bef003bb823f71c98d0f548d1bd34",
+    "module": "floppa.luau"
+  },
+  {
+    "species": "frigocamelo",
+    "input": "frigocamelo.png",
+    "input_sha256": "a70a55356a50bf0affe26a3a9c908aa2f9c8f351f4d17bf0f1b94e16a8203f21",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "e69327224e4ef085261c31e4b95b33d60f83b6aa340d3d4a417e39dd70da0e50",
+    "module": "frigocamelo.luau"
+  },
+  {
+    "species": "lavacca",
+    "input": "lavacca.png",
+    "input_sha256": "82ca1143454f59eab81e48e4a0a7c8d5ac68f9dfa1da11e973b710b1ee3a2d54",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": false,
+    "module_sha256": "11f49b52dc3985032e27f7f2d3a5ae9605b5be897ccd3de53b93a6e28bf8d41a",
+    "module": "lavacca.luau"
+  },
+  {
+    "species": "lirili",
+    "input": "lirili.png",
+    "input_sha256": "192a4f6755d280fb895376de9db8b5aebb2f1f5ae14cf457e949174f93eb882f",
+    "original_size": [
+      1105,
+      1424
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "f6745cd00099aed0805f6769dd34bc7771648445cae9fd02e36ad3817255a69a",
+    "module": "lirili.luau"
+  },
+  {
+    "species": "trippitroppi",
+    "input": "trippitroppi.png",
+    "input_sha256": "8aa95af24ed0a655834b46fb4ba0bf48cf4029f95c74a3462c46c5989ed24f36",
+    "original_size": [
+      1333,
+      1180
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "f833bbddd8f95a0894bce8ed02bd2b9c0206a0e3b8c6fa8fffa2ebffc12549de",
+    "module": "trippitroppi.luau"
+  },
+  {
+    "species": "verity",
+    "input": "verity.png",
+    "input_sha256": "49dc149ce129050b71030f34cf6d811df40c0139e3d437bebfbc5c1662cdc661",
+    "original_size": [
+      1254,
+      1254
+    ],
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "808b5b60f93a118a8bf787785f324fcb3b53e5f67183df2b4141ac31cb45a023",
+    "module": "verity.luau"
+  }
+]
