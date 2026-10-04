@@ -304,15 +304,15 @@ function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage,recovery)
     end
     return best
 end
-function Rig:_limb(shoulder,elbow,wrist,handCF,pole,weight)
-    local pose=self:_solveLimb(shoulder,elbow,wrist,handCF,pole)
-    if pose then
-        self:_place(shoulder,pose.Shoulder,weight);self:_place(elbow,pose.Elbow,weight);self:_place(wrist,pose.Wrist,weight)
-    end
-end
 function Rig:_armPole(side,stage)
     local shoulder,elbow=self.Joints[side..'Shoulder'],self.Joints[side..'Elbow']
     local scale=(elbow.C0.Position-shoulder.C1.Position).Magnitude/1.2
+    if side=='Right'then
+        -- Start at the actual shoulder: multiplying a root-local X by arm
+        -- length used to move the pole INSIDE a wide avatar's chest.
+        local origin=(self:_world(shoulder.Part0)*shoulder.C0).Position
+        return origin+self.Root.CFrame:VectorToWorldSpace(Vector3.new(.65,-.70,-1.85)*scale)
+    end
     -- Stage-specific rod targets drive the cast. Keep both elbow preferences
     -- in front throughout instead of pulling a charging elbow behind the chest.
     local right,left=Vector3.new(1.55,.55,-1.60),Vector3.new(-1.25,.45,-1.50)
@@ -488,7 +488,7 @@ end
 
 function Rig:_deactivate()
     self:Restore();self:_kinematic(false);self.Weight=0
-    self.FootTargets=nil;self.LastFrame=nil;self.LastRod=nil;self.PreviousStage=nil;self.Transition=nil
+    self.LegTargets=nil;self.LastFrame=nil;self.LastRod=nil;self.PreviousStage=nil;self.Transition=nil
     self.ElbowDirections={};self.EntryRod=nil;self.LastRodLocal=nil
     self.RodCacheStage=nil;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
     self.ArmContactFallback=nil
@@ -514,7 +514,7 @@ function Rig:Step(stage,t,power,config,dt)
     self:_kinematic(shown)
     for _,o in ipairs(self.OriginalParts)do if o.Part.Parent then o.Part.LocalTransparencyModifier=shown and 1 or o.Alpha end end
     for _,p in ipairs(self.VisibleParts)do if p.Parent then p.LocalTransparencyModifier=shown and 0 or 1 end end
-    if not shown then self.FootTargets=nil;self.LastFrame=nil;self.PreviousStage=nil;self.Transition=nil;return false end
+    if not shown then self.LegTargets=nil;self.LastFrame=nil;self.PreviousStage=nil;self.Transition=nil;return false end
     self.Cache={}
     self.ElbowAlpha=1-math.exp(-12*dt)
     local f=Cast.Frame(stage,t,power,config)
@@ -539,17 +539,32 @@ function Rig:Step(stage,t,power,config,dt)
     local waist=self.Joints.Waist
     local neck=self.Joints.Neck
     local plant=(stage=='Charging' or stage=='Casting') and humanoid and not humanoid.Sit and not moving
-    if not plant then self.FootTargets=nil end
-    if plant and not self.FootTargets then
-        self.FootTargets={}
-        for _,side in ipairs({'Left','Right'})do local foot=self.Character:FindFirstChild(side..'Foot')
-            if foot then self.FootTargets[side]=root:Inverse()*self:_world(foot) end
+    if not plant then self.LegTargets=nil end
+    if plant and not self.LegTargets then
+        self.LegTargets={}
+        for _,side in ipairs({'Left','Right'})do
+            local names=self.R15 and {side..'UpperLeg',side..'LowerLeg',side..'Foot'}or {side..' Leg'}
+            for _,name in ipairs(names)do
+                local part=self.Character:FindFirstChild(name)
+                local joint=part and self.ByPart[part]
+                if joint then
+                    self.LegTargets[#self.LegTargets+1]={Joint=joint,Frame=root:ToObjectSpace(self:_world(part))}
+                end
+            end
         end
     end
     if rigRoot then self:_set(rigRoot,CFrame.new(f.ShiftX,-f.Drop,f.ShiftZ)*deg(f.Lean*(waist and .22 or 1),f.Twist*(waist and .24 or 1),0))end
     if waist then self:_set(waist,deg(f.Lean*.78,f.Twist*.76,0))end
     if neck then self:_set(neck,deg(-f.Lean*.5,-f.Twist*.48,0))end
-    local finalPose=root*Cast.RodFrame(f)
+    -- Lock every leg segment, not only the feet. Foot IK let knees/hips swing
+    -- while compensating for the torso lean. Restore current Animator values
+    -- normally outside Charging/Casting, so walking resumes immediately.
+    for _,target in ipairs(self.LegTargets or {})do
+        self:_place(target.Joint,root*target.Frame,1)
+    end
+    -- Bring the shared grip forward and slightly up so the right elbow
+    -- has room to leave the chest without either hand missing the rod.
+    local finalPose=root*CFrame.new(0,.35,-.40)*Cast.RodFrame(f)
     local desired=finalPose
     -- The hidden native RightGrip follows our posed hand after the first
     -- simulation. Sampling it again would feed that rotation back into IK.
@@ -558,17 +573,11 @@ function Rig:Step(stage,t,power,config,dt)
     if not rodCF then self:_deactivate();return false end
     if self.R15 then
         for _,side in ipairs({'Right','Left'})do
-            local sign=side=='Right' and 1 or -1
             local pose=armPoses[side]
             self:_place(self.Joints[side..'Shoulder'],pose.Shoulder,1)
             self:_place(self.Joints[side..'Elbow'],pose.Elbow,1)
             self:_place(self.Joints[side..'Wrist'],pose.Wrist,1)
             self.ElbowDirections[side]=pose.Bend
-            local planted=self.FootTargets and self.FootTargets[side]
-            if planted then
-                self:_limb(self.Joints[side..'Hip'],self.Joints[side..'Knee'],self.Joints[side..'Ankle'],
-                    root*planted,root*Vector3.new(sign*.70,-1.0,-2.5))
-            end
         end
     else
         -- R6 rigid arms point from their shoulders toward the two grip positions.
@@ -596,6 +605,7 @@ end
 function Rig:Destroy()
     self:Restore();self:_kinematic(false)
     self.ElbowDirections={}
+    self.LegTargets=nil
     self.RodCacheStage=nil;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
     for _,o in ipairs(self.OriginalParts)do if o.Part.Parent then o.Part.LocalTransparencyModifier=o.Alpha end end
     if self.Visual then self.Visual:Destroy()end
