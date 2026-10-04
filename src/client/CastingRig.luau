@@ -210,7 +210,7 @@ function Rig:_shoulderPosition(shoulder,side)
     -- C0/C1 and attachments stay intact and native walking restores them.
     local torso=shoulder.Part0
     return origin+self.Root.CFrame:VectorToWorldSpace(
-        Vector3.new(torso.Size.X*.09,0,-torso.Size.Z*.38)*self.Weight)
+        Vector3.new(torso.Size.X*.045,0,-torso.Size.Z*.28)*self.Weight)
 end
 function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage,recovery)
     if not shoulder or not elbow or not wrist then return end
