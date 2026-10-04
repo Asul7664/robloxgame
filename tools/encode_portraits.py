@@ -12,7 +12,7 @@ from PIL import Image
 PROJECT = Path(__file__).resolve().parents[1]
 SUPPORTED_SPECIES = {
     "floppa", "chipichapa", "bobrito", "trippitroppi", "bombombini",
-    "cappuccino", "lirili", "chimpanzini", "frigocamelo", "lavacca", "verity",
+    "lirili", "chimpanzini", "frigocamelo", "lavacca", "verity",
 }
 
 

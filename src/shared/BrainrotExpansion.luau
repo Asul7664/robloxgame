@@ -1,0 +1,15 @@
+-- Additive native-model content; existing fish and balance remain intact.
+return {
+    Fish={
+        {["Id"]="floppa", ["Name"]="Флоппа-карась", ["Zone"]="Cove", ["Rarity"]=1, ["Chance"]=12, ["MinKg"]=0.3, ["MaxKg"]=1.1, ["Price"]=20, ["Difficulty"]=0.07, ["XP"]=25, ["Pattern"]="lazy", ["HookWindow"]=3.1, ["Nick"]="УШИ БОЛЬШИЕ — НЕРВЫ КРЕПКИЕ", ["UseModelPortrait"]=true},
+        {["Id"]="chipichapa", ["Name"]="Чипи Чапа", ["Zone"]="Cove", ["Rarity"]=2, ["Chance"]=6, ["MinKg"]=0.55, ["MaxKg"]=2.2, ["Price"]=32, ["Difficulty"]=0.11, ["XP"]=32, ["Pattern"]="wobble", ["HookWindow"]=2.8, ["Nick"]="ТАНЦУЕТ ДАЖЕ НА КРЮЧКЕ", ["UseModelPortrait"]=true},
+        {["Id"]="bobrito", ["Name"]="Бобрито Бандито", ["Zone"]="Reef", ["Rarity"]=2, ["Chance"]=8, ["MinKg"]=0.9, ["MaxKg"]=4.8, ["Price"]=44, ["Difficulty"]=0.16, ["XP"]=37, ["Pattern"]="pulse", ["HookWindow"]=2.7, ["Nick"]="СОМБРЕРО НЕ ВЛЕЗАЕТ В САЧОК", ["UseModelPortrait"]=true},
+        {["Id"]="trippitroppi", ["Name"]="Триппи Троппи", ["Zone"]="Reef", ["Rarity"]=3, ["Chance"]=4, ["MinKg"]=1.8, ["MaxKg"]=7.5, ["Price"]=66, ["Difficulty"]=0.23, ["XP"]=49, ["Pattern"]="spiral", ["HookWindow"]=2.4, ["Nick"]="КОТ, КРЕВЕТКА И НЕМНОГО ХАОСА", ["UseModelPortrait"]=true},
+        {["Id"]="bombombini", ["Name"]="Бомбомбини Гусини", ["Zone"]="Reef", ["Rarity"]=3, ["Chance"]=2.5, ["MinKg"]=4.5, ["MaxKg"]=19, ["Price"]=90, ["Difficulty"]=0.26, ["XP"]=61, ["Pattern"]="dart", ["HookWindow"]=2.25, ["MinRodQuality"]=2, ["Nick"]="ГУСЬ ВЫПОЛНЯЕТ БОЕВОЙ РАЗВОРОТ", ["UseModelPortrait"]=true},
+        {["Id"]="lirili", ["Name"]="Лирили Ларила", ["Zone"]="Moss", ["Rarity"]=4, ["Chance"]=2.2, ["MinKg"]=5.5, ["MaxKg"]=22, ["Price"]=135, ["Difficulty"]=0.31, ["XP"]=82, ["Pattern"]="pulse", ["HookWindow"]=2.15, ["MinRodQuality"]=2, ["Nick"]="СЛОН-КАКТУС В ТАПОЧКАХ", ["UseModelPortrait"]=true},
+        {["Id"]="chimpanzini", ["Name"]="Чимпанзини Бананини", ["Zone"]="Bloom", ["Rarity"]=5, ["Chance"]=0.85, ["MinKg"]=7, ["MaxKg"]=26, ["Price"]=225, ["Difficulty"]=0.36, ["XP"]=120, ["Pattern"]="berserk", ["HookWindow"]=1.9, ["MinRodQuality"]=2, ["Nick"]="БАНАНОВЫЙ ПЕРЕПОЛОХ В ЛАГУНЕ", ["UseModelPortrait"]=true},
+        {["Id"]="frigocamelo", ["Name"]="Фриго Камело", ["Zone"]="Dunes", ["Rarity"]=5, ["Chance"]=0.7, ["MinKg"]=18, ["MaxKg"]=48, ["Price"]=290, ["Difficulty"]=0.39, ["XP"]=135, ["Pattern"]="boss", ["HookWindow"]=1.9, ["MinRodQuality"]=3, ["Nick"]="ХОЛОДИЛЬНИК НА ВЕРБЛЮЖЬИХ НОГАХ", ["UseModelPortrait"]=true},
+        {["Id"]="lavacca", ["Name"]="Ла Вакка Сатурно Сатурнита", ["Zone"]="Storm", ["Rarity"]=6, ["Chance"]=0.1, ["MinKg"]=30, ["MaxKg"]=58, ["Price"]=440, ["Difficulty"]=0.5, ["XP"]=175, ["Pattern"]="boss", ["HookWindow"]=2, ["MinRodQuality"]=3, ["Night"]=true, ["Nick"]="НОЧНАЯ КОРОВА С КОЛЬЦАМИ САТУРНА", ["UseModelPortrait"]=true},
+    },
+    IslandWeights={["Moss"]={["floppa"]=4, ["bobrito"]=10, ["trippitroppi"]=5, ["lirili"]=2.2, ["chimpanzini"]=0.5}, ["Dunes"]={["bobrito"]=6, ["bombombini"]=4, ["lirili"]=1.5, ["frigocamelo"]=0.7}, ["Bloom"]={["chipichapa"]=5, ["trippitroppi"]=4, ["chimpanzini"]=0.85}, ["Storm"]={["bombombini"]=5, ["frigocamelo"]=0.8, ["lavacca"]=0.1}},
+}

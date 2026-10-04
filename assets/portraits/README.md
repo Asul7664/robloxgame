@@ -16,8 +16,10 @@
 | `lavacca.png` | Ла Вакка Сатурно Сатурнита |
 | `verity.png` | Верити — жёлтый шар со смайлом |
 
-Фото Капуччино Ассассино пока нет: он сохраняет существующий 3D-портрет.
-Чтобы добавить его позже, положи сюда `cappuccino.png` и отправь в GitHub.
+Капуччино Ассассино (`cappuccino`) удалён по запросу пользователя.
+Балерина Капуччина (`ballerina`) сохранена вместе с её существующим PNG.
+Десять исходных игровых портретов тоже перенесены в `src`: девять модулей
+в `CatchArtData` и отдельный `SahurArtData.luau`. Всего у 20 активных рыб есть PNG.
 Имя нового PNG должно совпадать с ID рыбы.
 
 Прозрачность исходников сохраняется. Чимпанзини и Ла Вакка пришли без
@@ -40,13 +42,18 @@ Rojo переносит эти модули в `StarterPlayerScripts → CatchAr
 `portrait-manifest.json` содержит соответствия, размеры и SHA256 исходников
 и созданных модулей. Если PNG-файлов нет, конвертер не меняет модули.
 
-В существующей игре v5 новый PNG имеет приоритет перед 3D-портретом,
-используется в карточке улова, рюкзаке и бестиарии. Roblox asset ID не нужен.
-Остальные скрипты отображения уже входят в v5.
+Скрипты отображения находятся в `src/client`. После завершения 3D-анимации
+появляется карточка с кругом редкости, PNG, названием, весом, ценой и опытом.
+PNG имеет приоритет перед 3D-портретом. В рюкзаке и бестиарии тоже используются
+фотографии. Roblox asset ID не нужен.
 
 После Pull останови и заново запусти Play. Для проверки в Command Bar:
 
 ```lua
-require(game.ReplicatedStorage.QuietCove.StudioPreview):Portrait("trippitroppi")
-require(game.ReplicatedStorage.QuietCove.StudioPreview):Catch("lavacca")
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Catch("lirili")
+require(game.ReplicatedStorage.QuietCove.StudioPreview):All("catch")
 ```
+
+`Catch` показывает 3D-анимацию, затем PNG-карточку. `All("catch")` последовательно
+показывает всех активных рыб. `Portrait("trippitroppi")` открывает только карточку,
+`World("trippitroppi")` — только 3D-анимацию; `Stop()` останавливает просмотр.

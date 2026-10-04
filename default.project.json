@@ -11,6 +11,14 @@
         "$ignoreUnknownInstances": true
       }
     },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "$ignoreUnknownInstances": true,
+      "QuietCove": {
+        "$path": "src/server",
+        "$ignoreUnknownInstances": true
+      }
+    },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "$ignoreUnknownInstances": true,
