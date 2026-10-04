@@ -19,8 +19,8 @@ local function ring(parent,center,color)
         FaceCamera=true,Width0=.10,Width1=.10,Segments=1,LightEmission=.7,Color=ColorSequence.new(color),Transparency=NumberSequence.new(.4)},root)end
     return {Root=root,Points=points,Beams=beams,Center=center}
 end
-function FX.new(config)
-    local self=setmetatable({Config=config,Active={},Seen={},PreviewIndex=0},FX)
+function FX.new(config,castEffects)
+    local self=setmetatable({Config=config,CastEffects=castEffects,Active={},Seen={},PreviewIndex=0},FX)
     self.Folder=make('Folder',{Name='QuietCoveCatchWorld'},workspace)
     self.Connection=RunService.RenderStepped:Connect(function()self:Step()end)
     return self
@@ -31,6 +31,7 @@ function FX:OwnerPlaying()
 end
 function FX:_remove(id)
     local c=self.Active[id];if not c then return end
+    if self.CastEffects then self.CastEffects:EndLanding(c.Data,c.Line)end
     c.Root:Destroy();self.Active[id]=nil
 end
 function FX:Handle(kind,p)
@@ -68,7 +69,8 @@ function FX:Handle(kind,p)
     if p.Rarity>=3 then
         for i=1,(p.Rarity==6 and 12 or 6)do stars[i]=particle(host,color,.07+(i%2)*.05)end
     end
-    self.Active[p.Id]={Data=p,Root=host,Model=model,Binding=binding,Dots=dots,Rings=rings,Stars=stars,Outline=outline}
+    local line=self.CastEffects and self.CastEffects:BeginLanding(p)
+    self.Active[p.Id]={Data=p,Root=host,Model=model,Binding=binding,Dots=dots,Rings=rings,Stars=stars,Outline=outline,Line=line}
     self:Step() -- position the newly created parts immediately; no flash at the world origin
 end
 function FX:Step()
@@ -83,6 +85,7 @@ function FX:Step()
             if (facing-position).Magnitude<.1 then facing=position+Vector3.new(0,0,-1)end
             local frame=CFrame.lookAt(position,facing)*CFrame.Angles(0,0,math.sin(t*math.pi*2)*.12*(1-t))
             Models.Animate(c.Model,c.Binding,frame,elapsed,Path.Fade(t))
+            if c.Line and not self.CastEffects:StepLanding(p,c.Line,c.Model:GetPivot().Position)then c.Line=nil end
             c.Outline.OutlineTransparency=math.min(1,(p.Rarity>=5 and .25 or .7)+Path.Fade(t))
             for i,d in ipairs(c.Dots)do
                 local at=math.max(0,elapsed-.15)

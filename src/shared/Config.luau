@@ -11,9 +11,10 @@ Config.SessionLeaseSeconds = 180
 Config.ChargeSeconds = 1.2
 -- The cast is not cosmetic-only timing: bites are impossible before touchdown.
 Config.Casting = {
-    SwingSeconds = 0.32, -- Release marker, inside the forward stroke (not its end).
-    StrokeEndSeconds = 0.58,
-    SettleSeconds = 1.18,
+    WindupSeconds = 0.045,
+    SwingSeconds = 0.18, -- Release marker, inside the fast forward stroke.
+    StrokeEndSeconds = 0.34,
+    SettleSeconds = 0.66,
     FlightSeconds = 0.86,
     ExtraFlightSeconds = 0.20,
     ArcHeight = 3.5,

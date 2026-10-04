@@ -28,20 +28,22 @@ local function spline(keys,time)
 end
 function Cast.Frame(stage,elapsed,power,config)
     power=clamp(power or 0,0,1)
+    local windup=config.WindupSeconds or .045
+    local strokeEnd=config.StrokeEndSeconds or .34
     local out=lerp(REST,REST,0)
     if stage=='Charging' then out=charged(power)
     elseif stage=='Casting' then
         local start=charged(power)
         local load=lerp(start,start,0);load.Pitch=math.min(-3,load.Pitch+4);load.Twist=load.Twist-2
         local follow={X=.15,Y=.06,Z=-1.78,Pitch=-77,Yaw=0,Roll=0,Lean=-8,Twist=4,Drop=.04,ShiftX=0,ShiftZ=-.04}
-        out=spline({{T=0,P=start},{T=.08,P=load},{T=config.StrokeEndSeconds or .54,P=follow},
-            {T=config.SettleSeconds or 1.10,P=REST}},elapsed)
+        out=spline({{T=0,P=start},{T=windup,P=load},{T=strokeEnd,P=follow},
+            {T=config.SettleSeconds or .66,P=REST}},elapsed)
     elseif stage=='Waiting' then out.Pitch=out.Pitch+math.sin(elapsed*1.55)*.85
     elseif stage=='Bite' then out.Pitch=out.Pitch+math.sin(elapsed*10)*1.4
     elseif stage=='Reeling' then out.Pitch=-61+math.sin(elapsed*3.5)*1.0;out.Lean=-6;out.Drop=.035
     elseif stage=='Landing' then out.Pitch=-52;out.Y=.22;out.Lean=-3;out.Drop=.025
     end
-    out.Slash=stage=='Casting' and elapsed>=.11 and elapsed<=.60
+    out.Slash=stage=='Casting' and elapsed>=windup and elapsed<=strokeEnd+.025
     return out
 end
 function Cast.RodFrame(frame)

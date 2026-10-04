@@ -10,6 +10,11 @@ local Rig={};Rig.__index=Rig
 local function clamp(x,a,b)return math.max(a,math.min(b,x))end
 local function rot(cf)return CFrame.new(cf.Position):Inverse()*cf end
 local function deg(x,y,z)return CFrame.Angles(math.rad(x or 0),math.rad(y or 0),math.rad(z or 0))end
+-- Bounded R15 fallback for wider avatars: height, forward clearance, yaw.
+-- Every candidate still has to satisfy both wrist reaches and all body checks.
+local broadCandidates={{0,0,24},{.25,0,0},{0,.15,16},{0,0,32},
+    {.25,.15,0},{.40,0,0},{0,.30,16},{0,.15,32},
+    {.40,0,8},{.25,.15,-8},{0,.30,24},{.25,.30,0}}
 local function basis(axis,ref)
     axis=axis.Unit
     local x=axis:Cross(ref)
@@ -20,6 +25,63 @@ end
 local function segment(localA,localB,worldA,worldB,normal)
     local r=basis(worldB-worldA,normal)*basis(localB-localA,Vector3.new(0,0,1)):Inverse()
     return CFrame.new(worldA)*r*CFrame.new(-localA)
+end
+local function radialDirection(delta,fallback)
+    return delta.Magnitude>.0001 and delta.Unit or fallback.Unit
+end
+local function circleDirection(delta,axis,fallback)
+    local direction=delta-axis*delta:Dot(axis)
+    if direction.Magnitude<.0001 then direction=fallback-axis*fallback:Dot(axis)end
+    if direction.Magnitude<.0001 then direction=Vector3.yAxis-axis*axis.Y end
+    if direction.Magnitude<.0001 then direction=Vector3.xAxis-axis*axis.X end
+    return direction.Unit
+end
+local function reachablePosition(desired,centres,ranges,fallback)
+    -- Fixed rod rotation gives two wrist reach shells. Their intersection,
+    -- rather than alternating one-arm corrections, must satisfy BOTH hands.
+    local tolerance=.0002
+    local best,bestDistance
+    local function consider(position)
+        for i=1,2 do
+            local distance=(position-centres[i]).Magnitude
+            if distance<ranges[i][1]-tolerance or distance>ranges[i][2]+tolerance then return end
+        end
+        local distance=(position-desired).Magnitude
+        if not bestDistance or distance<bestDistance then best=position;bestDistance=distance end
+    end
+    consider(desired)
+    if best then return best end
+    local delta=centres[2]-centres[1]
+    local separation=delta.Magnitude
+    if separation<.0001 then
+        local minimum=math.max(ranges[1][1],ranges[2][1])
+        local maximum=math.min(ranges[1][2],ranges[2][2])
+        if minimum<=maximum then
+            local radius=clamp((desired-centres[1]).Magnitude,minimum,maximum)
+            consider(centres[1]+radialDirection(desired-centres[1],fallback)*radius)
+        end
+        return best
+    end
+    -- The closest feasible position is either on one boundary sphere or
+    -- on a circle where two boundary spheres meet (inner/outer included).
+    for i=1,2 do
+        for _,radius in ipairs(ranges[i])do
+            consider(centres[i]+radialDirection(desired-centres[i],fallback)*radius)
+        end
+    end
+    local axis=delta/separation
+    for _,a in ipairs(ranges[1])do for _,b in ipairs(ranges[2])do
+        if separation<=a+b+tolerance and separation>=math.abs(a-b)-tolerance then
+            local along=(a*a-b*b+separation*separation)/(2*separation)
+            local radiusSquared=a*a-along*along
+            if radiusSquared>=-tolerance then
+                local centre=centres[1]+axis*along
+                local radius=math.sqrt(math.max(0,radiusSquared))
+                consider(centre+circleDirection(desired-centre,axis,fallback)*radius)
+            end
+        end
+    end end
+    return best
 end
 local function animationJoint(j)
     local a,b=j.Attachment0,j.Attachment1
@@ -48,7 +110,7 @@ local function jointName(part,fallback)
 end
 function Rig.new(character,tool,parent)
     local root=character:FindFirstChild('HumanoidRootPart');if not root then return nil end
-    local self=setmetatable({Character=character,Root=root,Tool=tool,ByPart={},Joints={},OriginalParts={},Saved={},Weight=0,Cache={},ConstraintStates={},KinematicsActive=false},Rig)
+    local self=setmetatable({Character=character,Root=root,Tool=tool,ByPart={},Joints={},OriginalParts={},Saved={},Weight=0,Cache={},ConstraintStates={},KinematicsActive=false,ElbowDirections={}},Rig)
     -- Two passes make upgraded constraints win when a compatibility Motor6D also exists.
     for _,j in ipairs(character:GetDescendants())do
         if j:IsA('Motor6D')and j.Part0 and j.Part1 then
@@ -77,6 +139,12 @@ function Rig.new(character,tool,parent)
     self.R15=character:FindFirstChild('RightUpperArm')~=nil
     self.RodShapes=Clearance.Describe(clone,h)
     self.BodyParts=Clearance.BodyParts(character)
+    self.ArmBodies={}
+    for _,part in ipairs(self.BodyParts)do
+        if part.Name=='Torso'or part.Name=='UpperTorso'or part.Name=='LowerTorso'or part.Name=='Head'then
+            self.ArmBodies[#self.ArmBodies+1]=part
+        end
+    end
     return self
 end
 function Rig:_kinematic(active)
@@ -109,10 +177,16 @@ end
 function Rig:_place(j,cf,weight)
     if not j then return end
     local t=j.C0:Inverse()*self:_world(j.Part0):Inverse()*cf*j.C1
-    -- The main hand follows the already blended rod exactly throughout entry.
+    -- Both arms follow the already blended rod exactly throughout entry.
     self:_set(j,t,weight)
 end
-function Rig:_limb(shoulder,elbow,wrist,handCF,pole,weight)
+function Rig:_clearArm(part,frame)
+    for _,body in ipairs(self.ArmBodies)do
+        if Clearance.Overlap(frame,part.Size*.5,self:_world(body),body.Size*.5,.02)then return false end
+    end
+    return true
+end
+function Rig:_solveLimb(shoulder,elbow,wrist,handCF,pole,side,stage)
     if not shoulder or not elbow or not wrist then return end
     local S=(self:_world(shoulder.Part0)*shoulder.C0).Position
     local target=(handCF*wrist.C1).Position
@@ -128,12 +202,74 @@ function Rig:_limb(shoulder,elbow,wrist,handCF,pole,weight)
     bend=bend.Unit
     local along=(a*a-b*b+d*d)/(2*d)
     local height=math.sqrt(math.max(0,a*a-along*along))
-    local E=S+axis*along+bend*height
-    local normal=axis:Cross(bend).Unit
-    local upper=segment(shoulder.C1.Position,elbow.C0.Position,S,E,normal)
-    local lower=segment(elbow.C1.Position,wrist.C0.Position,E,T,normal)
     local palm=CFrame.new(T)*rot(handCF)*CFrame.new(-wrist.C1.Position)
-    self:_place(shoulder,upper,weight);self:_place(elbow,lower,weight);self:_place(wrist,palm,weight)
+    if side and not self:_clearArm(wrist.Part1,palm)then return nil end
+    local previous=side and self.ElbowDirections[side]
+    if previous then
+        previous=self.Root.CFrame:VectorToWorldSpace(previous)
+        previous=previous-axis*previous:Dot(axis)
+        previous=previous.Magnitude>.0001 and previous.Unit or nil
+    end
+    local function solve(direction)
+        local E=S+axis*along+direction*height
+        local localElbow=self.Root.CFrame:PointToObjectSpace(E)
+        local localShoulder=self.Root.CFrame:PointToObjectSpace(S)
+        local ownSide=not side or localElbow.X*(side=='Right'and 1 or -1)>.02
+        local low=not side or (stage~='Waiting'and stage~='Reeling')or localElbow.Y<localShoulder.Y-.02
+        if ownSide and low then
+            local normal=axis:Cross(direction).Unit
+            local upper=segment(shoulder.C1.Position,elbow.C0.Position,S,E,normal)
+            local lower=segment(elbow.C1.Position,wrist.C0.Position,E,T,normal)
+            if not side or self:_clearArm(elbow.Part1,lower)then
+                return {Shoulder=upper,Elbow=lower,Wrist=palm,Bend=self.Root.CFrame:VectorToObjectSpace(direction)}
+            end
+        end
+    end
+    -- Normally the preferred pole is already safe. After a correction, move
+    -- gradually back toward it instead of switching elbow-circle branches.
+    local preferred=previous and previous:Lerp(bend,self.ElbowAlpha or 1)or bend
+    preferred=radialDirection(preferred,bend)
+    local pose=solve(preferred)
+    if pose then return pose end
+    if previous then pose=solve(previous);if pose then return pose end end
+    if previous then
+        -- A narrow safe arc next to the previous elbow can fall between the
+        -- coarse authored samples. Search it before considering another arc.
+        for _,angle in ipairs({2,-2,4,-4,6,-6,8,-8,10,-10,12,-12,15,-15,18,-18,20,-20})do
+            local radians=math.rad(angle)
+            local direction=previous*math.cos(radians)+axis:Cross(previous)*math.sin(radians)
+            pose=solve(direction)
+            if pose then return pose end
+        end
+    end
+    local best,bestScore
+    local reference=previous or bend
+    for _,angle in ipairs({0,15,-15,30,-30,45,-45,60,-60,90,-90,120,-120,150,-150,180})do
+        local radians=math.rad(angle)
+        local direction=bend*math.cos(radians)+axis:Cross(bend)*math.sin(radians)
+        local score=direction:Dot(reference)
+        -- Reject a different elbow-circle branch before accepting the rod.
+        -- A nearby rod position can keep both hands on the same safe branch.
+        if (not previous or score>=math.cos(math.rad(20)))and (not bestScore or score>bestScore)then
+            pose=solve(direction)
+            if pose then best=pose;bestScore=score end
+        end
+    end
+    return best
+end
+function Rig:_limb(shoulder,elbow,wrist,handCF,pole,weight)
+    local pose=self:_solveLimb(shoulder,elbow,wrist,handCF,pole)
+    if pose then
+        self:_place(shoulder,pose.Shoulder,weight);self:_place(elbow,pose.Elbow,weight);self:_place(wrist,pose.Wrist,weight)
+    end
+end
+function Rig:_armPole(side,stage)
+    local shoulder,elbow=self.Joints[side..'Shoulder'],self.Joints[side..'Elbow']
+    local scale=(elbow.C0.Position-shoulder.C1.Position).Magnitude/1.2
+    -- Stage-specific rod targets drive the cast. Keep both elbow preferences
+    -- in front throughout instead of pulling a charging elbow behind the chest.
+    local right,left=Vector3.new(1.55,.55,-1.60),Vector3.new(-1.25,.45,-1.50)
+    return self.Root.CFrame*((side=='Right'and right or left)*scale)
 end
 function Rig:_grasp(side,rodCF)
     local name=side=='Right' and 'CastMainGrip' or 'CastSupportGrip'
@@ -150,72 +286,133 @@ function Rig:_grip(side,rodCF)
 end
 function Rig:_fitRod(rodCF)
     -- Reach-aware translation; no stretching bones on scaled avatars.
+    local centres,ranges={},{}
     if not self.R15 then
         -- R6 has no elbow: fit both rigid arm endpoints to their rod grips.
         -- The handle centre lies on the intersection of two reach spheres.
-        local centres,lengths={},{}
         for _,side in ipairs({'Right','Left'})do
             local j=self.Joints[side..' Shoulder']
-            if not j then return rodCF end
+            if not j then return nil end
             local S=(self:_world(j.Part0)*j.C0).Position
             local localEnd=Vector3.new(0,-j.Part1.Size.Y*.46,0)
-            lengths[#lengths+1]=(localEnd-j.C1.Position).Magnitude
+            local length=(localEnd-j.C1.Position).Magnitude
+            ranges[#ranges+1]={length,length}
             centres[#centres+1]=S-(self:_grasp(side,rodCF).Position-rodCF.Position)
         end
-        local delta=centres[2]-centres[1];local d=delta.Magnitude
-        if d>.001 and d<lengths[1]+lengths[2] and d>math.abs(lengths[1]-lengths[2])then
-            local axis=delta.Unit
-            local along=(lengths[1]^2-lengths[2]^2+d*d)/(2*d)
-            local radius=math.sqrt(math.max(0,lengths[1]^2-along*along))
-            local centre=centres[1]+axis*along
-            local projected=rodCF.Position-centre
-            projected=projected-axis*projected:Dot(axis)
-            if projected.Magnitude<.001 then projected=self.Root.CFrame.LookVector end
-            return CFrame.new(centre+projected.Unit*radius)*rot(rodCF)
-        end
-        return rodCF
-    end
-    for _=1,3 do
-        for _,side in ipairs({'Left','Right'})do
+    else
+        for _,side in ipairs({'Right','Left'})do
             local a,b,c=self.Joints[side..'Shoulder'],self.Joints[side..'Elbow'],self.Joints[side..'Wrist']
-            if a and b and c then
-                local S=(self:_world(a.Part0)*a.C0).Position
-                local T=(self:_grip(side,rodCF)*c.C1).Position
-                local reach=(b.C0.Position-a.C1.Position).Magnitude+(c.C0.Position-b.C1.Position).Magnitude-.025
-                local delta=T-S
-                if delta.Magnitude>reach then
-                    local correction=-delta.Unit*(delta.Magnitude-reach)
-                    rodCF=CFrame.new(correction)*rodCF
-                end
-            end
+            if not a or not b or not c then return nil end
+            local S=(self:_world(a.Part0)*a.C0).Position
+            local T=(self:_grip(side,rodCF)*c.C1).Position
+            local upper=(b.C0.Position-a.C1.Position).Magnitude
+            local lower=(c.C0.Position-b.C1.Position).Magnitude
+            if upper<.01 or lower<.01 then return nil end
+            -- Leave a bend at each elbow; the IK solver must never clamp a
+            -- target away from the visible grip, including at entry Weight<1.
+            local margin=math.min(.025,math.min(upper,lower)*.1)
+            ranges[#ranges+1]={math.abs(upper-lower)+margin,upper+lower-margin}
+            centres[#centres+1]=S-(T-rodCF.Position)
         end
     end
-    return rodCF
+    local position=reachablePosition(rodCF.Position,centres,ranges,self.Root.CFrame.LookVector)
+    return position and CFrame.new(position)*rot(rodCF)or nil
 end
 
-function Rig:_safeRod(desired,finalPose)
+function Rig:_safeRod(desired,finalPose,stage)
+    local root=self.Root.CFrame
+    local desiredLocal=root:ToObjectSpace(desired)
+    if self.RodCacheStage~=stage then
+        self.RodCacheStage=stage;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
+    end
+    local previousDesired,correction=self.LastDesiredLocal,self.RodCorrectionLocal
+    local function accepted(candidate,poses)
+        -- Record only the final jointly safe result, never a rejected trial.
+        self.LastDesiredLocal=desiredLocal
+        self.RodCorrectionLocal=root:ToObjectSpace(candidate)*desiredLocal:Inverse()
+        return candidate,poses
+    end
     local function safe(candidate)
         candidate=self:_fitRod(candidate)
-        if Clearance.Check(candidate,self.RodShapes,self.BodyParts,function(part)return self:_world(part)end,.06)then
-            return candidate
+        if candidate and Clearance.Check(candidate,self.RodShapes,self.BodyParts,function(part)return self:_world(part)end,.06)then
+            local poses={}
+            if self.R15 then
+                for _,side in ipairs({'Right','Left'})do
+                    poses[side]=self:_solveLimb(self.Joints[side..'Shoulder'],self.Joints[side..'Elbow'],self.Joints[side..'Wrist'],
+                        self:_grip(side,candidate),self:_armPole(side,stage),side,stage)
+                    if not poses[side]then return nil end
+                end
+            end
+            return candidate,poses
         end
     end
-    local fitted=safe(desired)
-    if fitted then return fitted end
+    local fitted,poses
+    if previousDesired and self.LastRodLocal
+        and (desiredLocal.Position-previousDesired.Position).Magnitude<.00001
+        and (desiredLocal.RightVector-previousDesired.RightVector).Magnitude<.00001
+        and (desiredLocal.UpVector-previousDesired.UpVector).Magnitude<.00001 then
+        -- A stationary target needs one full recheck, not the same search
+        -- every frame. Body motion still goes through all existing guards.
+        fitted,poses=safe(root*self.LastRodLocal)
+        if fitted then return accepted(fitted,poses)end
+    end
+    if stage=='Charging'and previousDesired and correction
+        and (desiredLocal.Position-previousDesired.Position).Magnitude<.15
+        and (desiredLocal.RightVector-previousDesired.RightVector).Magnitude<.09
+        and (desiredLocal.UpVector-previousDesired.UpVector).Magnitude<.09 then
+        -- Reuse the preceding root-local clearance correction while charge
+        -- changes slowly. Remove it gradually, so a newly feasible authored
+        -- target cannot suddenly jump back from the corrected pose.
+        local relaxed=correction:Lerp(CFrame.new(),self.ElbowAlpha or 1)
+        fitted,poses=safe(root*relaxed*desiredLocal)
+        if fitted then return accepted(fitted,poses)end
+        fitted,poses=safe(root*correction*desiredLocal)
+        if fitted then return accepted(fitted,poses)end
+    end
+    fitted,poses=safe(desired)
+    if fitted then return accepted(fitted,poses)end
+    if self.R15 and self.LastRod then
+        -- Small clearance changes should not force the other side of an IK
+        -- circle. Probe nearby positions before the larger fallback shifts.
+        for _,offset in ipairs({Vector3.new(0,0,-.015),Vector3.new(0,0,-.03),Vector3.new(0,0,-.06),
+            Vector3.new(0,0,-.12),Vector3.new(.015,0,0),Vector3.new(-.015,0,0),
+            Vector3.new(0,.015,0),Vector3.new(0,-.015,0)})do
+            fitted,poses=safe(root*CFrame.new(offset)*desiredLocal)
+            if fitted then return accepted(fitted,poses)end
+        end
+    end
     if finalPose then
-        fitted=safe(finalPose)
-        if fitted then return fitted end
+        fitted,poses=safe(finalPose)
+        if fitted then return accepted(fitted,poses)end
         desired=finalPose
     end
     -- Clearance is evaluated AFTER reach fitting, including the reel and butt.
-    local root=self.Root.CFrame
     local localFrame=root:ToObjectSpace(desired)
     for _,pitch in ipairs({8,16,-8})do
         for _,offset in ipairs({Vector3.new(0,0,-.15),Vector3.new(.22,0,-.15),
             Vector3.new(-.22,0,-.15),Vector3.new(0,.16,-.12),Vector3.new(0,-.16,-.12)})do
-            fitted=safe(root*CFrame.new(offset)*localFrame*deg(pitch,0,0))
-            if fitted then return fitted end
+            fitted,poses=safe(root*CFrame.new(offset)*localFrame*deg(pitch,0,0))
+            if fitted then return accepted(fitted,poses)end
         end
+    end
+    -- Large torsos also need room for the palm, which an elbow rotation
+    -- cannot create. Keep the shift bounded and recheck BOTH reach shells.
+    for _,forward in ipairs({.30,.45,.65})do
+        for _,pitch in ipairs({0,8,-8})do
+            fitted,poses=safe(root*CFrame.new(0,0,-forward)*localFrame*deg(pitch,0,0))
+            if fitted then return accepted(fitted,poses)end
+        end
+    end
+    if self.R15 then
+        for _,candidate in ipairs(broadCandidates)do
+            local position=localFrame.Position+Vector3.new(0,candidate[1],-candidate[2])
+            fitted,poses=safe(root*CFrame.new(position)*deg(0,candidate[3],0)*rot(localFrame))
+            if fitted then return accepted(fitted,poses)end
+        end
+    end
+    if self.R15 and self.LastRodLocal then
+        fitted,poses=safe(root*self.LastRodLocal)
+        if fitted then return accepted(fitted,poses)end
     end
     return nil
 end
@@ -223,6 +420,8 @@ end
 function Rig:_deactivate()
     self:Restore();self:_kinematic(false);self.Weight=0
     self.FootTargets=nil;self.LastFrame=nil;self.LastRod=nil;self.PreviousStage=nil;self.Transition=nil
+    self.ElbowDirections={};self.EntryRod=nil;self.LastRodLocal=nil
+    self.RodCacheStage=nil;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
     for _,o in ipairs(self.OriginalParts)do if o.Part.Parent then o.Part.LocalTransparencyModifier=o.Alpha end end
     for _,part in ipairs(self.VisibleParts)do if part.Parent then part.LocalTransparencyModifier=1 end end
     -- Invisible clone tip follows the native Tool when fishing while moving.
@@ -232,7 +431,7 @@ end
 function Rig:Step(stage,t,power,config,dt)
     local humanoid=self.Character:FindFirstChildOfClass('Humanoid')
     local velocity=self.Root.AssemblyLinearVelocity or Vector3.zero
-    local moving=humanoid and (humanoid.MoveDirection.Magnitude>.05
+    local moving=humanoid and ((humanoid.WalkSpeed or 16)>0 and humanoid.MoveDirection.Magnitude>.05
         or Vector3.new(velocity.X,0,velocity.Z).Magnitude>1)
     local fishing={Charging=true,Casting=true,Waiting=true,Bite=true,Reeling=true,Landing=true}
     local active=self.Tool.Parent==self.Character and fishing[stage]==true and humanoid
@@ -246,6 +445,7 @@ function Rig:Step(stage,t,power,config,dt)
     for _,p in ipairs(self.VisibleParts)do if p.Parent then p.LocalTransparencyModifier=shown and 0 or 1 end end
     if not shown then self.FootTargets=nil;self.LastFrame=nil;self.PreviousStage=nil;self.Transition=nil;return false end
     self.Cache={}
+    self.ElbowAlpha=1-math.exp(-12*dt)
     local f=Cast.Frame(stage,t,power,config)
     if active and stage~=self.PreviousStage and self.LastFrame and stage~='Charging' and stage~='Casting' then
         self.Transition={From=self.LastFrame,Age=0}
@@ -259,10 +459,12 @@ function Rig:Step(stage,t,power,config,dt)
     self.PreviousStage=stage
     if not active and self.LastFrame then f=self.LastFrame else self.LastFrame=f end
     local root=self.Root.CFrame
+    local actual=self.Tool:FindFirstChild('Handle')
+    if not self.EntryRod and actual then self.EntryRod=root:ToObjectSpace(actual.CFrame)end
     local rigRoot=self.Joints.Root or self.Joints.RootJoint
     local waist=self.Joints.Waist
     local neck=self.Joints.Neck
-    local plant=(stage=='Charging' or stage=='Casting') and humanoid and not humanoid.Sit and humanoid.MoveDirection.Magnitude<.05
+    local plant=(stage=='Charging' or stage=='Casting') and humanoid and not humanoid.Sit and not moving
     if not plant then self.FootTargets=nil end
     if plant and not self.FootTargets then
         self.FootTargets={}
@@ -275,28 +477,19 @@ function Rig:Step(stage,t,power,config,dt)
     if neck then self:_set(neck,deg(-f.Lean*.5,-f.Twist*.48,0))end
     local finalPose=root*Cast.RodFrame(f)
     local desired=finalPose
-    local actual=self.Tool:FindFirstChild('Handle')
-    if self.Weight<.999 and actual then desired=actual.CFrame:Lerp(finalPose,self.Weight)end
-    local rodCF=self:_safeRod(desired,finalPose)
+    -- The hidden native RightGrip follows our posed hand after the first
+    -- simulation. Sampling it again would feed that rotation back into IK.
+    if self.Weight<.999 and self.EntryRod then desired=(root*self.EntryRod):Lerp(finalPose,self.Weight)end
+    local rodCF,armPoses=self:_safeRod(desired,finalPose,stage)
     if not rodCF then self:_deactivate();return false end
     if self.R15 then
         for _,side in ipairs({'Right','Left'})do
             local sign=side=='Right' and 1 or -1
-            -- Roblox forward is -Z.  Keep elbows in front of the torso instead of folding them into the chest.
-            local rightHint,leftHint
-            if stage=='Charging' then
-                rightHint=Vector3.new(1.38,-0.18,-0.12)
-                leftHint=Vector3.new(-1.02,-0.50,-0.30)
-            elseif stage=='Casting' then
-                rightHint=Vector3.new(1.48,-0.24,-0.72)
-                leftHint=Vector3.new(-1.08,-0.56,-0.92)
-            else
-                rightHint=Vector3.new(1.10,-0.55,-0.55)
-                leftHint=Vector3.new(-1.10,-0.55,-0.55)
-            end
-            local elbowHint=root*(side=='Right' and rightHint or leftHint)
-            self:_limb(self.Joints[side..'Shoulder'],self.Joints[side..'Elbow'],self.Joints[side..'Wrist'],
-                self:_grip(side,rodCF),elbowHint,side=='Right' and 1 or nil)
+            local pose=armPoses[side]
+            self:_place(self.Joints[side..'Shoulder'],pose.Shoulder,1)
+            self:_place(self.Joints[side..'Elbow'],pose.Elbow,1)
+            self:_place(self.Joints[side..'Wrist'],pose.Wrist,1)
+            self.ElbowDirections[side]=pose.Bend
             local planted=self.FootTargets and self.FootTargets[side]
             if planted then
                 self:_limb(self.Joints[side..'Hip'],self.Joints[side..'Knee'],self.Joints[side..'Ankle'],
@@ -316,17 +509,20 @@ function Rig:Step(stage,t,power,config,dt)
                 -- The R6 shoulder is on the upper inner corner of the block.
                 -- Keep that corner above the arm centre, rather than rolling
                 -- both blocks upward and crossing them high over the chest.
-                self:_place(j,segment(j.C1.Position,localEnd,S,endPoint,-root.LookVector),side=='Right' and 1 or nil)
+                self:_place(j,segment(j.C1.Position,localEnd,S,endPoint,-root.LookVector),1)
             end
         end
     end
     -- Never interpolate again here: that could reintroduce a body intersection.
     self.Visual:PivotTo(rodCF)
     self.LastRod=rodCF
+    self.LastRodLocal=root:ToObjectSpace(rodCF)
     return f.Slash
 end
 function Rig:Destroy()
     self:Restore();self:_kinematic(false)
+    self.ElbowDirections={}
+    self.RodCacheStage=nil;self.LastDesiredLocal=nil;self.RodCorrectionLocal=nil
     for _,o in ipairs(self.OriginalParts)do if o.Part.Parent then o.Part.LocalTransparencyModifier=o.Alpha end end
     if self.Visual then self.Visual:Destroy()end
 end

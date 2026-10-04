@@ -16,7 +16,7 @@ local CatchThumbnails = require(script.Parent:WaitForChild("CatchThumbnails"))
 local CastEffects = require(script.Parent:WaitForChild("CastEffects"))
 local castEffects = CastEffects.new(Config)
 local LandingEffects = require(script.Parent:WaitForChild("LandingEffects"))
-local landingEffects = LandingEffects.new(Config)
+local landingEffects = LandingEffects.new(Config, castEffects)
 local pendingCaught = nil
 local landingEndsAt = 0
 local function landingPlaying()

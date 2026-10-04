@@ -38,3 +38,23 @@ Rojo синхронизирует этот проект с уже открыты
 
 Последующие изменения текста и скриптов подхватываются работающим Rojo.
 После изменения клиентских скриптов останови и заново запусти Play.
+
+Обе руки следуют общему сглаженному положению удочки во время рыбалки.
+В `Idle` и при ходьбе работает обычная анимация персонажа.
+Скорость заброса задаётся в `src/shared/Config.luau`, в `Config.Casting`:
+`WindupSeconds` — короткая подготовка, `SwingSeconds` — момент выпуска,
+`StrokeEndSeconds` — конец маха, `SettleSeconds` — возврат в положение ожидания.
+Текущие значения: 0.045 / 0.18 / 0.34 / 0.66 секунды. Эти времена должны
+идти по возрастанию. Леска при успешном улове переходит от поплавка к
+движущейся 3D-модели рыбы и убирается после завершения вытягивания.
+
+Для просмотра хвата и заброса нажми Play, возьми удочку и запускай команды
+по одной в Command Bar:
+
+```lua
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Rod("Waiting", 6)
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Rod("Reeling", 6)
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Rod("Casting", 3)
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Catch("capybara")
+require(game.ReplicatedStorage.QuietCove.StudioPreview):Stop()
+```

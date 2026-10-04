@@ -9,6 +9,7 @@ local CastingRig=require(script.Parent:WaitForChild("CastingRig"))
 local Effects={};Effects.__index=Effects
 local WHITE=Color3.fromRGB(248,255,255)
 local AQUA=Color3.fromRGB(148,232,242)
+local HANDOFF_SECONDS=0.35
 local function make(cl,props,parent)
     local o=Instance.new(cl);for k,v in pairs(props)do o[k]=v end;o.Parent=parent;return o
 end
@@ -34,6 +35,66 @@ local function tipOf(tool)
     local handle=tool and tool:FindFirstChild("Handle")
     return handle and handle:FindFirstChild("Tip")
 end
+local function line(parent,name)
+    local root=anchor(parent,name);local points,beams={},{}
+    for i=1,10 do points[i]=make("Attachment",{},root)end
+    for i=1,9 do beams[i]=beam(root,points[i],points[i+1],0.048,WHITE,0.13)end
+    return {Root=root,Points=points,Beams=beams}
+end
+local function positionLine(c,tip,position,sag)
+    for i,a in ipairs(c.Points)do
+        local u=(i-1)/(#c.Points-1)
+        a.Position=tip+(position-tip)*u-Vector3.new(0,math.sin(math.pi*u)*sag,0)
+    end
+end
+function Effects:_tip(userId,tool,character)
+    local a=self.Actors[userId]
+    local player=Players:GetPlayerByUserId(userId)
+    if not a or not player or player.Character~=character or a.Character~=character
+        or a.Tool~=tool or tool.Parent~=character or not a.Root.Parent then return nil end
+    local humanoid=character:FindFirstChildOfClass("Humanoid")
+    if humanoid and humanoid.Health<=0 then return nil end
+    local tip=a.Rig and a.Rig.LastRod and a.Tip or tipOf(tool)
+    return tip and tip.Parent and tip or nil
+end
+-- Landing owns the transferred line until its full shared-clock duration ends.
+-- Its endpoint is supplied by the actual model animation, never the deleted marker.
+function Effects:BeginLanding(p)
+    if self.Dead then return nil end
+    self:_scan()
+    local a=self.Actors[p.UserId];if not a then return nil end
+    local latest=self.Latest[p.UserId]
+    if not p.Preview and latest and latest.Id~=p.Id and latest.Started>=p.Started then return nil end
+    local live=self.Casts[p.UserId]
+    if p.Preview and live then return nil end -- a Studio preview cannot steal an active cast
+    local c
+    if live and live.Data.Id==p.Id then
+        self.Casts[p.UserId]=nil;c=live
+        c.Bobber:Destroy();c.Cap:Destroy();c.Trail:Destroy()
+    else c=line(self.Folder,"LandingLine_"..p.UserId)end
+    c.Data=p;c.Tool=a.Tool;c.Character=a.Character
+    if not self:_tip(p.UserId,c.Tool,c.Character)then c.Root:Destroy();return nil end
+    if not p.Preview then
+        local old=self.LandingByUser[p.UserId]
+        if old then self:EndLanding(old.Data,old)end
+        self.LandingByUser[p.UserId]=c
+        self.Latest[p.UserId]={Id=p.Id,Started=p.Started};a.SessionId=p.Id
+        self.Closed[p.Id]=workspace:GetServerTimeNow()
+    end
+    return c
+end
+function Effects:StepLanding(p,c,position)
+    if self.Dead or not c or not c.Root.Parent then return false end
+    local tip=self:_tip(p.UserId,c.Tool,c.Character)
+    if not tip then self:EndLanding(p,c);return false end
+    positionLine(c,tip.WorldPosition,position,0.16)
+    return true
+end
+function Effects:EndLanding(p,c)
+    if not c then return end
+    if self.LandingByUser[p.UserId]==c then self.LandingByUser[p.UserId]=nil end
+    c.Root:Destroy()
+end
 function Effects:_removeActor(id)
     local a=self.Actors[id];if not a then return end
     for _,j in ipairs(a.Joints)do if j.Motor.Parent and j.Base then j.Motor.Transform=j.Base end end
@@ -44,7 +105,7 @@ function Effects:_removeActor(id)
 end
 function Effects:_actor(player,tool)
     local id=player.UserId;local old=self.Actors[id]
-    if old and old.Tool==tool then return old end
+    if old and old.Tool==tool and old.Character==player.Character then return old end
     self:_removeActor(id)
     local character=player.Character;local root=character and character:FindFirstChild("HumanoidRootPart")
     local tip=tipOf(tool);if not root or not tip then return nil end
@@ -169,17 +230,23 @@ function Effects:_updateSplashes(now)
 end
 function Effects:_end(id)
     local c=self.Casts[id]
-    if c then c.Root:Destroy();self.Casts[id]=nil end
+    if c then self.Closed[c.Data.Id]=workspace:GetServerTimeNow();c.Root:Destroy();self.Casts[id]=nil end
 end
 function Effects:Handle(kind,p)
     if self.Dead then return end
     if kind=="CastEnd" then
+        local landing=self.LandingByUser[p.UserId]
+        if landing and landing.Data.Id==p.Id then return end -- line is already attached to the won fish
         local live=self.Casts[p.UserId]
         if live and live.Data.Id~=p.Id then return end -- stale end must not stop a newer swing
-        if live then self:_end(p.UserId)end
         local a=self.Actors[p.UserId]
+        if a and a.SessionId and a.SessionId~=p.Id then return end
+        self.Closed[p.Id]=workspace:GetServerTimeNow()
+        if live then
+            live.EndAt=live.EndAt or workspace:GetServerTimeNow()+HANDOFF_SECONDS
+            live.Bobber.Transparency=1;live.Cap.Transparency=1;live.Trail.Enabled=false
+        end
         if a then
-            if a.Id==Players.LocalPlayer.UserId then a.Override={Stage="Idle",At=workspace:GetServerTimeNow()} end
             if a.Slash then a.Slash.Root:Destroy();a.Slash=nil end
         end
         return
@@ -187,25 +254,36 @@ function Effects:Handle(kind,p)
     if kind=="Stage"then
         self:_scan()
         local a=self.Actors[Players.LocalPlayer.UserId]
-        if a then a.Override={Stage=p.Stage,At=p.Started or workspace:GetServerTimeNow(),Power=p.Power}end
+        if a then
+            if p.Stage=="Idle" and a.SessionId and a.SessionId~=p.Id then return end
+            a.SessionId=p.Id
+            a.Override={Stage=p.Stage,At=p.Started or workspace:GetServerTimeNow(),Power=p.Power}
+        end
+        if p.Stage=="Charging" then
+            self.Latest[Players.LocalPlayer.UserId]={Id=p.Id,Started=p.Started or workspace:GetServerTimeNow()}
+        end
+        if p.Stage=="Idle" then
+            local live=self.Casts[Players.LocalPlayer.UserId]
+            if live and live.Data.Id==p.Id then self:_end(Players.LocalPlayer.UserId)end
+        end
         return
     end
     if kind~="CastVisual"then return end
     local player=Players:GetPlayerByUserId(p.UserId)
     if not player or not p.Tool or p.Tool.Parent~=player.Character then return end
+    local latest=self.Latest[p.UserId]
+    if self.Closed[p.Id]or (latest and latest.Id~=p.Id and latest.Started>=p.Started)then return end
     local existing=self.Casts[p.UserId]
     if existing and existing.Data.Id==p.Id then return end -- Ready replay is idempotent.
     local localChar=Players.LocalPlayer.Character
     local localRoot=localChar and localChar:FindFirstChild("HumanoidRootPart")
     if localRoot and (localRoot.Position-p.Target).Magnitude>self.Config.Casting.EffectDistance then return end
     local a=self:_actor(player,p.Tool);if not a then return end
+    self.Latest[p.UserId]={Id=p.Id,Started=p.Started};a.SessionId=p.Id
     self:_end(p.UserId)
-    local root=anchor(self.Folder,"VisibleCast_"..p.UserId)
+    local c=line(self.Folder,"VisibleCast_"..p.UserId);local root=c.Root
     local bobber=part(root,"VisibleBobber",Vector3.new(0.40,0.6,0.40),Color3.fromRGB(250,164,101));bobber.Shape=Enum.PartType.Ball
     local cap=part(root,"BobberWhiteCap",Vector3.new(0.29,0.20,0.29),WHITE);cap.Shape=Enum.PartType.Ball
-    local points,beams={},{}
-    for i=1,10 do points[i]=make("Attachment",{},root)end
-    for i=1,9 do beams[i]=beam(root,points[i],points[i+1],0.048,WHITE,0.13)end
     local tail0=make("Attachment",{Position=Vector3.new(-0.07,0,0)},bobber)
     local tail1=make("Attachment",{Position=Vector3.new(0.07,0,0)},bobber)
     local trail=make("Trail",{Name="FlyingLineGlint",Attachment0=tail0,Attachment1=tail1,Lifetime=0.20,
@@ -213,7 +291,8 @@ function Effects:Handle(kind,p)
         Transparency=NumberSequence.new({NumberSequenceKeypoint.new(0,0.1),NumberSequenceKeypoint.new(1,1)})},bobber)
     local elapsed=workspace:GetServerTimeNow()-p.Started
     local late=elapsed>p.Swing+p.Flight+0.2
-    self.Casts[p.UserId]={Root=root,Bobber=bobber,Cap=cap,Trail=trail,Points=points,Beams=beams,Data=p,Tip=a.Tip,Impact=late}
+    c.Bobber=bobber;c.Cap=cap;c.Trail=trail;c.Data=p;c.Tip=a.Tip;c.Impact=late;c.LastPosition=p.Origin
+    self.Casts[p.UserId]=c
     -- White Trails use actual rod-tip motion; no unrelated fixed crescent.
 end
 function Effects:_render()
@@ -222,17 +301,19 @@ function Effects:_render()
     if now>=self.ScanAt then self.ScanAt=now+0.20;self:_scan()end
     for id,c in pairs(self.Casts)do
         local p=c.Data
-        local actor=self.Actors[id]
-        local currentTip=c.Tip
-        -- The native Tool moves during simulation, after the IK step. Read its
-        -- current tip at render time while walking or using standard carry.
-        if actor and actor.Rig and not actor.Rig.LastRod then currentTip=tipOf(p.Tool)end
-        if not p.Tool.Parent or not currentTip or not currentTip.Parent or (p.Marker and not p.Marker.Parent)then self:_end(id)
+        local player=Players:GetPlayerByUserId(id)
+        local currentTip=player and self:_tip(id,p.Tool,player.Character)
+        if not currentTip then self:_end(id)
         else
+            if p.Marker and not p.Marker.Parent and not c.EndAt then c.EndAt=now+HANDOFF_SECONDS end
+            if c.EndAt and (now>=c.EndAt or p.Tool:GetAttribute("QCFishingStage")=="Idle")then
+                self:_end(id);continue
+            end
             local elapsed=now-p.Started;local t=Cast.Progress(now,p.Started,p.Swing,p.Flight)
             local tip=currentTip.WorldPosition
             local position
-            if elapsed<p.Swing then
+            if c.EndAt then position=c.LastPosition or p.Target
+            elseif elapsed<p.Swing then
                 position=tip;c.PreviousTip=tip;c.PreviousTipAt=now
             elseif t<1 then
                 if not c.LaunchOrigin then
@@ -256,26 +337,25 @@ function Effects:_render()
                 local rate=stage=="Bite" and 18 or 3
                 position=p.Target+Vector3.new(0,math.sin(now*rate)*0.10,0)
             end
+            c.LastPosition=position
             c.Bobber.Position=position;c.Cap.Position=position+Vector3.new(0,0.22,0)
-            c.Trail.Enabled=elapsed>=p.Swing and t<1
+            c.Trail.Enabled=not c.EndAt and elapsed>=p.Swing and t<1
             local sag=t<1 and math.sin(math.pi*t)*2.6 or 0.5
-            for i,a in ipairs(c.Points)do
-                local u=(i-1)/(#c.Points-1)
-                a.Position=tip+(position-tip)*u-Vector3.new(0,math.sin(math.pi*u)*sag,0)
-            end
+            positionLine(c,tip,position,sag)
         end
     end
     self:_updateSplashes(now)
+    for id,at in pairs(self.Closed)do if now-at>15 then self.Closed[id]=nil end end
 end
 function Effects:Destroy()
     if self.Dead then return end;self.Dead=true
     self.Pre:Disconnect();self.Sim:Disconnect();self.Render:Disconnect()
     local ids={};for id in pairs(self.Actors)do ids[#ids+1]=id end
     for _,id in ipairs(ids)do self:_removeActor(id)end
-    self.Casts={};self.Splashes={};self.Folder:Destroy()
+    self.Casts={};self.LandingByUser={};self.Splashes={};self.Folder:Destroy()
 end
 function Effects.new(config)
-    local self=setmetatable({Config=config,Actors={},Casts={},Splashes={},ScanAt=0},Effects)
+    local self=setmetatable({Config=config,Actors={},Casts={},LandingByUser={},Latest={},Closed={},Splashes={},ScanAt=0},Effects)
     self.Folder=make("Folder",{Name="QuietCoveLocalCastEffects"},workspace)
     self.Pre=RunService.PreAnimation:Connect(function()self:_restoreTransforms()end)
     self.Sim=RunService.PreSimulation:Connect(function(dt)self:_pose(math.min(dt,0.1))end)
