@@ -12,8 +12,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "2bc57b906cd8de5b24705e38bd6f9c0cc9c574a9344fa459483aefbbe2f3a6d7",
-    "module": "bobrito.luau"
+    "module_sha256": "92581efc0af4da86e947b791c77f52e9414b108d0e340d6c868d4ff365bdb05b",
+    "module": "bobrito.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/bobrito"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "bombombini",
@@ -28,8 +34,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "c62b5c90b415e326c1e75100e7a6a7c9a90cace3760f93cf74fbc9caf440ec36",
-    "module": "bombombini.luau"
+    "module_sha256": "033407cf70bfd6b9f91340e699423566a9911a27fe76b47a757930563be8d83c",
+    "module": "bombombini.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/bombombini"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "chimpanzini",
@@ -43,9 +55,15 @@
       320,
       320
     ],
-    "has_transparency": false,
-    "module_sha256": "5d8a7e1f7f59150a941fd48722056c4fbd2c725aa6a3a4f6bc78a0ef059316c9",
-    "module": "chimpanzini.luau"
+    "has_transparency": true,
+    "module_sha256": "733b07fca28364abdf6df3723779cd95a7ce7afbe2ffa0c87f21c9ea466e8063",
+    "module": "chimpanzini.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/chimpanzini"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "chipichapa",
@@ -60,8 +78,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "bc4a6f9dc10f1d876ebb00705e95d55a3573689f2d784a9d4f5a778f6ef7af38",
-    "module": "chipichapa.luau"
+    "module_sha256": "31258b0b1e23f5e5c3017343c0e4ebb6eacf5ded8604b945f8a8fa9a3959a4df",
+    "module": "chipichapa.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/chipichapa"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "floppa",
@@ -76,8 +100,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "6038ec51ad8d6df9cc56dfc239594454124bef003bb823f71c98d0f548d1bd34",
-    "module": "floppa.luau"
+    "module_sha256": "c558d8f69cebe8f9f855ddf4e287dd5bb9bbe7137958872f254d11b3ad569e2b",
+    "module": "floppa.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/floppa"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "frigocamelo",
@@ -92,8 +122,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "e69327224e4ef085261c31e4b95b33d60f83b6aa340d3d4a417e39dd70da0e50",
-    "module": "frigocamelo.luau"
+    "module_sha256": "0238ffa39f9c1d6dbcbd9aec4962a46899157bf6c41f96343bb448c6abae7932",
+    "module": "frigocamelo.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/frigocamelo"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "lavacca",
@@ -107,9 +143,15 @@
       320,
       320
     ],
-    "has_transparency": false,
-    "module_sha256": "11f49b52dc3985032e27f7f2d3a5ae9605b5be897ccd3de53b93a6e28bf8d41a",
-    "module": "lavacca.luau"
+    "has_transparency": true,
+    "module_sha256": "99460553584b62f99b705302b658ca3ac595b47c83d9695a1f2e9eec5a9af76b",
+    "module": "lavacca.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/lavacca"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "lirili",
@@ -124,8 +166,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "f6745cd00099aed0805f6769dd34bc7771648445cae9fd02e36ad3817255a69a",
-    "module": "lirili.luau"
+    "module_sha256": "fe0b73483129afd086d66df72e00c6aecb6be25a38ba3faa9d41d8c7f5e60481",
+    "module": "lirili.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/lirili"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "trippitroppi",
@@ -140,8 +188,14 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "f833bbddd8f95a0894bce8ed02bd2b9c0206a0e3b8c6fa8fffa2ebffc12549de",
-    "module": "trippitroppi.luau"
+    "module_sha256": "5a04ee15822b419fb2158ee42d1cda6b5c10d1cb98cc3c9059bd79f3e4c956e8",
+    "module": "trippitroppi.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/trippitroppi"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   },
   {
     "species": "verity",
@@ -156,7 +210,32 @@
       320
     ],
     "has_transparency": true,
-    "module_sha256": "808b5b60f93a118a8bf787785f324fcb3b53e5f67183df2b4141ac31cb45a023",
-    "module": "verity.luau"
+    "module_sha256": "de3fd321e033d88b9b244fee4ed22c44bd3f167682206acbcf7543bfaba23e45",
+    "module": "verity.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/verity"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
+  },
+  {
+    "species": "gigachad",
+    "input": null,
+    "input_sha256": null,
+    "original_size": null,
+    "embedded_size": [
+      320,
+      320
+    ],
+    "has_transparency": true,
+    "module_sha256": "69a5e5aecb73ed95a26ae9fd84abdbdde314eb51724ad91adcdbcac8db8e6d40",
+    "module": "gigachad.luau",
+    "source_place": {
+      "file": "QuietCove_10_Brainrots_v6_portraits_patched.rbxlx",
+      "sha256": "eb7f74bcb78a6c191e1cc81649de69bd1c0b572bc6886256e96baf284581e847",
+      "module_path": "StarterPlayer/StarterPlayerScripts/CatchArtData/gigachad"
+    },
+    "provenance": "Exact ModuleScript Source imported from the user-provided v6 place."
   }
 ]

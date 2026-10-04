@@ -1,0 +1,387 @@
+{
+  "name": "Workspace",
+  "tree": {
+    "$className": "Workspace",
+    "$ignoreUnknownInstances": true,
+    "QuietCoveMap": {
+      "$className": "Model",
+      "$ignoreUnknownInstances": true,
+      "Merchant": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Body": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "МАРА · ПРОДАЖА УЛОВА"
+              }
+            }
+          },
+          "MerchantPrompt": {
+            "$className": "ProximityPrompt",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "ActionText": "Продать весь улов",
+              "ObjectText": "МАРА · ПРОДАЖА УЛОВА"
+            }
+          }
+        }
+      },
+      "Rodsmith": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Body": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "ЛЕВ · МАСТЕР УДОЧЕК"
+              }
+            }
+          },
+          "RodsmithPrompt": {
+            "$className": "ProximityPrompt",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "ActionText": "Выбрать удочку",
+              "ObjectText": "ЛЕВ · МАСТЕР УДОЧЕК"
+            }
+          }
+        }
+      },
+      "Ferry": {
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "Travel": {
+          "$className": "ProximityPrompt",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "ActionText": "На коралловый риф",
+            "ObjectText": "Переправа · уровень 2"
+          }
+        }
+      },
+      "ReturnFerry": {
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "Travel": {
+          "$className": "ProximityPrompt",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "ActionText": "Вернуться в бухту",
+            "ObjectText": "Обратная переправа"
+          }
+        }
+      }
+    },
+    "QuietCoveArchipelago": {
+      "$className": "Model",
+      "$ignoreUnknownInstances": true,
+      "Dock_Cove": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "КАПИТАН МИРОН · ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "КАПИТАН МИРОН · ЛОДКИ"
+              }
+            }
+          }
+        }
+      },
+      "Dock_Reef": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+              }
+            }
+          }
+        }
+      },
+      "Dock_Moss": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+              }
+            }
+          }
+        },
+        "Buyer": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                }
+              }
+            },
+            "BuyerPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Продать весь улов",
+                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+              }
+            }
+          }
+        }
+      },
+      "Dock_Dunes": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+              }
+            }
+          }
+        },
+        "Buyer": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                }
+              }
+            },
+            "BuyerPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Продать весь улов",
+                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+              }
+            }
+          }
+        }
+      },
+      "Dock_Bloom": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+              }
+            }
+          }
+        },
+        "Buyer": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                }
+              }
+            },
+            "BuyerPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Продать весь улов",
+                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+              }
+            }
+          }
+        }
+      },
+      "Dock_Storm": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Captain": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                }
+              }
+            },
+            "CaptainPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Лодки / вызвать",
+                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+              }
+            }
+          }
+        },
+        "Buyer": {
+          "$className": "Model",
+          "$ignoreUnknownInstances": true,
+          "Body": {
+            "$className": "Part",
+            "$ignoreUnknownInstances": true,
+            "Label": {
+              "$className": "BillboardGui",
+              "$ignoreUnknownInstances": true,
+              "TextLabel": {
+                "$className": "TextLabel",
+                "$ignoreUnknownInstances": true,
+                "$properties": {
+                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                }
+              }
+            },
+            "BuyerPrompt": {
+              "$className": "ProximityPrompt",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "ActionText": "Продать весь улов",
+                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

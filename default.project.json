@@ -27,6 +27,10 @@
         "$path": "src/client",
         "$ignoreUnknownInstances": true
       }
+    },
+    "Workspace": {
+      "$path": "world-text.project.json",
+      "$ignoreUnknownInstances": true
     }
   }
 }

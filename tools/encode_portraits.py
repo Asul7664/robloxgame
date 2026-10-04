@@ -77,23 +77,58 @@ def main():
     invalid = [p.name for p in paths if p.stem not in SUPPORTED_SPECIES]
     if invalid:
         parser.error("Unknown fish ID in PNG filename: " + ", ".join(invalid))
-    if not paths:
+
+    manifest = args.manifest or args.input / "portrait-manifest.json"
+    try:
+        previous = json.loads(manifest.read_text(encoding="utf-8")) if manifest.exists() else []
+        if not isinstance(previous, list):
+            raise ValueError("expected a list of portrait records")
+        report = {record["species"]: record for record in previous}
+        if len(report) != len(previous):
+            raise ValueError("duplicate species records")
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        parser.error(f"Invalid portrait manifest {manifest}: {error}")
+
+    if not paths and not previous:
         print(f"No supplied PNG files found in {args.input}; no portrait modules changed.")
         return
 
-    # Prepare the complete conversion before writing any modules.
-    encoded = [(path, *encode(path)) for path in paths]
+    # Imported v6 artwork is authoritative until its supplied PNG is replaced.
+    # Prepare and verify everything before writing, including imports without a
+    # raw PNG (Gigachad). A missing/edited import must never be silently rebuilt.
+    replacements = []
+    replacing = set()
+    for path in paths:
+        record = report.get(path.stem)
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        if record and record.get("source_place") and digest == record.get("input_sha256"):
+            continue
+        replacements.append(path)
+        replacing.add(path.stem)
+    for species, record in report.items():
+        if not record.get("source_place") or species in replacing:
+            continue
+        destination = args.output / (species + ".luau")
+        if not destination.is_file():
+            parser.error(f"Imported v6 portrait is missing: {destination}; restore the imported module.")
+        digest = hashlib.sha256(destination.read_bytes()).hexdigest()
+        if digest != record.get("module_sha256"):
+            parser.error(f"Imported v6 portrait was changed: {destination}; restore it or update its provenance before encoding.")
+
+    encoded = [(path, *encode(path)) for path in replacements]
+    if not encoded:
+        print(f"Preserved {sum(bool(record.get('source_place')) for record in report.values())} imported portraits; no modules or manifest changed.")
+        return
+
     args.output.mkdir(parents=True, exist_ok=True)
-    report = []
     for path, source, record in encoded:
         destination = args.output / (path.stem + ".luau")
         destination.write_text(source, encoding="utf-8", newline="\n")
         record["module"] = destination.name
-        report.append(record)
+        report[path.stem] = record
         print(f"Encoded {path.name} -> {destination}")
-    manifest = args.manifest or args.input / "portrait-manifest.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
-    manifest.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    manifest.write_text(json.dumps(list(report.values()), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

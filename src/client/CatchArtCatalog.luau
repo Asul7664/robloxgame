@@ -1,16 +1,16 @@
--- Presentation-only mapping; every key matches an existing server species ID.
-local parent = script.Parent
-local art = parent:WaitForChild("CatchArtData")
-local Catalog = {}
-local known = {capybara=true, skibidi=true, sigma=true, ballerina=true, tralalero=true,
-    patapim=true, ambalabu=true, bombardiro=true, sahur=true, gigachad=true}
-function Catalog.Has(species)
-    local supplied=type(species)=="string" and art:FindFirstChild(species)
-    return known[species]==true or (supplied and supplied:IsA("ModuleScript"))==true
+local parent=script.Parent
+local art=parent:WaitForChild("CatchArtData")
+local Catalog={}
+function Catalog.Has(id)
+    if type(id)~="string" then return false end
+    local n=art:FindFirstChild(id)
+    if not n and id=="sahur" then n=parent:FindFirstChild("SahurArtData") end
+    return n~=nil and n:IsA("ModuleScript")
 end
-function Catalog.Get(species)
-    assert(Catalog.Has(species), "Unknown catch portrait: " .. tostring(species))
-    if species == "sahur" then return require(parent:WaitForChild("SahurArtData")) end
-    return require(art:WaitForChild(species))
+function Catalog.Get(id)
+    assert(Catalog.Has(id),"Unknown catch portrait: "..tostring(id))
+    local n=art:FindFirstChild(id)
+    if not n and id=="sahur" then n=parent:FindFirstChild("SahurArtData") end
+    return require(n)
 end
 return Catalog

@@ -67,7 +67,7 @@ function Thumbs:_mount(e)
         e.Portrait=Sprite.Mount(e.Canvas,e.Species,false,e.Known)
         e.Active=e.Portrait~=nil;e.Root:SetAttribute("ThumbnailReady",e.Portrait and e.Portrait.Ready==true);return
     end
-    if e.Species=="verity" or self.Config.ById[e.Species].UseModelPortrait==true then
+    if Data.Slots[e.Species]==nil and (e.Species=="verity" or self.Config.ById[e.Species].UseModelPortrait==true) then
         e.ModelView=ModelView.Mount(e.Canvas,e.Species,false,e.Known)
         e.Active=e.ModelView~=nil;e.Root:SetAttribute("ThumbnailReady",e.Active);return
     end
