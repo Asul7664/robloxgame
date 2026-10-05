@@ -1,4 +1,4 @@
--- Additive native-model content; existing fish and balance remain intact.
+-- Native-model creatures and their destination-specific catch weights.
 return {
     Fish={
         {["Id"]="floppa", ["Name"]="Флоппа-карась", ["Zone"]="Cove", ["Rarity"]=1, ["Chance"]=12, ["MinKg"]=0.3, ["MaxKg"]=1.1, ["Price"]=20, ["Difficulty"]=0.07, ["XP"]=25, ["Pattern"]="lazy", ["HookWindow"]=3.1, ["Nick"]="УШИ БОЛЬШИЕ — НЕРВЫ КРЕПКИЕ", ["UseModelPortrait"]=true},
@@ -11,5 +11,11 @@ return {
         {["Id"]="frigocamelo", ["Name"]="Фриго Камело", ["Zone"]="Dunes", ["Rarity"]=5, ["Chance"]=0.7, ["MinKg"]=18, ["MaxKg"]=48, ["Price"]=290, ["Difficulty"]=0.39, ["XP"]=135, ["Pattern"]="boss", ["HookWindow"]=1.9, ["MinRodQuality"]=3, ["Nick"]="ХОЛОДИЛЬНИК НА ВЕРБЛЮЖЬИХ НОГАХ", ["UseModelPortrait"]=true},
         {["Id"]="lavacca", ["Name"]="Ла Вакка Сатурно Сатурнита", ["Zone"]="Storm", ["Rarity"]=6, ["Chance"]=0.1, ["MinKg"]=30, ["MaxKg"]=58, ["Price"]=440, ["Difficulty"]=0.5, ["XP"]=175, ["Pattern"]="boss", ["HookWindow"]=2, ["MinRodQuality"]=3, ["Night"]=true, ["Nick"]="НОЧНАЯ КОРОВА С КОЛЬЦАМИ САТУРНА", ["UseModelPortrait"]=true},
     },
-    IslandWeights={["Moss"]={["floppa"]=4, ["bobrito"]=10, ["trippitroppi"]=5, ["lirili"]=2.2, ["chimpanzini"]=0.5}, ["Dunes"]={["bobrito"]=6, ["bombombini"]=4, ["lirili"]=1.5, ["frigocamelo"]=0.7}, ["Bloom"]={["chipichapa"]=5, ["trippitroppi"]=4, ["chimpanzini"]=0.85}, ["Storm"]={["bombombini"]=5, ["frigocamelo"]=0.8, ["lavacca"]=0.1}},
+    IslandWeights={
+        Reef={bobrito=30,trippitroppi=18,bombombini=5},
+        Moss={floppa=4,lirili=2.2},
+        Dunes={bobrito=12,bombombini=6,lirili=6,frigocamelo=1.2},
+        Bloom={chipichapa=12,trippitroppi=5,chimpanzini=2},
+        Storm={bombombini=8,lavacca=0.1},
+    },
 }

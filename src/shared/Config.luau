@@ -1,13 +1,14 @@
 -- Quiet Cove / Тихая бухта. All balance values live here.
 local Config = {}
 Config.Title = "ТИХАЯ БУХТА"
-Config.Version = "0.2.9-hands-hands-islands-ballet"
+Config.Version = "0.3.0-islands-quests"
 Config.BagCapacity = 40
 Config.XPPerLevel = 100
 Config.SaveInStudio = false -- Keep false for normal local playtests.
 Config.DataStoreName = "QuietCove_v2_brainrot"
 Config.AutoSaveSeconds = 45
 Config.SessionLeaseSeconds = 180
+Config.Quests = {DailyActiveSeconds = 1200, WeeklyActiveSeconds = 7200}
 Config.ChargeSeconds = 1.2
 -- The cast is not cosmetic-only timing: bites are impossible before touchdown.
 Config.Casting = {
@@ -77,24 +78,25 @@ function Config.Value(fish, kg, mutation)
     local rarityBonus = 1 + (fish.Rarity - 1) * 0.08
     return math.floor(fish.Price * rarityBonus * (0.8 + kg * 0.32) * multiplier + 0.5)
 end
--- Islands use weights, not fixed percentages. Cove/Reef keep their old pools.
+-- Every destination has its own catch pool. Weights are normalized after rod/night filters.
 Config.Islands = {
     {Id="Cove", Name="Тихая бухта", X=0, Z=0, Radius=64, Level=1, Color={109,199,183},
         DockX=0, DockZ=70, Target="Старт, торговцы и лодочная верфь", Theme="home"},
-    {Id="Reef", Name="Коралловый риф", X = 262.5, Z = -325, Radius=26, Level=2, Color={113,203,219},
-        DockX = 262.5, DockZ = -284, Target="Старое место рыбалки и переправа", Theme="reef"},
-    {Id="Moss", Name="Мшистый остров", X = -950, Z = 475, Radius=62, Level=2, Color={105,204,128},
+    {Id="Reef", Name="Коралловый риф", X=450, Z=-650, Radius=26, Level=2, Color={113,203,219},
+        DockX=450, DockZ=-609, Target="Бобрито, Триппи Троппи и Бомбардиро", Theme="reef",
+        Weights={sigma=8,patapim=3,ambalabu=2,bombardiro=28,sahur=0.8,gigachad=0.35}},
+    {Id="Moss", Name="Мшистый остров", X=-1450, Z=800, Radius=62, Level=2, Color={105,204,128},
         Target="БР-БР Патапим и Бонека Амбалабу", Theme="moss",
         Weights={capybara=10,sigma=3,patapim=55,ambalabu=42,ballerina=2}},
-    {Id="Dunes", Name="Пески Сахура", X = -825, Z = -850, Radius=70, Level=3, Color={248,201,102},
-        Target="Тун Тун Сахур: повышенный шанс", Theme="sand",
-        Weights={capybara=14,skibidi=16,sigma=18,bombardiro=20,sahur=12}},
-    {Id="Bloom", Name="Лагуна Капуччино", X = 825, Z = 475, Radius=64, Level=4, Color={238,173,193},
+    {Id="Dunes", Name="Пески Сахура", X=-1350, Z=-1450, Radius=70, Level=3, Color={248,201,102},
+        Target="Тун Тун Сахур, Лирили и Фриго Камело", Theme="sand",
+        Weights={skibidi=8,sigma=10,bombardiro=18,sahur=16}},
+    {Id="Bloom", Name="Лагуна Капуччино", X=1450, Z=800, Radius=64, Level=4, Color={238,173,193},
         Target="Балерина; ночью — Тралалелетралала", Theme="bloom",
-        Weights={capybara=12,sigma=12,ambalabu=12,ballerina=32,tralalero=12}},
-    {Id="Storm", Name="Штормовые скалы", X = 975, Z = -1050, Radius=66, Level=7, Color={160,172,240},
-        Target="Гигачад-акула и Бомбардиро; ночью — Верити", Theme="storm",
-        Weights={sigma=12,patapim=12,bombardiro=28,sahur=6,tralalero=10,gigachad=10,verity=0.12}},
+        Weights={capybara=6,sigma=8,ballerina=42,tralalero=14}},
+    {Id="Storm", Name="Штормовые скалы", X=1500, Z=-1700, Radius=66, Level=7, Color={160,172,240},
+        Target="Гигачад-акула; ночью — Верити и Ла Вакка", Theme="storm",
+        Weights={sigma=6,bombardiro=24,sahur=3,tralalero=6,gigachad=16,verity=0.12}},
 }
 Config.IslandById = {}
 for _,island in ipairs(Config.Islands) do
@@ -114,7 +116,7 @@ Config.Boats = {
 }
 Config.BoatById={}
 for _,boat in ipairs(Config.Boats) do Config.BoatById[boat.Id]=boat end
-Config.Ocean={HalfExtent = 1700,SurfaceY=0,BoatHeight=0.60, MapSpan = 2800}
+Config.Ocean={HalfExtent=2700,SurfaceY=0,BoatHeight=0.60,MapSpan=5400}
 Config.CatchVisuals={HaloSize=338,HaloOpacity=0.70,PortraitSizes={capybara=260,patapim=260}}
 Config.RodLooks={
     wood="Тёплое дерево, латунная катушка",

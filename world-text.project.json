@@ -83,6 +83,21 @@
             "ObjectText": "Обратная переправа"
           }
         }
+      },
+      "ReefSign": {
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "Text": "КОРАЛЛОВЫЙ РИФ\nБобрито, Триппи Троппи и Бомбардиро"
+            }
+          }
+        }
       }
     },
     "QuietCoveArchipelago": {
@@ -377,6 +392,82 @@
               "$properties": {
                 "ActionText": "Продать весь улов",
                 "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+              }
+            }
+          }
+        }
+      },
+      "Moss": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "FishingMarker": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "РЫБАЛКА · УРОВЕНЬ 2\nБР-БР Патапим и Бонека Амбалабу"
+              }
+            }
+          }
+        }
+      },
+      "Dunes": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "FishingMarker": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "РЫБАЛКА · УРОВЕНЬ 3\nТун Тун Сахур, Лирили и Фриго Камело"
+              }
+            }
+          }
+        }
+      },
+      "Bloom": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "FishingMarker": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "РЫБАЛКА · УРОВЕНЬ 4\nБалерина; ночью — Тралалелетралала"
+              }
+            }
+          }
+        }
+      },
+      "Storm": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "FishingMarker": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "РЫБАЛКА · УРОВЕНЬ 7\nГигачад-акула; ночью — Верити и Ла Вакка"
               }
             }
           }

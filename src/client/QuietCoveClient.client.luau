@@ -11,6 +11,7 @@ local Config = require(shared:WaitForChild("Config"))
 local CatchReveal = require(script.Parent:WaitForChild("CatchReveal"))
 local WaterJump = require(script.Parent:WaitForChild("WaterJump"))
 local VoyageUI = require(script.Parent:WaitForChild("VoyageUI"))
+local QuestUI = require(script.Parent:WaitForChild("QuestUI"))
 local ModelPreview = require(script.Parent:WaitForChild("ModelPreview"))
 local CatchThumbnails = require(script.Parent:WaitForChild("CatchThumbnails"))
 local CastEffects = require(script.Parent:WaitForChild("CastEffects"))
@@ -24,7 +25,7 @@ local function landingPlaying()
     -- not be mounted. An active local visual must also finish before the card.
     return workspace:GetServerTimeNow() < landingEndsAt or landingEffects:OwnerPlaying()
 end
-local voyage
+local voyage, quests
 local Action, Update = shared:WaitForChild("Action"), shared:WaitForChild("Update")
 local C = {Bg = Color3.fromRGB(14, 32, 43), Panel = Color3.fromRGB(23, 47, 60),
     Ink = Color3.fromRGB(237, 242, 230), Muted = Color3.fromRGB(169, 194, 198),
@@ -344,16 +345,49 @@ local function openModal(mode)
     if stageName ~= "Idle" then notify("Сначала закончи или отмени рыбалку."); return end
     catchReveal:Hide(true)
     if voyage then voyage:Close() end
+    if quests then quests:Close() end
     shownMode = mode; modal.Visible = true; panel.Visible = false; renderModal()
 end
 local function closeModal() modal.Visible = false; panel.Visible = true end
 voyage = VoyageUI.new(gui,Config,Action,{
     CanOpen=function()return stageName=="Idle" and not catchReveal:IsVisible()end,
-    OnOpen=function()modal.Visible=false;panel.Visible=false end,
-    OnClose=function()panel.Visible=not modal.Visible and not catchReveal:IsVisible()end,
-    Quiet=function()return catchReveal:IsVisible()end,
+    OnOpen=function()if quests then quests:Close()end;modal.Visible=false;panel.Visible=false end,
+    OnClose=function()panel.Visible=not modal.Visible and not catchReveal:IsVisible() and not (quests and quests:IsOpen())end,
+    Quiet=function()return catchReveal:IsVisible() or (quests and quests:IsOpen())end,
     Notice=function()return toast.Visible end,
 })
+quests = QuestUI.new(gui, Config, function(periodKind, taskId)
+    Action:FireServer("QuestClaim", periodKind, taskId)
+end, {
+    CanOpen = function()
+        if stageName ~= "Idle" or landingPlaying() or catchReveal:IsVisible() then
+            notify("Сначала закончи рыбалку и закрой карточку улова."); return false
+        end
+        if voyage:IsDriving() then notify("Сначала сойди с лодки."); return false end
+        return true
+    end,
+    OnOpen = function() voyage:Close(); modal.Visible = false; panel.Visible = false end,
+    OnClose = function() panel.Visible = not modal.Visible and not catchReveal:IsVisible() and not voyage:IsOpen() end,
+})
+-- The map, bag and quest buttons share a separate row on narrow phone screens.
+local headerWidth
+local function layoutHeader(width)
+    if headerWidth == width then return end
+    headerWidth = width
+    local compact = width < 580
+    header.Size = UDim2.new(1, -24, 0, compact and 128 or 84)
+    heading.Size = UDim2.new(1, compact and -138 or -256, 0, 28)
+    statsLabel.Size = UDim2.new(1, compact and -28 or -256, 0, 43)
+    timeLabel.Position = compact and UDim2.new(1, -124, 0, 5) or UDim2.new(1, -120, 0, 53)
+    bagButton.Size = compact and UDim2.new(1/3, -16, 0, 34) or UDim2.fromOffset(116, 40)
+    bagButton.Position = compact and UDim2.new(2/3, 4, 0, 86) or UDim2.new(1, -126, 0, 10)
+    quests.Button.Size = compact and UDim2.new(1/3, -16, 0, 34) or UDim2.fromOffset(106, 26)
+    quests.Button.Position = compact and UDim2.new(1/3, 8, 0, 86) or UDim2.new(1, -232, 0, 52)
+    voyage.MapButton.Size = compact and UDim2.new(1/3, -24, 0, 34) or UDim2.fromOffset(106, 40)
+    voyage.MapButton.Position = compact and UDim2.fromOffset(24, 96) or UDim2.new(1, -244, 0, 20)
+    toast.Position = UDim2.new(0.5, 0, 0, compact and 150 or 106)
+    voyage.Nav.Position = UDim2.fromOffset(18, compact and 148 or 102)
+end
 bagButton.Activated:Connect(function() if modal.Visible then closeModal() else openModal("bag") end end)
 closeButton.Activated:Connect(closeModal)
 bagTab.Activated:Connect(function() shownMode = "bag"; renderModal() end)
@@ -366,7 +400,7 @@ local function press(input)
         if catchReveal:CanDismiss() then catchReveal:Hide(false) end
         return -- closing a portrait never begins another cast
     end
-    if modal.Visible or (voyage and (voyage:IsOpen() or voyage:IsDriving())) or activeInput or UIS:GetFocusedTextBox() then return end
+    if modal.Visible or quests:IsOpen() or (voyage and (voyage:IsOpen() or voyage:IsDriving())) or activeInput or UIS:GetFocusedTextBox() then return end
     activeInput = input; holding = true
     if stageName == "Idle" then
         if not data then notify("Профиль ещё загружается."); return end
@@ -394,7 +428,7 @@ if RunService:IsStudio() then
     StudioPreview.Attach({Config=Config,Gui=gui,
         Alive=function()return gui.Parent~=nil end,
         CanPreview=function()
-            return stageName=="Idle" and not modal.Visible and not landingPlaying()
+            return stageName=="Idle" and not modal.Visible and not quests:IsOpen() and not landingPlaying()
                 and (not catchReveal:IsVisible() or catchReveal.Host:GetAttribute("Preview")==true)
                 and not (voyage and (voyage:IsOpen() or voyage:IsDriving()))
         end,
@@ -418,7 +452,7 @@ local worldPreviewIndex = 0
 UIS.InputBegan:Connect(function(input, processed)
     if processed or UIS:GetFocusedTextBox() then return end
     if input.KeyCode == Enum.KeyCode.P and RunService:IsStudio() then
-        if stageName == "Idle" and not modal.Visible and not landingPlaying() then
+        if stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not landingPlaying() then
             previewIndex = previewIndex % #Config.Fish + 1
             local fish = Config.Fish[previewIndex]
             local kg = math.floor((fish.MinKg + fish.MaxKg) * 50) / 100
@@ -427,7 +461,7 @@ UIS.InputBegan:Connect(function(input, processed)
             showCatchReveal(record, {XP = fish.XP, Preview = true, New = false, LevelUp = false})
         end
     elseif input.KeyCode==Enum.KeyCode.O and RunService:IsStudio() then
-        if stageName=="Idle" and not modal.Visible and not landingPlaying() then
+        if stageName=="Idle" and not modal.Visible and not quests:IsOpen() and not landingPlaying() then
             catchReveal:Hide(true)
             worldPreviewIndex=worldPreviewIndex % #Config.Fish+1
             local f=Config.Fish[worldPreviewIndex]
@@ -441,13 +475,14 @@ UIS.InputEnded:Connect(function(input) release(input, false) end)
 UIS.WindowFocusReleased:Connect(function() release(nil, true) end)
 -- Space is never bound to fishing. Normal Roblox movement keeps its jump input.
 local waterJump = WaterJump.new(player, Config.WaterJump, function()
-    return stageName == "Idle" and not modal.Visible and not UIS:GetFocusedTextBox()
+    return stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not UIS:GetFocusedTextBox()
 end)
-gui.Destroying:Connect(function() waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy() end)
+gui.Destroying:Connect(function() quests:Destroy();waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy() end)
 player.CharacterRemoving:Connect(function()
     if studioPreview then pcall(studioPreview.Stop,studioPreview) end
     landingEffects:Clear();pendingCaught=nil;landingEndsAt=0
     catchReveal:Hide(true)
+    quests:Close()
     if sessionId then Action:FireServer("Cancel", sessionId) end
     activeInput = nil; holding = false; stageName = "Idle"; sessionId = nil; closeModal(); updateStage()
 end)
@@ -455,7 +490,8 @@ Update.OnClientEvent:Connect(function(kind, payload)
     castEffects:Handle(kind,payload)
     landingEffects:Handle(kind,payload)
     if voyage then voyage:Handle(kind,payload) end
-    if kind == "Profile" then data = payload.Data; memoryOnly = payload.MemoryOnly; updateStats()
+    if kind == "Quests" then quests:Update(payload)
+    elseif kind == "Profile" then data = payload.Data; memoryOnly = payload.MemoryOnly; updateStats()
     elseif kind == "Notice" then notify(payload.Text)
     elseif kind == "Rejected" then
         stageName = "Idle"; sessionId = nil; pendingRelease = false; updateStage(); notify(payload.Text, C.Gold)
@@ -493,10 +529,12 @@ RunService.RenderStepped:Connect(function(dt)
     if pendingCaught and not landingPlaying()then
         local p=pendingCaught;pendingCaught=nil;showCatchReveal(p.Record,p)
     end
-    panel.Visible=stageName~="Landing" and not landingPlaying() and not modal.Visible and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
+    panel.Visible=stageName~="Landing" and not landingPlaying() and not modal.Visible and not quests:IsOpen() and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
+    quests.Button.Visible = stageName ~= "Landing" and not catchReveal:IsVisible()
+    quests:Step()
     if toast.Visible and os.clock() > toastUntil then toast.Visible = false end
     local camera = workspace.CurrentCamera
-    if camera then panelScale.Scale = camera.ViewportSize.Y < 500 and 0.78 or 1 end
+    if camera then panelScale.Scale = camera.ViewportSize.Y < 500 and 0.78 or 1; layoutHeader(camera.ViewportSize.X) end
     if reveal.Visible and os.clock() > revealUntil then revealUntil = math.huge; hideReveal(false) end
     thumbnails:Update()
     local hour = Lighting.ClockTime
