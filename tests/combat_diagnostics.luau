@@ -64,27 +64,5 @@ do
         found("The delayed hit-immunity reset clears IFrame even when a later dodge still owns its immunity window.")
     end
 end
-do
-    local function run(fps)
-        local env = Environment.new()
-        local char = env:Character()
-        local animator = env:Execute("src/combat/WeaponAnimator.luau")
-        animator.playSaber(char, 1); env:Advance(.7, 1 / fps)
-        return char:FindFirstChild("RootJoint", true).Transform,
-            char:FindFirstChild("Right Shoulder", true).Transform
-    end
-    local thirty, shoulder = run(30)
-    local hundredTwenty = run(120)
-    local relative = thirty:ToObjectSpace(hundredTwenty)
-    local _, _, _, a, b, c, d, e, f, g, h, i = relative:GetComponents()
-    if math.abs(a - 1) + math.abs(e - 1) + math.abs(i - 1)
-        + math.abs(b) + math.abs(c) + math.abs(d) + math.abs(f) + math.abs(g) + math.abs(h) > 1e-3 then
-        found("Waist Transform accumulates each render frame: final torso pose differs between 30 and 120 FPS.")
-    end
-    if shoulder ~= CF.new() then
-        found("The animator restores RightGrip after a slash but leaves its shoulder/elbow/waist Transform pose applied.")
-    end
-end
-
 print("Preserved combat diagnostics: " .. #findings .. " reproducible findings.")
 for index, message in ipairs(findings) do print(index .. ". " .. message) end

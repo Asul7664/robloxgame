@@ -6,6 +6,18 @@ local luau = require("@lune/luau")
 local roblox = require("@lune/roblox")
 local Environment = {}
 local V, CF = roblox.Vector3, roblox.CFrame
+-- Lune 0.10.5's native lookAt looks toward +Z for a -Z target, unlike Roblox.
+-- Build the equivalent Roblox basis from real datatypes so camera tests don't
+-- mistake that datatype bug for a controller bug.
+local frames = setmetatable({lookAt = function(position, target, up)
+    local forward = target - position
+    if forward.Magnitude < 1e-7 then return CF.new(position) end
+    forward = forward.Unit; up = up or V.yAxis
+    local right = forward:Cross(up)
+    if right.Magnitude < 1e-7 then right = forward:Cross(V.zAxis) end
+    right = right.Unit
+    return CF.fromMatrix(position, right, right:Cross(forward).Unit, -forward)
+end}, {__index = CF})
 
 local function signal()
     local self = {Listeners = {}}
@@ -48,6 +60,11 @@ function methods:FindFirstAncestorOfClass(class)
     local parent = self.Parent
     while parent do if parent:IsA(class) then return parent end; parent = parent.Parent end
 end
+function methods:IsDescendantOf(ancestor)
+    local parent = self.Parent
+    while parent do if parent == ancestor then return true end; parent = parent.Parent end
+    return false
+end
 function methods:GetChildren() return table.clone(self.Children) end
 function methods:GetDescendants()
     local result = {}
@@ -89,7 +106,8 @@ function methods:Clone()
     for key, value in pairs(self._properties) do
         if key ~= "Children" and key ~= "Parent" and key ~= "Owner" and key ~= "Destroying"
             and key ~= "Attributes" and key ~= "AttributeSignals" and key ~= "PropertySignals"
-            and key ~= "OnServerEvent" and key ~= "OnClientEvent" then
+            and key ~= "OnServerEvent" and key ~= "OnClientEvent"
+            and key ~= "AncestryChanged" and key ~= "ChildAdded" and key ~= "ChildRemoved" then
             copy[key] = value
         end
     end
@@ -111,12 +129,13 @@ end
 function Environment:Node(class, name, parent)
     local properties = {ClassName = class, Name = name or class, Owner = self,
         Children = {}, Attributes = {}, AttributeSignals = {}, PropertySignals = {},
-        CFrame = CF.new(), Transform = CF.new(), C0 = CF.new(),
-        Destroying = signal(), AncestryChanged = signal()}
+        CFrame = CF.new(), Transform = CF.new(), C0 = CF.new(), C1 = CF.new(),
+        Destroying = signal(), AncestryChanged = signal(), ChildAdded = signal(), ChildRemoved = signal()}
     if class == "Humanoid" then
         properties.Health, properties.MaxHealth = 100, 100
         properties.HealthChanged, properties.Died = signal(), signal()
         properties.DamageCalls = {}; properties.CameraOffset = V.zero
+        properties.WalkSpeed, properties.AutoRotate, properties.JumpPower = 16, true, 50
     elseif class == "RemoteEvent" then
         properties.OnServerEvent, properties.OnClientEvent = signal(), signal()
     elseif class == "Part" then
@@ -135,12 +154,20 @@ function Environment:Node(class, name, parent)
         end,
         __newindex = function(_, key, value)
             if key == "Parent" then
-                if properties.Parent then
-                    local index = table.find(properties.Parent.Children, object)
-                    if index then table.remove(properties.Parent.Children, index) end
+                local previous = properties.Parent
+                if previous == value then return end
+                if previous then
+                    local index = table.find(previous.Children, object)
+                    if index then table.remove(previous.Children, index) end
                 end
                 properties.Parent = value
                 if value then table.insert(value.Children, object) end
+                if class == "Tool" and value and value:IsA("Model") then
+                    local grip = value:FindFirstChild("RightGrip", true)
+                    if grip then grip.Part1 = object:FindFirstChild("Handle"); grip.C1 = object.Grip or CF.new() end
+                end
+                if previous then previous.ChildRemoved:Fire(object) end
+                if value then value.ChildAdded:Fire(object) end
                 properties.AncestryChanged:Fire(object, value)
             elseif key == "Position" and (class == "Part" or class == "MeshPart") then properties.CFrame = CF.new(value)
             else
@@ -160,12 +187,21 @@ function Environment.new()
     self.Players = self:Node("Players")
     self.Players.PlayerAdded, self.Players.PlayerRemoving = signal(), signal()
     function self.Players:GetPlayers() return self:GetChildren() end
-    self.Run = {RenderStepped = signal(), Heartbeat = signal(), PostSimulation = signal()}
-    self.UIS = {InputBegan = signal(), GetFocusedTextBox = function() return nil end}
+    self.Run = {RenderStepped = signal(), Heartbeat = signal(), PostSimulation = signal(),
+        PreAnimation = signal(), PreSimulation = signal(), Bindings = {}}
+    function self.Run:BindToRenderStep(name, priority, callback) self.Bindings[name] = {Priority = priority, Callback = callback} end
+    function self.Run:UnbindFromRenderStep(name) self.Bindings[name] = nil end
+    self.UIS = {InputBegan = signal(), InputEnded = signal(), MouseEnabled = true,
+        TouchEnabled = false, MouseIconEnabled = true, MouseDeltaSensitivity = 1,
+        GetFocusedTextBox = function() return self.FocusedTextBox end,
+        GetMouseDelta = function() return self.MouseDelta or roblox.Vector2.zero end,
+        GetMouseLocation = function() return roblox.Vector2.new(640, 360) end}
+    self.Gui = {MenuIsOpen = false, MenuOpened = signal(), MenuClosed = signal()}
     self.Replicated = self:Node("ReplicatedStorage")
     self.Storage = self:Node("ServerStorage")
     self.World = self:Node("Workspace")
-    self.World.CurrentCamera = self:Node("Camera"); self.World.CurrentCamera.FieldOfView = 70
+    self.World.CurrentCamera = self:Node("Camera", "Camera", self.World); self.World.CurrentCamera.FieldOfView = 70
+    self.World.CurrentCamera.ViewportSize = roblox.Vector2.new(1280, 720)
     function self.World:GetServerTimeNow() return self.Owner.Time end
     function self.World:GetPartBoundsInBox(box, size, params)
         table.insert(self.Owner.Queries, {Box = box, Size = size, Params = params})
@@ -179,6 +215,9 @@ function Environment.new()
     self:Node("ModuleScript", "Config", combat)
     self:Node("ModuleScript", "WeaponAnimator", combat)
     self.Combat = combat
+    local playerScripts = self:Node("PlayerScripts")
+    self.ClientScript = self:Node("LocalScript", "CombatClient", playerScripts)
+    self:Node("ModuleScript", "WeaponCamera", playerScripts)
     local tweenService = {}
     function tweenService:Create(target, info, goals)
         local record = {Target = target, Info = info, Goals = goals, At = self.Owner.Time}
@@ -195,17 +234,22 @@ function Environment.new()
     end}
     self.Services = {Players = self.Players, ReplicatedStorage = self.Replicated,
         ServerStorage = self.Storage, RunService = self.Run, TweenService = tweenService,
-        UserInputService = self.UIS, Debris = debris}
+        UserInputService = self.UIS, Debris = debris, GuiService = self.Gui}
     local enum = setmetatable({}, {__index = function(t, group)
         local values = setmetatable({}, {__index = function(inner, key) rawset(inner, key, group .. "." .. key); return inner[key] end})
         rawset(t, group, values); return values
     end})
     self.Enum = enum
+    enum.RenderPriority.Camera = {Value = 200}
+    self.UIS.MouseBehavior = enum.MouseBehavior.Default
+    self.World.CurrentCamera.CameraType = enum.CameraType.Custom
+    self.UserGameSettings = {RotationType = enum.RotationType.MovementRelative}
     local clock = table.clone(os); clock.clock = function() return self.Time end
     self.Globals = {game = {GetService = function(_, name) return assert(self.Services[name], name) end},
-        workspace = self.World, Enum = enum, os = clock,
+        workspace = self.World, Enum = enum, os = clock, script = self.ClientScript,
+        UserSettings = function() return {GetService = function() return self.UserGameSettings end} end,
         Instance = {new = function(class, parent) return self:Node(class, nil, parent) end},
-        Vector3 = V, Vector2 = roblox.Vector2, CFrame = CF, Color3 = roblox.Color3,
+        Vector3 = V, Vector2 = roblox.Vector2, CFrame = frames, Color3 = roblox.Color3,
         UDim2 = roblox.UDim2, UDim = roblox.UDim,
         ColorSequence = roblox.ColorSequence, NumberSequence = roblox.NumberSequence,
         NumberSequenceKeypoint = roblox.NumberSequenceKeypoint, NumberRange = roblox.NumberRange,
@@ -215,14 +259,15 @@ function Environment.new()
             table.insert(self.Queue, {At = self.Time + delay, Callback = callback, Args = table.pack(...)})
         end, defer = function(callback, ...)
             table.insert(self.Queue, {At = self.Time, Callback = callback, Args = table.pack(...)})
-        end},
+        end, spawn = function(callback, ...) return callback(...) end},
         typeof = function(value)
             if type(value) == "userdata" then return typeof(value) end
             return type(value)
         end,
         require = function(module)
             if not self.Modules[module.Name] then
-                local paths = {Config = "src/combat/Config.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau"}
+                local paths = {Config = "src/combat/Config.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau",
+                    WeaponCamera = "src/client/WeaponCamera.luau"}
                 self.Modules[module.Name] = self:Execute(assert(paths[module.Name], module.Name))
             end
             return self.Modules[module.Name]
@@ -251,7 +296,14 @@ function Environment:Advance(seconds, dt)
     while self.Time < target - 1e-9 do
         local step = math.min(dt, target - self.Time)
         self.Time += step; self:Flush()
+        local bindings = {}
+        for _, binding in pairs(self.Run.Bindings) do table.insert(bindings, binding) end
+        table.sort(bindings, function(a, b) return a.Priority < b.Priority end)
+        for _, binding in ipairs(bindings) do binding.Callback(step) end
         self.Run.RenderStepped:Fire(step)
+        self.Run.PreAnimation:Fire(step)
+        if self.DefaultAnimation then self.DefaultAnimation(step) end
+        self.Run.PreSimulation:Fire(step)
         self.Run.Heartbeat:Fire(step)
         self.Run.PostSimulation:Fire(step)
     end
@@ -261,9 +313,24 @@ function Environment:Character(name)
     local humanoid = self:Node("Humanoid", "Humanoid", character)
     local root = self:Node("Part", "HumanoidRootPart", character)
     local torso = self:Node("Part", "Torso", character)
-    for _, name in ipairs({"Right Shoulder", "Right Elbow", "RootJoint", "RightGrip"}) do
-        self:Node("Motor6D", name, torso)
+    local right = self:Node("Part", "Right Arm", character)
+    local left = self:Node("Part", "Left Arm", character)
+    local head = self:Node("Part", "Head", character)
+    local rightLeg = self:Node("Part", "Right Leg", character)
+    local leftLeg = self:Node("Part", "Left Leg", character)
+    local function joint(name, part0, part1, c0, c1, class)
+        local result = self:Node(class or "Motor6D", name, part0)
+        result.Part0, result.Part1 = part0, part1
+        result.C0, result.C1 = c0 or CF.new(), c1 or CF.new()
+        return result
     end
+    joint("RootJoint", root, torso, CF.Angles(-math.pi / 2, 0, math.pi), CF.Angles(-math.pi / 2, 0, math.pi))
+    joint("Right Shoulder", torso, right, CF.new(1, .5, 0) * CF.Angles(0, math.pi / 2, 0), CF.new(-.5, .5, 0) * CF.Angles(0, math.pi / 2, 0))
+    joint("Left Shoulder", torso, left, CF.new(-1, .5, 0) * CF.Angles(0, -math.pi / 2, 0), CF.new(.5, .5, 0) * CF.Angles(0, -math.pi / 2, 0))
+    joint("Neck", torso, head, CF.new(0, 1, 0) * CF.Angles(-math.pi / 2, 0, math.pi), CF.new(0, -.5, 0) * CF.Angles(-math.pi / 2, 0, math.pi))
+    joint("Right Hip", torso, rightLeg, CF.new(1, -1, 0) * CF.Angles(0, math.pi / 2, 0))
+    joint("Left Hip", torso, leftLeg, CF.new(-1, -1, 0) * CF.Angles(0, -math.pi / 2, 0))
+    joint("RightGrip", right, nil, CF.new(0, -1, 0) * CF.Angles(-math.pi / 2, 0, 0), CF.new(), "Weld")
     return character, humanoid, root
 end
 function Environment:AddPlayer(id, initial)
@@ -276,15 +343,20 @@ function Environment:AddPlayer(id, initial)
     return player
 end
 function Environment:Weapon(kind, parent)
-    local tool = self:Node("Tool", kind, parent)
+    local tool = self:Node("Tool", kind)
     tool:SetAttribute("WeaponType", kind)
     self:Node("Part", "Handle", tool)
     if kind == "Saber" then
         local blade = self:Node("Part", "Blade", tool); blade.Size = V.new(.08, 3.4, .28)
+        blade.CFrame = CF.new(0, 2.2, 0)
     else
         local barrel = self:Node("Part", "Barrel", tool)
+        barrel.CFrame = CF.new(0, 2.05, 0)
         local muzzle = self:Node("Attachment", "Muzzle", barrel); muzzle.Position = V.new(0, 2, 0)
     end
+    self.Modules.WeaponModels = self.Modules.WeaponModels or self:Execute("src/server/WeaponModels.luau")
+    tool.Grip = self.Modules.WeaponModels.Grip(kind)
+    if parent then tool.Parent = parent end
     return tool
 end
 function Environment:StartServer()
@@ -298,6 +370,19 @@ function Environment:StartClient()
 end
 function Environment:Click(processed)
     self.UIS.InputBegan:Fire({UserInputType = self.Enum.UserInputType.MouseButton1}, processed == true)
+end
+function Environment:Respawn(player)
+    player = player or self.Player
+    local previous = player.Character
+    player.CharacterRemoving:Fire(previous)
+    previous.Parent = nil
+    for _, gui in ipairs(player.PlayerGui:GetChildren()) do
+        if gui:IsA("ScreenGui") and gui.ResetOnSpawn then gui:Destroy() end
+    end
+    local nextCharacter = self:Character("Respawn" .. player.UserId)
+    player.Character = nextCharacter
+    player.CharacterAdded:Fire(nextCharacter)
+    return nextCharacter, previous
 end
 Environment.Signal = signal
 return Environment

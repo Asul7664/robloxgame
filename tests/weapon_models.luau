@@ -44,6 +44,10 @@ end
 local source = stall()
 local displays = source:FindFirstChild("Displays")
 local expectedParts = {Saber = 52, Musket = 43}
+local expectedGrips = {
+    Saber = CF.new(0, 0.02, 0),
+    Musket = CF.new(0, 0.02, 0) * CF.Angles(math.pi * 0.5, 0, 0),
+}
 local built = {}
 local function verify(display, tool, id, label)
     local displayParts, toolParts = parts(display), parts(tool)
@@ -55,9 +59,10 @@ local function verify(display, tool, id, label)
     check(handle and handle:IsA("BasePart"), label .. ": direct Handle")
     check(countParts(tool) == expectedParts[id], label .. ": complete display geometry")
     check(tool:GetAttribute("WeaponModelKey") == Models.Key(display, id), label .. ": current source key")
-    closeFrame(tool.Grip, CF.new(0, 0.02, 0) * CF.Angles(math.pi * 0.5, 0, 0), label .. ": detailed grip")
-    check(tool.Grip:VectorToObjectSpace(V.yAxis):Dot(V.new(0, 0, -1)) > .999,
-        label .. ": weapon axis extends out of the hand")
+    closeFrame(tool.Grip, expectedGrips[id], label .. ": weapon-specific native grip")
+    local expectedAxis = id == "Saber" and V.yAxis or V.new(0, 0, -1)
+    check(tool.Grip:VectorToObjectSpace(V.yAxis):Dot(expectedAxis) > .999,
+        label .. ": blade/barrel preserves its native hand axis")
     local welds, welded = 0, {}
     for _, item in tool:GetDescendants() do
         check(not item:IsA("LuaSourceContainer"), label .. ": no executable model descendants")
@@ -126,6 +131,9 @@ for _, id in {"Saber", "Musket"} do
     verify(display, tool, id, "build " .. id)
     local roundTrip = roblox.deserializeModel(roblox.serializeModel({tool}, true))[1]
     verify(display, roundTrip, id, "XML round trip " .. id)
+    local static = roblox.deserializeModel(fs.readFile("assets/weapons/" .. id .. ".rbxmx"))[1]
+    closeFrame(static.Grip, expectedGrips[id], id .. ": static Tool matches runtime grip")
+    check(countParts(static) == expectedParts[id], id .. ": static Tool retains all display details")
 end
 for part, frame in originalFrames do
     check(part.Anchored, "Building equipped Tools leaves each displayed part anchored")
@@ -236,5 +244,42 @@ for _, parent in {character, backpack} do
     end
 end
 check(currentCount == 2, "Each owned weapon appears exactly once after repeated migration")
+
+-- A grip-only revision must invalidate a full detailed Tool, not just the
+-- old two-part placeholder, and use the ordinary free ownership grant path.
+local correctGrip = Models.Grip
+local display = freshStall:FindFirstChild("Displays"):FindFirstChild("SaberDisplay")
+local currentKey = Models.Key(display, "Saber")
+Models.Grip = function(id)
+    return id == "Saber" and expectedGrips.Musket or correctGrip(id)
+end
+local oldGripKey = Models.Key(display, "Saber")
+check(oldGripKey ~= currentKey, "Grip matrix alone changes the model fingerprint")
+local oldDetailedSaber = Models.Build(display, "Saber")
+closeFrame(oldDetailedSaber.Grip, expectedGrips.Musket, "Previous full-detail Saber retains old quarter-turn fixture")
+check(countParts(oldDetailedSaber) == 52, "Grip migration fixture retains all existing Saber geometry")
+Models.Grip = correctGrip
+check(Models.Key(display, "Saber") == currentKey, "Restoring native grip restores the current fingerprint")
+granted.Saber:Destroy()
+oldDetailedSaber.Parent = character
+local corrected = shop:Grant(player, character)
+check(oldDetailedSaber.Parent == nil and corrected.Saber ~= oldDetailedSaber,
+    "Owned detailed Saber is replaced when only its grip revision is stale")
+verify(display, corrected.Saber, "Saber", "owned grip-only migration")
+check(corrected.Musket == granted.Musket, "Saber grip migration preserves the existing current Musket")
+check(data.Coins == 1234 and data.OwnedWeapons == owned and owned.Saber and owned.Musket,
+    "Grip-only migration never charges existing owners or clears ownership")
+check(rod.Parent == character and unrelated.Parent == backpack,
+    "Grip-only migration preserves the fishing rod and unrelated equipment")
+local final = shop:Grant(player, character)
+check(final.Saber == corrected.Saber and final.Musket == corrected.Musket,
+    "Corrected native grips remain stable on subsequent grants")
+
+-- Genuine v1 inventory keys from the unchanged 52/43-part display fixture.
+local v1Keys = {Saber = "display-237815b3", Musket = "display-33d7bfd4"}
+for _, id in {"Saber", "Musket"} do
+    check(Models.Key(freshStall:FindFirstChild("Displays"):FindFirstChild(id .. "Display"), id) ~= v1Keys[id],
+        id .. ": v2 fingerprint invalidates the previous deployed revision")
+end
 
 print("PASS weapon display/runtime identity: " .. checks .. " checks (real 52/43-part XML models, stock sync, owned inventory migration)")

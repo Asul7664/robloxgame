@@ -9,14 +9,17 @@ function Controller.new(player, settings, request, canUse)
         self:_finish(); self:_clearTracks()
         if self.Died then self.Died:Disconnect(); self.Died=nil end
         if self.CreatedAttachment then self.CreatedAttachment:Destroy(); self.CreatedAttachment=nil end
-        self.Character=character; self.Pending=nil; self.NextAt=0
+        self:_clearPending()
+        self.Character=character; self.NextAt=0
+        character:SetAttribute("LocalDodgePendingUntil",nil)
+        character:SetAttribute("LocalDodgeActive",false)
         local h=character:FindFirstChildOfClass("Humanoid")
-        if h then self.Died=h.Died:Connect(function()self.Pending=nil;self:_finish()end)end
+        if h then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
     end
     table.insert(self.Connections,player.CharacterAdded:Connect(bind))
     table.insert(self.Connections,player.CharacterRemoving:Connect(function(character)
         if self.Character==character then
-            self.Pending=nil; self:_finish(); self:_clearTracks(); self.Character=nil
+            self:_clearPending(); self:_finish(); self:_clearTracks(); self.Character=nil
             if self.Died then self.Died:Disconnect();self.Died=nil end
             if self.CreatedAttachment then self.CreatedAttachment:Destroy();self.CreatedAttachment=nil end
         end
@@ -24,8 +27,13 @@ function Controller.new(player, settings, request, canUse)
     if player.Character then bind(player.Character)end
     return self
 end
+function Controller:_clearPending()
+    local pending=self.Pending
+    self.Pending=nil
+    if pending then pending.Character:SetAttribute("LocalDodgePendingUntil",nil) end
+end
 function Controller:IsBusy()
-    if self.Pending and os.clock()-self.Pending.At > self.Settings.REQUEST_TIMEOUT then self.Pending=nil end
+    if self.Pending and os.clock()-self.Pending.At > self.Settings.REQUEST_TIMEOUT then self:_clearPending() end
     return self.Active~=nil or self.Pending~=nil
 end
 function Controller:_clearTracks()
@@ -58,9 +66,12 @@ function Controller:Request(side)
         or h:GetState()==Enum.HumanoidStateType.PlatformStanding
         or self.Settings.Stunned(character,h,workspace:GetServerTimeNow())then return false end
     local direction=self.Settings.Direction(root.CFrame,side);if not direction then return false end
-    if not self.Died then self.Died=h.Died:Connect(function()self.Pending=nil;self:_finish()end)end
+    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
     self.Serial=self.Serial%2147483647+1
     self.Pending={Id=self.Serial,Character=character,Side=side,Direction=direction,At=os.clock()}
+    -- The expiry is local input coordination, never a server immunity flag.
+    -- Lost acknowledgements cannot leave attacks blocked after the timeout.
+    character:SetAttribute("LocalDodgePendingUntil",os.clock()+self.Settings.REQUEST_TIMEOUT)
     self.Send(side,self.Serial)
     return true
 end
@@ -76,17 +87,18 @@ function Controller:_finish()
         state.Humanoid.WalkSpeed=state.WalkSpeed
         state.Humanoid.AutoRotate=state.AutoRotate
     end
+    state.Character:SetAttribute("LocalDodgeActive",false)
 end
 function Controller:Handle(kind,payload)
     if kind=="DodgeCancel"then
-        if self.Pending and self.Pending.Id==payload.Id and self.Pending.Character==payload.Character then self.Pending=nil end
+        if self.Pending and self.Pending.Id==payload.Id and self.Pending.Character==payload.Character then self:_clearPending() end
         if self.Active and self.Active.Id==payload.Id and self.Active.Character==payload.Character then self:_finish()end
         return
     end
     if kind~="DodgeResult"then return end
     local pending=self.Pending
     if not pending or payload.Id~=pending.Id or payload.Side~=pending.Side then return end
-    self.Pending=nil
+    self:_clearPending()
     if not payload.Allowed or pending.Character~=self.Player.Character or payload.Character~=pending.Character
         or os.clock()-pending.At>self.Settings.REQUEST_TIMEOUT
         or workspace:GetServerTimeNow()>=payload.EndsAt or not self.CanUse()then return end
@@ -95,7 +107,7 @@ function Controller:Handle(kind,payload)
         or h:GetState()==Enum.HumanoidStateType.Swimming
         or h:GetState()==Enum.HumanoidStateType.PlatformStanding
         or self.Settings.Stunned(c,h,workspace:GetServerTimeNow())then return end
-    if not self.Died then self.Died=h.Died:Connect(function()self.Pending=nil;self:_finish()end)end
+    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
     local attachment=root:FindFirstChild("RootAttachment")
     if not attachment then
         -- Some R6 characters lack the standard attachment. Create exactly one
@@ -114,6 +126,7 @@ function Controller:Handle(kind,payload)
     local state={Id=pending.Id,Character=c,Humanoid=h,Root=root,Direction=pending.Direction,Velocity=lv,
         WalkSpeed=h.WalkSpeed,AutoRotate=h.AutoRotate,Started=os.clock(),Ray=ray}
     self.Active=state
+    c:SetAttribute("LocalDodgeActive",true)
     self.NextAt=os.clock()+math.max(0,payload.CooldownUntil-workspace:GetServerTimeNow())
     h.WalkSpeed=0;h.AutoRotate=false
     state.Track=self:_track(h,pending.Side)
@@ -165,7 +178,7 @@ function Controller:_step(state,dt)
     end
 end
 function Controller:Destroy()
-    self.Pending=nil;self:_finish();self:_clearTracks()
+    self:_clearPending();self:_finish();self:_clearTracks()
     if self.Died then self.Died:Disconnect();self.Died=nil end
     if self.CreatedAttachment then self.CreatedAttachment:Destroy();self.CreatedAttachment=nil end
     for _,connection in ipairs(self.Connections)do connection:Disconnect()end

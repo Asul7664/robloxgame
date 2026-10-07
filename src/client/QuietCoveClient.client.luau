@@ -498,6 +498,7 @@ end, function()
     return data ~= nil and stageName == "Idle" and not modal.Visible and not quests:IsOpen()
         and not landingPlaying() and not catchReveal:IsVisible()
         and not voyage:IsOpen() and not voyage:IsDriving() and not UIS:GetFocusedTextBox()
+        and not (player.Character and player.Character:GetAttribute("CombatAttacking") == true)
 end)
 UIS.InputBegan:Connect(function(input, processed)
     if processed or UIS:GetFocusedTextBox() then return end
@@ -530,7 +531,10 @@ UIS.WindowFocusReleased:Connect(function() release(nil, true) end)
 local waterJump = WaterJump.new(player, Config.WaterJump, function()
     return not dodge:IsBusy() and stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not UIS:GetFocusedTextBox()
 end)
-gui.Destroying:Connect(function() dodge:Destroy();quests:Destroy();waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy() end)
+gui.Destroying:Connect(function()
+    dodge:Destroy();quests:Destroy();waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy()
+    if player.Character then player.Character:SetAttribute("CombatUIBlocked",false) end
+end)
 player.CharacterRemoving:Connect(function()
     if studioPreview then pcall(studioPreview.Stop,studioPreview) end
     landingEffects:Clear();pendingCaught=nil;landingEndsAt=0
@@ -586,6 +590,13 @@ RunService.RenderStepped:Connect(function(dt)
     end
     panel.Visible=stageName~="Landing" and not landingPlaying() and not modal.Visible and not quests:IsOpen() and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
     local character = player.Character
+    if character then
+        local combatBlocked = stageName ~= "Idle" or modal.Visible or quests:IsOpen()
+            or landingPlaying() or catchReveal:IsVisible() or voyage:IsOpen() or voyage:IsDriving()
+        if character:GetAttribute("CombatUIBlocked") ~= combatBlocked then
+            character:SetAttribute("CombatUIBlocked", combatBlocked)
+        end
+    end
     local equippedTool = character and character:FindFirstChildOfClass("Tool")
     if equippedTool and equippedTool:GetAttribute("WeaponType") then panel.Visible = false end
     quests.Button.Visible = stageName ~= "Landing" and not catchReveal:IsVisible()

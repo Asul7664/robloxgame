@@ -2,6 +2,12 @@
 -- Rebuild around the handle instead of carrying the display's world position
 -- or its anchored physics into the player's character.
 local Models = {}
+function Models.Grip(id)
+    -- The saber's +Y blade already follows the native hand grip. Adding
+    -- the firearm's quarter-turn would point its blade back at the arm.
+    local neutral=CFrame.new(0,.02,0)
+    return id=="Saber" and neutral or neutral*CFrame.Angles(math.pi*.5,0,0)
+end
 local function parts(display)
     local result={}
     for _, object in ipairs(display:GetChildren()) do
@@ -21,7 +27,7 @@ local function parts(display)
 end
 function Models.Key(display,id)
     local handle=assert(display:FindFirstChild("Handle"),"Weapon display needs Handle")
-    local tokens={"display-weapon-v1",id}
+    local tokens={"display-weapon-v2",id}
     local function numbers(...)
         for _,n in ipairs({...}) do
             -- Normalize tiny world-to-local floating point differences.
@@ -29,6 +35,9 @@ function Models.Key(display,id)
             table.insert(tokens,tostring(value==0 and 0 or value))
         end
     end
+    -- Grip changes must migrate previously purchased inventory for free,
+    -- even when every displayed part and attachment remains unchanged.
+    numbers(Models.Grip(id):GetComponents())
     for _,part in ipairs(parts(display)) do
         table.insert(tokens,part.ClassName);table.insert(tokens,part.Name)
         table.insert(tokens,tostring(part.Material))
@@ -60,7 +69,7 @@ function Models.Build(display,id)
     tool.Name=id;tool.RequiresHandle=true;tool.CanBeDropped=false
     tool:SetAttribute("WeaponType",id)
     tool:SetAttribute("WeaponModelKey",Models.Key(display,id))
-    tool.Grip=CFrame.new(0,.02,0)*CFrame.Angles(math.pi*.5,0,0)
+    tool.Grip=Models.Grip(id)
     tool.ToolTip=(id=="Saber" and "Сабля" or "Мушкет").." · ЛКМ — атака"
     for _,part in ipairs(parts(display)) do
         local copy=assert(part:Clone(),"Weapon display part must be archivable")

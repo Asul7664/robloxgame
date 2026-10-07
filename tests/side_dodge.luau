@@ -80,6 +80,7 @@ local function client(animationIDs)
             for _,ch in ipairs(env.Objects)do if ch.Parent==self and ch.ClassName==name and not ch.Destroyed then return ch end end
         end
         function o:GetAttribute(key)return self.Attributes[key]end
+        function o:SetAttribute(key,value)self.Attributes[key]=value end
         function o:GetState()return self.State or "Running"end
         function o:Destroy()self.Destroyed=true;self.Parent=nil end
         table.insert(env.Objects,o);return o
@@ -151,18 +152,22 @@ for _,fps in ipairs({30,60,120})do
     for _,air in ipairs({false,true})do
         local e=client();local ctrl=e.Controller
         check(ctrl:Request("Right"),"Request is responsive")
+        check(e.Player.Character:GetAttribute("LocalDodgePendingUntil")==e.Time+e.Settings.REQUEST_TIMEOUT,"Pending dodge input lock has a bounded expiry")
         check(not ctrl.Active and e.Humanoid.WalkSpeed==19,"No force or movement lock before server approval")
         e.Root.CFrame=CF.Angles(0,math.pi/2,0);e:Grant()
         local lv=ctrl.Active.Velocity
+        check(e.Player.Character:GetAttribute("LocalDodgePendingUntil")==nil,"Server approval clears the pending input lock")
         check(lv.Attachment0==e.Attachment,"Standard RootAttachment reused")
         check(lv.RelativeTo=="World" and lv.VelocityConstraintMode=="Vector" and lv.ForceLimitMode=="PerAxis","Required constraint modes")
         check(lv.MaxAxesForce==V.new(60000,0,60000),"Finite horizontal force, zero vertical force")
         check(e.Humanoid.WalkSpeed==0 and not e.Humanoid.AutoRotate,"Walk and rotation locked only during step")
+        check(e.Player.Character:GetAttribute("LocalDodgeActive")==true,"Local movement flag coordinates weapon camera")
         check(not ctrl:Request("Left"),"No overlapping client movement")
         for _=1,math.ceil(.35*fps)do e:Tick(1/fps,air)end
         check(not ctrl.Active and lv.Destroyed,"Constraint cleaned after step")
         check(e.Run.Heartbeat:Count()==0 and e.Run.PostSimulation:Count()==0,"Both frame connections cleaned")
         check(e.Humanoid.WalkSpeed==19 and e.Humanoid.AutoRotate,"Captured movement settings restored")
+        check(e.Player.Character:GetAttribute("LocalDodgeActive")==false,"Local flag cleared after restoring movement")
         check(e.Root.Position.X>=8 and e.Root.Position.X<=14,"Short intended step at different frame rates")
         near(e.Root.Position.Z,0,.001,"Direction fixed at input despite rotation before approval")
         near(e.Horizontal.Magnitude,0,.001,"Last physics solve removes residual horizontal drift")
@@ -184,6 +189,7 @@ do
     e.Time+=1;ctrl:Request("Left");e:Grant();check(e.Loads==1,"Animation cache reused per direction")
     e.Humanoid.Health=0;e.Humanoid.Died:Fire()
     check(not ctrl.Active and e.Run.Heartbeat:Count()==0,"Death tears down current motion")
+    check(e.Player.Character:GetAttribute("LocalDodgeActive")==false,"Death clears local movement flag")
     e:Respawn();check(t.Destroyed,"Respawn clears animation cache")
     ctrl:Request("Right");e:Grant();check(e.Loads==2,"Separate direction and new-character track")
     e:Respawn();check(not ctrl.Active and e.Run.Heartbeat:Count()==0,"Respawn tears down force and frame listener")
@@ -210,6 +216,7 @@ do
     ctrl:Request("Right");local req=e.Requests[#e.Requests]
     ctrl:Handle("DodgeCancel",{Id=req.Id,Character=e.Player.Character})
     e:Grant();check(not ctrl.Active,"Cancellation clears a pending request")
+    check(e.Player.Character:GetAttribute("LocalDodgePendingUntil")==nil,"Cancellation releases the pending combat gate")
     ctrl:Request("Right");e.CanUse=false;e:Grant()
     check(not ctrl.Active,"Menu opened while awaiting approval cancels playback")
     ctrl:Destroy()

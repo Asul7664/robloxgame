@@ -6,25 +6,34 @@ local UIS = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 local combat = ReplicatedStorage:WaitForChild("Combat")
 local animator = require(combat:WaitForChild("WeaponAnimator"))
+local config = require(combat:WaitForChild("Config"))
+local WeaponCamera = require(script.Parent:WaitForChild("WeaponCamera"))
 local swingRemote = combat:WaitForChild("Swing")
 local shotRemote = combat:WaitForChild("Shot")
 local confirmRemote = combat:WaitForChild("ConfirmHit")
 
-local camera = workspace.CurrentCamera
 local combo = 0
 local lastSwing = 0
 local busy = false
 local ammo = 1
 local reloading = false
 local pendingHit
+local equipped
+local boundCharacter
+local characterConnections = {}
+local lifetimeConnections = {}
+local healthGui
+local characterSerial = 0
+local actionSerial = 0
+local activeTrail
+local recoil
 
 local function character()
 	return player.Character
 end
 
 local function tool()
-	local c = character()
-	return c and c:FindFirstChildOfClass("Tool")
+	return equipped and equipped.Parent == character() and equipped or nil
 end
 
 local function kind()
@@ -32,21 +41,73 @@ local function kind()
 	return t and t:GetAttribute("WeaponType")
 end
 
-local function kickCamera(pitch, fov, time)
-	local start = camera.FieldOfView
-	TweenService:Create(camera, TweenInfo.new(0.06, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { FieldOfView = start + fov }):Play()
-	task.delay(0.06, function()
-		TweenService:Create(camera, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { FieldOfView = 70 }):Play()
-	end)
+local function clearRecoil()
+	local saved = recoil
+	recoil = nil
+	if not saved then return end
+	for _, tween in ipairs(saved.Tweens) do tween:Cancel() end
+	if saved.Camera.Parent then saved.Camera.FieldOfView = saved.FieldOfView end
+	if saved.Humanoid and saved.Humanoid.Parent then saved.Humanoid.CameraOffset = saved.Offset end
+end
+
+local function kickCamera(pitch, fov, duration)
+	clearRecoil()
+	local camera = workspace.CurrentCamera
+	if not camera then return end
 	local hum = character() and character():FindFirstChildOfClass("Humanoid")
-	if hum then
-		TweenService:Create(hum, TweenInfo.new(0.05), { CameraOffset = Vector3.new(pitch, 0.05, 0) }):Play()
-		task.delay(0.05, function()
-			if hum.Parent then
-				TweenService:Create(hum, TweenInfo.new(0.18), { CameraOffset = Vector3.new(0, 0, 0) }):Play()
-			end
-		end)
+	local saved = {Camera = camera, FieldOfView = camera.FieldOfView,
+		Humanoid = hum, Offset = hum and hum.CameraOffset, Tweens = {}}
+	recoil = saved
+	local function tween(object, seconds, properties)
+		local value = TweenService:Create(object, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
+		table.insert(saved.Tweens, value)
+		value:Play()
 	end
+	tween(camera, .06, {FieldOfView = saved.FieldOfView + fov})
+	if hum then tween(hum, .05, {CameraOffset = saved.Offset + Vector3.new(pitch, .05, 0)}) end
+	task.delay(.06, function()
+		if recoil ~= saved then return end
+		if camera.Parent then tween(camera, duration, {FieldOfView = saved.FieldOfView}) end
+		if hum and hum.Parent then tween(hum, .18, {CameraOffset = saved.Offset}) end
+	end)
+	task.delay(.06 + math.max(duration, .18), function()
+		if recoil == saved then clearRecoil() end
+	end)
+end
+
+local weaponCamera = WeaponCamera.new(player, function()
+	local c = character()
+	return c ~= nil and c:GetAttribute("CombatUIBlocked") ~= true
+end, function(c, pitch)
+	animator.setAimPitch(c, pitch or 0)
+end)
+
+local function canAttack()
+	local c = character()
+	local h = c and c:FindFirstChildOfClass("Humanoid")
+	return tool() ~= nil and h ~= nil and h.Health > 0 and not h.Sit and not h.SeatPart
+		and not WeaponCamera.IsUIBlocked(player)
+		and c:GetAttribute("CombatUIBlocked") ~= true
+		and c:GetAttribute("Dodging") ~= true and c:GetAttribute("LocalDodgeActive") ~= true
+		and os.clock() >= (c:GetAttribute("LocalDodgePendingUntil") or 0)
+		and c:GetAttribute("Stunned") ~= true and h:GetAttribute("Stunned") ~= true
+end
+
+local function cancelAction()
+	actionSerial += 1
+	busy = false
+	pendingHit = nil
+	if activeTrail then activeTrail.Enabled = false; activeTrail = nil end
+	if boundCharacter then boundCharacter:SetAttribute("CombatAttacking", false) end
+	clearRecoil()
+end
+
+local function setEquipped(value)
+	if equipped == value then return end
+	cancelAction()
+	equipped = value
+	weaponCamera:SetTool(value)
+	if boundCharacter then animator.setWeapon(boundCharacter, value) end
 end
 
 local function trail(blade)
@@ -86,7 +147,7 @@ local function whoosh(parent)
 end
 
 local function saber()
-	if busy then
+	if busy or not canAttack() then
 		return
 	end
 	local c = character()
@@ -100,22 +161,30 @@ local function saber()
 	combo = (combo % 3) + 1
 	lastSwing = os.clock()
 	busy = true
+	c:SetAttribute("CombatAttacking", true)
+	actionSerial += 1
+	local serial = actionSerial
+	local swingCombo = combo
 	local blade = t:FindFirstChild("Blade") or t:FindFirstChild("Handle")
 	local tr = trail(blade)
-	if tr then
-		tr.Enabled = true
-	end
-	whoosh(c:FindFirstChild("HumanoidRootPart") or t)
-	kickCamera(combo == 3 and 0.35 or 0.16, combo == 3 and -6 or -3, 0.2)
-	animator.playSaber(c, combo, function(reply)
-		pendingHit = reply
-		swingRemote:FireServer(combo)
-	end)
-	task.delay(0.5, function()
-		if tr then
-			tr.Enabled = false
-		end
+	activeTrail = tr
+	animator.playSaber(c, swingCombo, function(reply)
+		if actionSerial ~= serial or character() ~= c or tool() ~= t then return end
+		pendingHit = {Reply = reply, Character = c, Tool = t, Serial = serial}
+		if tr then tr.Enabled = true end
+		whoosh(c:FindFirstChild("HumanoidRootPart") or t)
+		kickCamera(swingCombo == 3 and .25 or .1, swingCombo == 3 and -4 or -2, .2)
+		swingRemote:FireServer(swingCombo)
+		task.delay(config.Saber.Active, function()
+			if actionSerial == serial and tr then tr.Enabled = false end
+		end)
+	end, function()
+		if actionSerial ~= serial then return end
+		if tr then tr.Enabled = false end
+		activeTrail = nil
+		pendingHit = nil
 		busy = false
+		c:SetAttribute("CombatAttacking", false)
 	end)
 end
 
@@ -144,7 +213,7 @@ local function puff(origin, dir)
 end
 
 local function musket()
-	if busy or reloading or ammo <= 0 then
+	if busy or reloading or ammo <= 0 or not canAttack() then
 		return
 	end
 	local c = character()
@@ -153,9 +222,17 @@ local function musket()
 		return
 	end
 	busy = true
+	c:SetAttribute("CombatAttacking", true)
+	actionSerial += 1
+	local serial = actionSerial
+	local life = characterSerial
 	ammo -= 1
 	reloading = true
 	local root = c:FindFirstChild("HumanoidRootPart")
+	local camera = workspace.CurrentCamera
+	if not root or not camera then
+		ammo += 1; reloading = false; cancelAction(); return
+	end
 	local muzzle = t:FindFirstChild("Muzzle", true)
 	local origin = muzzle and muzzle.WorldPosition or (root.Position + Vector3.new(0, 1.4, 0))
 	local dir = camera.CFrame.LookVector
@@ -169,17 +246,24 @@ local function musket()
 	s:Play()
 	game:GetService("Debris"):AddItem(s, 1.4)
 	puff(origin, dir)
+	pendingHit = {Character = c, Tool = t, Serial = serial}
 	shotRemote:FireServer(origin, dir)
 	task.delay(0.35, function()
-		busy = false
+		if actionSerial == serial then
+			busy = false
+			c:SetAttribute("CombatAttacking", false)
+		end
 	end)
-	task.delay(1.7, function()
-		ammo = 1
-		reloading = false
+	task.delay(config.Musket.Reload, function()
+		-- Switching weapons does not bypass reloading; respawn invalidates it.
+		if characterSerial == life and character() == c then
+			ammo = config.Musket.Magazine
+			reloading = false
+		end
 	end)
 end
 
-UIS.InputBegan:Connect(function(input, processed)
+table.insert(lifetimeConnections, UIS.InputBegan:Connect(function(input, processed)
 	if processed or input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 		return
 	end
@@ -189,17 +273,16 @@ UIS.InputBegan:Connect(function(input, processed)
 	elseif k == "Musket" then
 		musket()
 	end
-end)
+end))
 
-confirmRemote.OnClientEvent:Connect(function(didHit)
-	if pendingHit then
-		pendingHit(didHit)
+table.insert(lifetimeConnections, confirmRemote.OnClientEvent:Connect(function(didHit)
+	local pending = pendingHit
+	if pending and pending.Character == character() and pending.Tool == tool() and pending.Serial == actionSerial then
+		if pending.Reply then pending.Reply(didHit) end
 		pendingHit = nil
+		if didHit and canAttack() then kickCamera(.22, -2, .12) end
 	end
-	if didHit then
-		kickCamera(0.22, -2, 0.12)
-	end
-end)
+end))
 
 local function mountHealth(char)
 	local hum = char:WaitForChild("Humanoid")
@@ -207,6 +290,7 @@ local function mountHealth(char)
 	gui.Name = "HealthBar"
 	gui.ResetOnSpawn = true
 	gui.Parent = player:WaitForChild("PlayerGui")
+	healthGui = gui
 	local root = Instance.new("Frame")
 	root.AnchorPoint = Vector2.new(0.5, 1)
 	root.Position = UDim2.new(0.5, 0, 1, -36)
@@ -247,10 +331,55 @@ local function mountHealth(char)
 		end)
 	end
 	redraw(hum.Health)
-	hum.HealthChanged:Connect(redraw)
+	local connection = hum.HealthChanged:Connect(redraw)
+	gui.Destroying:Connect(function() connection:Disconnect() end)
 end
 
-player.CharacterAdded:Connect(mountHealth)
+local function unbindCharacter()
+	cancelAction()
+	weaponCamera:SetTool(nil)
+	if boundCharacter then animator.stop(boundCharacter) end
+	for _, connection in ipairs(characterConnections) do connection:Disconnect() end
+	characterConnections = {}
+	if healthGui then healthGui:Destroy(); healthGui = nil end
+	equipped = nil
+	boundCharacter = nil
+	characterSerial += 1
+end
+
+local function bindCharacter(c)
+	unbindCharacter()
+	boundCharacter = c
+	combo = 0; lastSwing = 0; ammo = config.Musket.Magazine; reloading = false
+	c:SetAttribute("CombatAttacking", false)
+	local function updateTool()
+		setEquipped(c:FindFirstChildOfClass("Tool"))
+	end
+	table.insert(characterConnections, c.ChildAdded:Connect(function(child)
+		if child:IsA("Tool") then updateTool() end
+	end))
+	table.insert(characterConnections, c.ChildRemoved:Connect(function(child)
+		if child:IsA("Tool") then updateTool() end
+	end))
+	local hum = c:WaitForChild("Humanoid")
+	if boundCharacter ~= c then return end
+	table.insert(characterConnections, hum.Died:Connect(function()
+		cancelAction(); weaponCamera:SetTool(nil); animator.stop(c)
+		equipped = nil
+	end))
+	updateTool()
+	mountHealth(c)
+end
+
+table.insert(lifetimeConnections, player.CharacterAdded:Connect(bindCharacter))
+table.insert(lifetimeConnections, player.CharacterRemoving:Connect(function(c)
+	if boundCharacter == c then unbindCharacter() end
+end))
+script.Destroying:Connect(function()
+	unbindCharacter(); weaponCamera:Destroy()
+	for _, connection in ipairs(lifetimeConnections) do connection:Disconnect() end
+	lifetimeConnections = {}
+end)
 if player.Character then
-	mountHealth(player.Character)
+	bindCharacter(player.Character)
 end

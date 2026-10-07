@@ -70,9 +70,12 @@ local function tool(name)
 	item.RequiresHandle = true
 	item.CanBeDropped = false
 	item:SetAttribute("WeaponType", name)
-	-- The model's positive Y is the firing/blade axis. In grip coordinates it
-	-- points along -Z, out of the hand, rather than through the palm/forearm.
-	item.Grip = CFrame.new(0, 0.02, 0) * CFrame.Angles(math.pi * 0.5, 0, 0)
+	-- The saber keeps its +Y blade in the native hand orientation. The
+	-- musket alone needs the quarter-turn to aim its barrel out of the hand.
+	item.Grip = CFrame.new(0, 0.02, 0)
+	if name == "Musket" then
+		item.Grip *= CFrame.Angles(math.pi * 0.5, 0, 0)
+	end
 	return item
 end
 
@@ -194,8 +197,9 @@ local function verify(item)
 	local handle = item:FindFirstChild("Handle")
 	assert(handle and handle:IsA("Part"), "Tool needs a direct Part Handle")
 	assert((handle.CFrame.Position - Vector3.zero).Magnitude < 0.001, "Grip reference must remain at the handle")
-	local forward = item.Grip:VectorToObjectSpace(Vector3.yAxis)
-	assert(forward:Dot(Vector3.new(0, 0, -1)) > 0.999, "Weapon must extend forward from the hand")
+	local axis = item.Grip:VectorToObjectSpace(Vector3.yAxis)
+	local expectedAxis = item.Name == "Saber" and Vector3.yAxis or Vector3.new(0, 0, -1)
+	assert(axis:Dot(expectedAxis) > 0.999, "Weapon must use its correct native hand orientation")
 	local partCount, weldCount = 0, 0
 	for _, child in item:GetDescendants() do
 		assert(not child:IsA("LuaSourceContainer"), "Models must not contain hidden scripts")
