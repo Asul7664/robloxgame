@@ -133,7 +133,7 @@ function Environment.new()
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
     for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog"}) do child(shared, "ModuleScript", name) end
-    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop"}) do child(server, "ModuleScript", name) end
+    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels"}) do child(server, "ModuleScript", name) end
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
     action.OnServerEvent = signal()
@@ -160,6 +160,7 @@ function Environment.new()
     local workspace = node("Workspace", "Workspace")
     workspace.GetServerTimeNow = function() return self.epoch + self.clock end
     local stall = child(workspace, "Model", "WeaponStall")
+    child(stall, "Folder", "Displays")
     local counter = child(stall, "Part", "Counter")
     counter.Position = V.new(24, 9, 3)
     prompt(counter, "WeaponShopPrompt")
@@ -203,6 +204,21 @@ function Environment.new()
     self.modules.World = {Build = function() return world end}
     self.modules.Archipelago = {Attach = function(value) return value end}
     self.modules.BoatService, self.modules.EquipmentModels = boats, models
+    -- Geometry is covered separately by tests/weapon_models. Here the factory
+    -- supplies its canonical version keys so actual shop migration is exercised.
+    local weaponModels = {}
+    function weaponModels.Key(id) return "test-" .. id end
+    function weaponModels.Sync(bank, displays)
+        local keys = {}
+        for _, id in ipairs({"Saber", "Musket"}) do
+            local key = weaponModels.Key(id)
+            keys[id] = key
+            local stock = bank:FindFirstChild(id)
+            if stock then stock:SetAttribute("WeaponModelKey", key) end
+        end
+        return keys
+    end
+    self.modules.WeaponModels = weaponModels
     local paths = {Config = "src/shared/Config.luau", BrainrotExpansion = "src/shared/BrainrotExpansion.luau",
         Quests = "src/shared/Quests.luau", CatchLedger = "src/shared/CatchLedger.luau",
         CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",

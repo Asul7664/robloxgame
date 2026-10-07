@@ -1,9 +1,11 @@
 -- Uses the existing profile, wallet, Action/Update remotes and map interaction.
+local Models = require(script.Parent:WaitForChild("WeaponModels"))
 local Shop = {}
 Shop.__index = Shop
 function Shop.new(catalog, profiles, bank, counter, send, sync, busy, notice)
+    local keys=Models.Sync(bank,counter.Parent:WaitForChild("Displays"))
     return setmetatable({Catalog=catalog, Profiles=profiles, Bank=bank, Counter=counter,
-        Send=send, Sync=sync, Busy=busy, Notice=notice}, Shop)
+        ModelKeys=keys, Send=send, Sync=sync, Busy=busy, Notice=notice}, Shop)
 end
 function Shop:_can(player)
     local c=player.Character
@@ -16,6 +18,7 @@ function Shop:_source(id)
     local source=self.Bank:FindFirstChild(id)
     local handle=source and source:FindFirstChild("Handle")
     if source and source:IsA("Tool") and source:GetAttribute("WeaponType")==id
+        and source:GetAttribute("WeaponModelKey")==self.ModelKeys[id]
         and source.Archivable~=false and handle and handle:IsA("BasePart") then return source end
 end
 function Shop:Open(player)
@@ -37,7 +40,9 @@ function Shop:Grant(player,character)
             if id and self.Catalog.ById[id] then
                 -- Retire old unconditional gifts and duplicate Tools without
                 -- touching the player's fishing rod or unrelated equipment.
-                if not owned[id] or found[id] then tool:Destroy() else found[id]=tool end
+                if not owned[id] or found[id] or tool:GetAttribute("WeaponModelKey")~=self.ModelKeys[id] then
+                    tool:Destroy()
+                else found[id]=tool end
             end
         end
     end

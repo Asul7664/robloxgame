@@ -329,4 +329,73 @@ do
         "WeaponBuy uses Main's existing two-per-second action rate bucket")
 end
 
+do
+    local env, player, data = server(713)
+    approach(env, player); data.Coins = 1500
+    buy(env, player, "Saber")
+    local legacy = tools(player, "Saber")[1]
+    legacy:SetAttribute("WeaponModelKey", nil)
+    buy(env, player, "Saber")
+    local upgraded = tools(player, "Saber")[1]
+    check(legacy.Destroyed and upgraded ~= legacy and #tools(player, "Saber") == 1,
+        "Owned selection replaces a legacy unstamped Saber instead of retaining its plain Handle")
+    check(upgraded:GetAttribute("WeaponModelKey") == "test-Saber"
+        and upgraded.Parent == player.Character,
+        "Replacement Saber uses the current factory model key and is equipped")
+    check(data.Coins == 1250 and data.OwnedWeapons.Saber == true,
+        "Upgrading a bought Saber neither charges again nor erases ownership")
+    buy(env, player, "Saber")
+    check(tools(player, "Saber")[1] == upgraded and not upgraded.Destroyed,
+        "An owned Tool already matching the canonical model is retained idempotently")
+    env:Advance(1)
+    buy(env, player, "Musket")
+    local musket = tools(player, "Musket")[1]
+    musket:SetAttribute("WeaponModelKey", "old-musket-v0")
+    buy(env, player, "Musket")
+    local upgradedMusket = tools(player, "Musket")[1]
+    check(musket.Destroyed and upgradedMusket ~= musket
+        and upgradedMusket:GetAttribute("WeaponModelKey") == "test-Musket",
+        "Owned selection also replaces a Musket with an obsolete version key")
+    check(data.Coins == 350 and data.OwnedWeapons.Saber and data.OwnedWeapons.Musket,
+        "Model migration preserves both paid ownership flags and remaining coins")
+
+    -- Backpack survivors emulate a place update between sessions/respawns:
+    -- profile ownership is valid while both in-memory Tools use old geometry.
+    upgraded.Parent = player.Backpack
+    upgradedMusket.Parent = player.Backpack
+    upgraded:SetAttribute("WeaponModelKey", nil)
+    upgradedMusket:SetAttribute("WeaponModelKey", nil)
+    env:Reset(player)
+    check(upgraded.Destroyed and upgradedMusket.Destroyed,
+        "Main's CharacterAdded grant retires legacy backpack Tools after respawn")
+    local newSaber, newMusket = tools(player, "Saber")[1], tools(player, "Musket")[1]
+    check(#tools(player, "Saber") == 1 and #tools(player, "Musket") == 1
+        and newSaber:GetAttribute("WeaponModelKey") == "test-Saber"
+        and newMusket:GetAttribute("WeaponModelKey") == "test-Musket",
+        "Respawn restores exactly one current model of each purchased weapon")
+    check(data.Coins == 350 and data.OwnedWeapons.Saber and data.OwnedWeapons.Musket,
+        "Respawn model replacement is free and preserves ownership")
+    env:Reset(player)
+    check(tools(player, "Saber")[1] == newSaber and tools(player, "Musket")[1] == newMusket,
+        "Repeated respawn grant retains already upgraded backpack Tools")
+    env:Leave(player)
+    check(env.documents.u_713.Data.Coins == 350
+        and env.documents.u_713.Data.OwnedWeapons.Saber
+        and env.documents.u_713.Data.OwnedWeapons.Musket,
+        "Model upgrade does not change the persistent purchase record")
+end
+
+do
+    local env, player, data = server(714)
+    approach(env, player); data.Coins = 1500
+    env.Weapons.Saber:SetAttribute("WeaponModelKey", nil)
+    buy(env, player, "Saber")
+    check(data.Coins == 1500 and not data.OwnedWeapons.Saber and #tools(player, "Saber") == 0,
+        "A source without the expected canonical key cannot charge or issue a legacy model")
+    env.Weapons.Musket:SetAttribute("WeaponModelKey", "old-model")
+    buy(env, player, "Musket")
+    check(data.Coins == 1500 and not data.OwnedWeapons.Musket and #tools(player, "Musket") == 0,
+        "A source carrying an obsolete model key is rejected before charging")
+end
+
 print("PASS weapon shop integration: " .. checks .. " checks (real Main/WeaponShop/Profiles)")

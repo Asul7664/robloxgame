@@ -2,6 +2,8 @@
 -- Exercise real server handlers, client UI/input and procedural animation.
 local Environment = require("./helpers/combat_environment")
 local roblox = require("@lune/roblox")
+local fs = require("@lune/fs")
+local luau = require("@lune/luau")
 local V, CF = roblox.Vector3, roblox.CFrame
 local checks = 0
 local function check(value, label) checks += 1; assert(value, label) end
@@ -108,20 +110,10 @@ do
     check(#hum.DamageCalls == 0, "Dead targets do not receive further damage")
 end
 
--- Fallback constructors preserve developer-supplied models. Their generated
--- defaults can also execute, have a usable handle and expose the muzzle.
-do
-    local env = Environment.new()
-    local bank = env:Node("Folder", "Weapons", env.Storage)
-    local original = env:Weapon("Saber", bank)
-    env:Execute("src/combat/WeaponPlaceholders.server.luau")
-    check(bank.Saber == original, "Fallback generator preserves custom saber")
-    check(bank.Musket and bank.Musket:GetAttribute("WeaponType") == "Musket", "Missing fallback musket is created")
-    check(bank.Musket:FindFirstChild("Muzzle", true), "Generated musket has a muzzle attachment")
-    check(not bank.Musket.Handle.CanCollide and bank.Musket.Handle.Massless, "Fallback handle has safe physics properties")
-    env:Execute("src/combat/WeaponPlaceholders.server.luau")
-    check(#bank:GetChildren() == 2, "Fallback generator does not duplicate weapons")
-end
+-- WeaponPlaceholders now bootstraps WeaponModels rather than constructing
+-- plain tools. Compile its real source here; native tests/weapon_models cover
+-- model geometry, shared construction and migration of old fallback tools.
+luau.load(fs.readFile("src/combat/WeaponPlaceholders.server.luau"))
 
 -- Run the actual procedural animator, including the hit activation callback and
 -- normal completed/cancelled RenderStepped cleanup.
