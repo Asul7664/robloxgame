@@ -9,6 +9,12 @@
       "QuietCove": {
         "$path": "src/shared",
         "$ignoreUnknownInstances": true
+      },
+      "Combat": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "Config": {"$path": "src/combat/Config.luau"},
+        "WeaponAnimator": {"$path": "src/combat/WeaponAnimator.luau"}
       }
     },
     "ServerScriptService": {
@@ -17,6 +23,18 @@
       "QuietCove": {
         "$path": "src/server",
         "$ignoreUnknownInstances": true
+      },
+      "CombatServer": {"$path": "src/combat/CombatServer.server.luau"},
+      "WeaponPlaceholders": {"$path": "src/combat/WeaponPlaceholders.server.luau"}
+    },
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "$ignoreUnknownInstances": true,
+      "Weapons": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "Saber": {"$path": "assets/weapons/Saber.rbxmx"},
+        "Musket": {"$path": "assets/weapons/Musket.rbxmx"}
       }
     },
     "StarterPlayer": {

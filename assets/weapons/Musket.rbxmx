@@ -1,0 +1,1779 @@
+<roblox version="4">
+  <Item class="Tool" referent="0">
+    <Properties>
+      <string name="Name">Musket</string>
+      <BinaryString name="AttributesSerialize">AQAAAAoAAABXZWFwb25UeXBlAgYAAABNdXNrZXQ=</BinaryString>
+      <bool name="CanBeDropped">false</bool>
+      <CoordinateFrame name="Grip">
+        <X>0</X>
+        <Y>0.020004272</Y>
+        <Z>0</Z>
+        <R00>1</R00>
+        <R01>0</R01>
+        <R02>0</R02>
+        <R10>0</R10>
+        <R11>-0</R11>
+        <R12>-1</R12>
+        <R20>0</R20>
+        <R21>1</R21>
+        <R22>-0</R22>
+      </CoordinateFrame>
+      <bool name="RequiresHandle">true</bool>
+      <string name="ToolTip">Мушкет · ЛКМ — выстрел · перезарядка 1.7 с</string>
+    </Properties>
+    <Item class="Part" referent="1">
+      <Properties>
+        <string name="Name">Handle</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0</Y>
+          <Z>0</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">5582621</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.25</X>
+          <Y>0.5</Y>
+          <Z>0.33000183</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+    </Item>
+    <Item class="Part" referent="2">
+      <Properties>
+        <string name="Name">StockNeck</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.30000305</Y>
+          <Z>-0.035003662</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>0.9928131</R11>
+          <R12>0.1197052</R12>
+          <R20>0</R20>
+          <R21>-0.1197052</R21>
+          <R22>0.9928131</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">5582621</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.2899933</X>
+          <Y>0.5700073</Y>
+          <Z>0.32000732</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="3">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">2</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="4">
+      <Properties>
+        <string name="Name">Stock</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.9799957</Y>
+          <Z>-0.070007324</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">5582621</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.33999634</X>
+          <Y>0.7299957</Y>
+          <Z>0.5399933</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="5">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">4</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="WedgePart" referent="6">
+      <Properties>
+        <string name="Name">StockTopTaper</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.5299988</Y>
+          <Z>0.11000061</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">5582621</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.33000183</X>
+          <Y>0.4600067</Y>
+          <Z>0.21000671</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="7">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">6</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="8">
+      <Properties>
+        <string name="Name">ButtPlate</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-1.3600006</Y>
+          <Z>-0.070007324</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.3600006</X>
+          <Y>0.054992676</Y>
+          <Z>0.5700073</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="9">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">8</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="10">
+      <Properties>
+        <string name="Name">Forestock</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.8899994</Y>
+          <Z>0.024993896</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">5582621</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.22999573</X>
+          <Y>1.5200043</Y>
+          <Z>0.27000427</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="11">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">10</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="12">
+      <Properties>
+        <string name="Name">ForestockRidge</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.8899994</Y>
+          <Z>-0.11999512</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">8408622</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">512</token>
+        <Vector3 name="size">
+          <X>0.19000244</X>
+          <Y>1.3500061</Y>
+          <Z>0.04499817</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="13">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">12</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="14">
+      <Properties>
+        <string name="Name">StockInlay</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>-0.17500305</X>
+          <Y>-0.9900055</Y>
+          <Z>0.054992676</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.009002686</X>
+          <Y>0.44000244</Y>
+          <Z>0.03199768</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="15">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">14</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="16">
+      <Properties>
+        <string name="Name">StockInlay</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.17500305</X>
+          <Y>-0.9900055</Y>
+          <Z>0.054992676</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.009002686</X>
+          <Y>0.44000244</Y>
+          <Z>0.03199768</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="17">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">16</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="18">
+      <Properties>
+        <string name="Name">Barrel</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>1.1300049</Y>
+          <Z>0.2250061</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <float name="Reflectance">0.08</float>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>1.9600067</X>
+          <Y>0.18400574</Y>
+          <Z>0.18400574</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="Attachment" referent="19">
+        <Properties>
+          <string name="Name">Muzzle</string>
+          <CoordinateFrame name="CFrame">
+            <X>0.9830017</X>
+            <Y>0</Y>
+            <Z>0</Z>
+            <R00>0</R00>
+            <R01>1</R01>
+            <R02>0</R02>
+            <R10>0</R10>
+            <R11>0</R11>
+            <R12>-1</R12>
+            <R20>-1</R20>
+            <R21>0</R21>
+            <R22>0</R22>
+          </CoordinateFrame>
+        </Properties>
+      </Item>
+      <Item class="WeldConstraint" referent="20">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">18</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="21">
+      <Properties>
+        <string name="Name">Breech</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.06500244</Y>
+          <Z>0.2250061</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11977162</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.30999756</X>
+          <Y>0.21200562</Y>
+          <Z>0.21200562</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="22">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">21</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="23">
+      <Properties>
+        <string name="Name">BarrelBand1</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.27999878</Y>
+          <Z>0.09500122</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.2649994</X>
+          <Y>0.06500244</Y>
+          <Z>0.3650055</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="24">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">23</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="25">
+      <Properties>
+        <string name="Name">BandTop1</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.27999878</Y>
+          <Z>0.31199646</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">14530405</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.25</X>
+          <Y>0.070007324</Y>
+          <Z>0.04499817</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="26">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">25</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="27">
+      <Properties>
+        <string name="Name">BarrelBand2</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.91999817</Y>
+          <Z>0.09500122</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.2649994</X>
+          <Y>0.06500244</Y>
+          <Z>0.3650055</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="28">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">27</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="29">
+      <Properties>
+        <string name="Name">BandTop2</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.91999817</Y>
+          <Z>0.31199646</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">14530405</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.25</X>
+          <Y>0.070007324</Y>
+          <Z>0.04499817</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="30">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">29</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="31">
+      <Properties>
+        <string name="Name">BarrelBand3</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>1.5299988</Y>
+          <Z>0.09500122</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.2649994</X>
+          <Y>0.06500244</Y>
+          <Z>0.3650055</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="32">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">31</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="33">
+      <Properties>
+        <string name="Name">BandTop3</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>1.5299988</Y>
+          <Z>0.31199646</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">14530405</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.25</X>
+          <Y>0.070007324</Y>
+          <Z>0.04499817</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="34">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">33</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="35">
+      <Properties>
+        <string name="Name">MuzzleRing</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>2.0899963</Y>
+          <Z>0.2250061</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11977162</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.039993286</X>
+          <Y>0.22200012</Y>
+          <Z>0.22200012</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="36">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">35</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="37">
+      <Properties>
+        <string name="Name">Bore</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>2.1080017</Y>
+          <Z>0.2250061</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">987668</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">272</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.009994507</X>
+          <Y>0.12800598</Y>
+          <Z>0.12800598</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="38">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">37</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="39">
+      <Properties>
+        <string name="Name">FrontSight</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>1.9600067</Y>
+          <Z>0.34700012</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.04499817</X>
+          <Y>0.11000061</Y>
+          <Z>0.08999634</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="40">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">39</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="41">
+      <Properties>
+        <string name="Name">RearSight</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.2599945</Y>
+          <Z>0.34599304</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.11999512</X>
+          <Y>0.08000183</Y>
+          <Z>0.054992676</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="42">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">41</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="43">
+      <Properties>
+        <string name="Name">Ramrod</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.085006714</X>
+          <Y>1.1300049</Y>
+          <Z>-0.13900757</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11977162</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>1.5599976</X>
+          <Y>0.039993286</Y>
+          <Z>0.039993286</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="44">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">43</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="45">
+      <Properties>
+        <string name="Name">RamrodCap</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.085006714</X>
+          <Y>1.8899994</Y>
+          <Z>-0.13900757</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>1</R10>
+          <R11>0</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>-1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.1000061</X>
+          <Y>0.06399536</Y>
+          <Z>0.06399536</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="46">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">45</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="47">
+      <Properties>
+        <string name="Name">LockPlate</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.17999268</X>
+          <Y>0.035003662</Y>
+          <Z>0.11000061</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11977162</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.052001953</X>
+          <Y>0.3999939</Y>
+          <Z>0.19999695</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="48">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">47</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="49">
+      <Properties>
+        <string name="Name">FlashPan</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.2400055</X>
+          <Y>0.11000061</Y>
+          <Z>0.23800659</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.16999817</X>
+          <Y>0.11999512</Y>
+          <Z>0.035003662</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="50">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">49</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="51">
+      <Properties>
+        <string name="Name">FlintHammer</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.21000671</X>
+          <Y>-0.08999634</Y>
+          <Z>0.33999634</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>0.9249115</R11>
+          <R12>0.380188</R12>
+          <R20>0</R20>
+          <R21>-0.380188</R21>
+          <R22>0.9249115</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.06500244</X>
+          <Y>0.11999512</Y>
+          <Z>0.2599945</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="52">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">51</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="53">
+      <Properties>
+        <string name="Name">Flint</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.21000671</X>
+          <Y>-0.027999878</Y>
+          <Z>0.47000122</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">987668</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.085006714</X>
+          <Y>0.13000488</Y>
+          <Z>0.085006714</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="54">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">53</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="55">
+      <Properties>
+        <string name="Name">Frizzen</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.20500183</X>
+          <Y>0.11999512</Y>
+          <Z>0.3670044</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>0.971344</R11>
+          <R12>-0.23770142</R12>
+          <R20>0</R20>
+          <R21>0.23770142</R21>
+          <R22>0.971344</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <Vector3 name="size">
+          <X>0.070007324</X>
+          <Y>0.21000671</Y>
+          <Z>0.1499939</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="56">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">55</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="57">
+      <Properties>
+        <string name="Name">LockScrew1</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.21299744</X>
+          <Y>-0.10499573</Y>
+          <Z>0.1000061</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>0</R11>
+          <R12>-1</R12>
+          <R20>0</R20>
+          <R21>1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">14530405</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.009994507</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="58">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">57</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="59">
+      <Properties>
+        <string name="Name">LockScrew2</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0.21299744</X>
+          <Y>0.16999817</Y>
+          <Z>0.1000061</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>0</R11>
+          <R12>-1</R12>
+          <R20>0</R20>
+          <R21>1</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">14530405</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.009994507</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="60">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">59</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="61">
+      <Properties>
+        <string name="Name">TriggerGuard1</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.05000305</Y>
+          <Z>-0.32595825</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.9840393</R10>
+          <R11>0.17797852</R11>
+          <R12>0</R12>
+          <R20>0.17797852</R20>
+          <R21>-0.9840393</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.101623535</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="62">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">61</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="63">
+      <Properties>
+        <string name="Name">TriggerGuard2</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.036605835</Y>
+          <Z>-0.2922058</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.82884216</R10>
+          <R11>0.55947876</R11>
+          <R12>0</R12>
+          <R20>0.55947876</R20>
+          <R21>-0.82884216</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.08831787</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="64">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">63</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="65">
+      <Properties>
+        <string name="Name">TriggerGuard3</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.08660889</Y>
+          <Z>-0.23374939</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.36895752</R10>
+          <R11>0.92944336</R11>
+          <R12>0</R12>
+          <R20>0.92944336</R20>
+          <R21>-0.36895752</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.07261658</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="66">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">65</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="67">
+      <Properties>
+        <string name="Name">TriggerGuard4</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.08660889</Y>
+          <Z>-0.1662445</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.36895752</R10>
+          <R11>0.92944336</R11>
+          <R12>0</R12>
+          <R20>0.92944336</R20>
+          <R21>0.36895752</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.07261658</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="68">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">67</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="69">
+      <Properties>
+        <string name="Name">TriggerGuard5</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>0.036605835</Y>
+          <Z>-0.107788086</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.82884216</R10>
+          <R11>0.55947876</R11>
+          <R12>0</R12>
+          <R20>0.55947876</R20>
+          <R21>0.82884216</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.08831787</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="70">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">69</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="71">
+      <Properties>
+        <string name="Name">TriggerGuard6</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.05000305</Y>
+          <Z>-0.0740509</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.9840393</R10>
+          <R11>0.17797852</R11>
+          <R12>0</R12>
+          <R20>0.17797852</R20>
+          <R21>0.9840393</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.101623535</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="72">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">71</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="73">
+      <Properties>
+        <string name="Name">TriggerGuard7</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.1499939</Y>
+          <Z>-0.0740509</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.9840393</R10>
+          <R11>-0.17797852</R11>
+          <R12>0</R12>
+          <R20>-0.17797852</R20>
+          <R21>0.9840393</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.101623535</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="74">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">73</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="75">
+      <Properties>
+        <string name="Name">TriggerGuard8</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.23660278</Y>
+          <Z>-0.107788086</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.82884216</R10>
+          <R11>-0.55947876</R11>
+          <R12>0</R12>
+          <R20>-0.55947876</R20>
+          <R21>0.82884216</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.08831787</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="76">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">75</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="77">
+      <Properties>
+        <string name="Name">TriggerGuard9</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.28660583</Y>
+          <Z>-0.1662445</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.36895752</R10>
+          <R11>-0.92944336</R11>
+          <R12>0</R12>
+          <R20>-0.92944336</R20>
+          <R21>0.36895752</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.07261658</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="78">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">77</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="79">
+      <Properties>
+        <string name="Name">TriggerGuard10</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.28660583</Y>
+          <Z>-0.23374939</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.36895752</R10>
+          <R11>-0.92944336</R11>
+          <R12>0</R12>
+          <R20>-0.92944336</R20>
+          <R21>-0.36895752</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.07261658</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="80">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">79</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="81">
+      <Properties>
+        <string name="Name">TriggerGuard11</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.23660278</Y>
+          <Z>-0.2922058</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.82884216</R10>
+          <R11>-0.55947876</R11>
+          <R12>0</R12>
+          <R20>-0.55947876</R20>
+          <R21>-0.82884216</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.08831787</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="82">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">81</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="83">
+      <Properties>
+        <string name="Name">TriggerGuard12</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.1499939</Y>
+          <Z>-0.32595825</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>0.9840393</R10>
+          <R11>-0.17797852</R11>
+          <R12>0</R12>
+          <R20>-0.17797852</R20>
+          <R21>-0.9840393</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">11895863</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.101623535</X>
+          <Y>0.044006348</Y>
+          <Z>0.044006348</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="84">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">83</Ref>
+        </Properties>
+      </Item>
+    </Item>
+    <Item class="Part" referent="85">
+      <Properties>
+        <string name="Name">Trigger</string>
+        <bool name="Anchored">false</bool>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>0</X>
+          <Y>-0.02999878</Y>
+          <Z>-0.16499329</Z>
+          <R00>0</R00>
+          <R01>0</R01>
+          <R02>-1</R02>
+          <R10>-0.38075256</R10>
+          <R11>-0.9246826</R11>
+          <R12>0</R12>
+          <R20>-0.9246826</R20>
+          <R21>0.38075256</R21>
+          <R22>0</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">4805210</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">1088</token>
+        <token name="shape">2</token>
+        <Vector3 name="size">
+          <X>0.18385315</X>
+          <Y>0.035995483</Y>
+          <Z>0.035995483</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+      </Properties>
+      <Item class="WeldConstraint" referent="86">
+        <Properties>
+          <string name="Name">HandleWeld</string>
+          <Ref name="Part0Internal">1</Ref>
+          <Ref name="Part1Internal">85</Ref>
+        </Properties>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

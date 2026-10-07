@@ -148,7 +148,7 @@ local function showCatchReveal(record, payload)
     TweenService:Create(revealScale, TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Scale = 1}):Play()
 end
 local panel = create("Frame", {Name = "FishingPanel", AnchorPoint = Vector2.new(0.5, 1),
-    Size = UDim2.new(0.93, 0, 0, 222), Position = UDim2.new(0.5, 0, 1, -16),
+    Size = UDim2.new(0.93, 0, 0, 222), Position = UDim2.new(0.5, 0, 1, -80),
     BackgroundColor3 = C.Bg, BackgroundTransparency = 0.04, BorderSizePixel = 0}, gui)
 rounded(panel, 16)
 create("UISizeConstraint", {MaxSize = Vector2.new(680, 222)}, panel)
@@ -399,6 +399,9 @@ bookTab.Activated:Connect(function() shownMode = "book"; renderModal() end)
 cancelButton.Activated:Connect(function() if sessionId then Action:FireServer("Cancel", sessionId) end end)
 local function press(input)
     if dodge and dodge:IsBusy() then return end
+    local character = player.Character
+    local equippedTool = character and character:FindFirstChildOfClass("Tool")
+    if equippedTool and equippedTool:GetAttribute("WeaponType") then return end
     if not input or input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
     if stageName=="Landing" or landingPlaying() then return end
     if catchReveal:IsVisible() then
@@ -547,6 +550,9 @@ RunService.RenderStepped:Connect(function(dt)
         local p=pendingCaught;pendingCaught=nil;showCatchReveal(p.Record,p)
     end
     panel.Visible=stageName~="Landing" and not landingPlaying() and not modal.Visible and not quests:IsOpen() and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
+    local character = player.Character
+    local equippedTool = character and character:FindFirstChildOfClass("Tool")
+    if equippedTool and equippedTool:GetAttribute("WeaponType") then panel.Visible = false end
     quests.Button.Visible = stageName ~= "Landing" and not catchReveal:IsVisible()
     quests:Step()
     if toast.Visible and os.clock() > toastUntil then toast.Visible = false end
