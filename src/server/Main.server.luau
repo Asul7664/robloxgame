@@ -4,6 +4,7 @@ local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
+local ServerStorage = game:GetService("ServerStorage")
 local shared = RS:WaitForChild("QuietCove")
 local Config = require(shared:WaitForChild("Config"))
 local Reel = require(shared:WaitForChild("Reel"))
@@ -13,6 +14,8 @@ local CatchLedger = require(shared:WaitForChild("CatchLedger"))
 local Quests = require(shared:WaitForChild("Quests"))
 local DodgeSettings = require(shared:WaitForChild("SideDodge"))
 local DodgeService = require(script.Parent:WaitForChild("DodgeService"))
+local WeaponCatalog = require(shared:WaitForChild("WeaponCatalog"))
+local WeaponShop = require(script.Parent:WaitForChild("WeaponShop"))
 local TesterAccess = require(script.Parent:WaitForChild("TesterAccess"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 local World = require(script.Parent:WaitForChild("World"))
@@ -20,7 +23,7 @@ local Archipelago = require(script.Parent:WaitForChild("Archipelago"))
 local BoatService = require(script.Parent:WaitForChild("BoatService"))
 local Models = require(shared:WaitForChild("EquipmentModels"))
 local world = Archipelago.Attach(World.Build())
-local grantRod, boats, dodges
+local grantRod, boats, dodges, weaponShop
 local function remote(name)
     local r = shared:FindFirstChild(name)
     if not r then r = Instance.new("RemoteEvent"); r.Name = name; r.Parent = shared end
@@ -50,6 +53,7 @@ dodges = DodgeService.new(DodgeSettings, send, function(player)
     return sessions[player] ~= nil or not Profiles.Get(player)
 end)
 limitsPerSecond.Dodge = 4
+limitsPerSecond.WeaponBuy = 2
 local function rootOf(player)
     local c = player.Character
     local h = c and c:FindFirstChildOfClass("Humanoid")
@@ -92,6 +96,11 @@ local function sync(player)
     send(player, "Profile", {Data = data, MemoryOnly = Profiles.MemoryOnly})
     syncQuests(player, data)
 end
+weaponShop = WeaponShop.new(WeaponCatalog, Profiles, ServerStorage:WaitForChild("Weapons"),
+    workspace:WaitForChild("WeaponStall"):WaitForChild("Counter"), send, sync, function(player)
+        return sessions[player]~=nil or dodges:IsActive(player)
+    end, notice)
+weaponShop.Counter:WaitForChild("WeaponShopPrompt").Triggered:Connect(function(player) weaponShop:Open(player) end)
 local function stage(player, s, name, extra)
     s.Stage = name
     if s.Tool and s.Tool.Parent then
@@ -306,6 +315,7 @@ boats = BoatService.new(Config,world,Profiles,send,sync,function(p)return sessio
 Action.OnServerEvent:Connect(function(player, kind, id, value)
     if type(kind) ~= "string" or not limitsPerSecond[kind] or not allow(player, kind, limitsPerSecond[kind]) then return end
     if kind == "Dodge" then dodges:Request(player, id, value, workspace:GetServerTimeNow()); return end
+    if kind == "WeaponBuy" then weaponShop:Buy(player, value); return end
     if kind == "Ready" then
         sync(player)
         -- Late joiners get current lines too, but never other players' rewards.
@@ -444,7 +454,7 @@ local function playerAdded(player)
         task.spawn(function()
             local untilTime=os.clock()+20
             while not Profiles.Get(player) and player.Parent==Players and os.clock()<untilTime do task.wait(0.1) end
-            if Profiles.Get(player) then grantRod(player,character) end
+            if Profiles.Get(player) then grantRod(player,character);weaponShop:Grant(player,character) end
         end)
     end)
     if not Profiles.Load(player) then
@@ -452,7 +462,7 @@ local function playerAdded(player)
         return
     end
     if player.Parent ~= Players then Profiles.Save(player, true); return end
-    if player.Character then grantRod(player,player.Character) end
+    if player.Character then grantRod(player,player.Character);weaponShop:Grant(player,player.Character) end
     sync(player)
     local loaded = Profiles.Get(player)
     if loaded and loaded.TestMode then

@@ -1,6 +1,7 @@
 -- Engine/service doubles for exercising the actual server entrypoint and lease
 -- profile module in Lune. Fishing motion, world building, boat physics and tester
--- identity resolution are isolated; quest, Config and catch transactions are real.
+-- identity resolution are isolated; quest, weapon ownership and catch transactions
+-- run through the real Main, Profiles and shop modules.
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
 local roblox = require("@lune/roblox")
@@ -62,12 +63,42 @@ function methods:FindFirstChildOfClass(class)
     return nil
 end
 function methods:GetChildren() return table.clone(self.Children) end
+function methods:GetDescendants()
+    local descendants = {}
+    for _, object in ipairs(self.Children) do
+        table.insert(descendants, object)
+        for _, nested in ipairs(object:GetDescendants()) do table.insert(descendants, nested) end
+    end
+    return descendants
+end
 function methods:IsA(class) return self.ClassName == class or (class == "BasePart" and self.ClassName == "Part") end
 function methods:GetAttribute(key) return self.Attributes[key] end
 function methods:SetAttribute(key, value) self.Attributes[key] = value end
 function methods:Destroy() self.Parent = nil; self.Destroyed = true end
+function methods:Clone()
+    if self.Archivable == false then return nil end
+    local cloned = node(self.ClassName, self.Name)
+    for key, value in pairs(self._properties) do
+        if key ~= "Parent" and key ~= "Children" and key ~= "Destroyed" then cloned[key] = copy(value) end
+    end
+    for _, object in ipairs(self.Children) do
+        local nested = object:Clone()
+        if nested then nested.Parent = cloned end
+    end
+    return cloned
+end
 function methods:GetState() return self.State or "Running" end
-function methods:EquipTool(tool) tool.Parent = self.Parent end
+function methods:EquipTool(tool)
+    local character = self.Parent
+    local player = character.PlayerOwner
+    local backpack = player and player:FindFirstChild("Backpack")
+    if backpack then
+        for _, current in ipairs(character:GetChildren()) do
+            if current:IsA("Tool") and current ~= tool then current.Parent = backpack end
+        end
+    end
+    tool.Parent = character
+end
 function methods:Kick(message) self.Kicked = message end
 local function child(parent, class, name)
     local result = node(class, name); result.Parent = parent; return result
@@ -101,8 +132,8 @@ function Environment.new()
     local replicated = node("ReplicatedStorage")
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
-    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge"}) do child(shared, "ModuleScript", name) end
-    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService"}) do child(server, "ModuleScript", name) end
+    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog"}) do child(shared, "ModuleScript", name) end
+    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop"}) do child(server, "ModuleScript", name) end
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
     action.OnServerEvent = signal()
@@ -114,11 +145,24 @@ function Environment.new()
     end
     update.owner = self
     local lighting = {ClockTime = 11}
+    local storage = node("ServerStorage", "ServerStorage")
+    local weapons = child(storage, "Folder", "Weapons")
+    for _, id in ipairs({"Saber", "Musket"}) do
+        local tool = child(weapons, "Tool", id)
+        tool:SetAttribute("WeaponType", id)
+        child(tool, "Part", "Handle")
+    end
     local services = {Players = players, RunService = run, HttpService = http,
-        DataStoreService = dataService, ReplicatedStorage = replicated, Lighting = lighting}
+        DataStoreService = dataService, ReplicatedStorage = replicated, Lighting = lighting,
+        ServerStorage = storage}
     local game = {GetService = function(_, name) return assert(services[name], name) end,
         BindToClose = function(_, callback) self.close = callback end}
-    local workspace = {GetServerTimeNow = function() return self.epoch + self.clock end}
+    local workspace = node("Workspace", "Workspace")
+    workspace.GetServerTimeNow = function() return self.epoch + self.clock end
+    local stall = child(workspace, "Model", "WeaponStall")
+    local counter = child(stall, "Part", "Counter")
+    counter.Position = V.new(24, 9, 3)
+    prompt(counter, "WeaponShopPrompt")
     local fakeOs = table.clone(os)
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
@@ -162,7 +206,8 @@ function Environment.new()
     local paths = {Config = "src/shared/Config.luau", BrainrotExpansion = "src/shared/BrainrotExpansion.luau",
         Quests = "src/shared/Quests.luau", CatchLedger = "src/shared/CatchLedger.luau",
         CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",
-        SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau"}
+        SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau",
+        WeaponCatalog = "src/shared/WeaponCatalog.luau", WeaponShop = "src/server/WeaponShop.luau"}
     local function environment(scriptNode)
         return {game = game, workspace = workspace, script = scriptNode, os = fakeOs, task = fakeTask,
             Enum = fakeEnum, Vector3 = V, CFrame = CF, Color3 = roblox.Color3,
@@ -179,6 +224,7 @@ function Environment.new()
     end
     self.environment = environment
     self.Players, self.RunService, self.Action, self.Update, self.World = players, run, action, update, world
+    self.Workspace, self.ServerStorage, self.Weapons, self.WeaponCounter = workspace, storage, weapons, counter
     self.shared, self.server, self.mainScript = shared, server, mainScript
     self.Config = environment(mainScript).require(shared.Config)
     self.Quests = environment(mainScript).require(shared.Quests)
@@ -195,6 +241,7 @@ function Environment:Player(id, tester)
     player.CharacterAdded = signal()
     child(player, "Backpack", "Backpack")
     player.Character = self:Character()
+    player.Character.PlayerOwner = player
     player.Parent = self.Players
     return player
 end
@@ -223,6 +270,7 @@ end
 function Environment:Now() return self.epoch + math.floor(self.clock) end
 function Environment:Reset(player)
     player.Character = self:Character()
+    player.Character.PlayerOwner = player
     player.CharacterAdded:Fire(player.Character)
 end
 function Environment:Leave(player)

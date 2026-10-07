@@ -8,6 +8,7 @@ local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local shared = RS:WaitForChild("QuietCove")
 local Config = require(shared:WaitForChild("Config"))
+local WeaponCatalog = require(shared:WaitForChild("WeaponCatalog"))
 local CatchReveal = require(script.Parent:WaitForChild("CatchReveal"))
 local WaterJump = require(script.Parent:WaitForChild("WaterJump"))
 local VoyageUI = require(script.Parent:WaitForChild("VoyageUI"))
@@ -181,7 +182,7 @@ local footer = text(panel, "ЛКМ — рыбалка · ПРОБЕЛ — пры
 footer.TextXAlignment = Enum.TextXAlignment.Center
 local modal = create("Frame", {Name = "InventoryAndShop", AnchorPoint = Vector2.new(0.5, 0.5),
     Size = UDim2.new(0.94, 0, 0.65, 0), Position = UDim2.fromScale(0.5, 0.46),
-    BackgroundColor3 = C.Bg, BorderSizePixel = 0, Visible = false, ZIndex = 20}, gui)
+    BackgroundColor3 = C.Bg, BorderSizePixel = 0, Visible = false, Active = true, ZIndex = 20}, gui)
 rounded(modal, 16)
 create("UISizeConstraint", {MaxSize = Vector2.new(660, 510)}, modal)
 local modalTitle = text(modal, "УЛОВ", UDim2.new(1, -80, 0, 42), UDim2.fromOffset(14, 5), 20)
@@ -225,9 +226,10 @@ local function renderModal()
     thumbnails:Clear()
     for _, child in ipairs(scroll:GetChildren()) do if child:IsA("GuiObject") then child:Destroy() end end
     if not data then return end
-    bagTab.Visible = shownMode ~= "shop"; bookTab.Visible = shownMode ~= "shop"
-    scroll.Position = UDim2.fromOffset(12, shownMode == "shop" and 55 or 91)
-    scroll.Size = UDim2.new(1, -24, 1, shownMode == "shop" and -65 or -101)
+    local shopMode = shownMode == "shop" or shownMode == "weapons"
+    bagTab.Visible = not shopMode; bookTab.Visible = not shopMode
+    scroll.Position = UDim2.fromOffset(12, shopMode and 55 or 91)
+    scroll.Size = UDim2.new(1, -24, 1, shopMode and -65 or -101)
     local function row(content, color, height)
         local r = create("Frame", {Size = UDim2.new(1, -8, 0, height or 62), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
         rounded(r, 8)
@@ -280,6 +282,38 @@ local function renderModal()
             local known = data.Bestiary[fish.Id]
             fishRow(fish,nil,known==true)
         end
+    elseif shownMode == "weapons" then
+        modalTitle.Text = "ОРУЖЕЙНЫЙ ЛАРЁК · " .. (data.TestMode and "ТЕСТЕР" or data.Coins .. " монет")
+        local ownedWeapons = data.OwnedWeapons or {}
+        for index, weapon in ipairs(WeaponCatalog.List) do
+            local owned = ownedWeapons[weapon.Id] == true
+            local affordable = data.TestMode or owned or data.Coins >= weapon.Price
+            local accent = weapon.Id == "Saber" and C.Gold or C.Aqua
+            local r = create("Frame", {Name = "WeaponRow_" .. weapon.Id, LayoutOrder = index,
+                Size = UDim2.new(1, -8, 0, 145), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
+            rounded(r, 8)
+            local nameLabel = text(r, index .. ". " .. weapon.Name, UDim2.new(1, -124, 0, 26),
+                UDim2.fromOffset(12, 8), 17, accent)
+            nameLabel.Font = Enum.Font.GothamBold
+            local stats = weapon.Id == "Saber"
+                and string.format("Урон: %d · комбо: %d", weapon.Damage, weapon.ComboDamage)
+                or string.format("Урон: %d\nПерезарядка: %.1f с · дальность: %d", weapon.Damage, weapon.Reload, weapon.Range)
+            text(r, stats, UDim2.new(1, -124, 0, 46), UDim2.fromOffset(12, 36), 12, C.Ink)
+            text(r, weapon.Description, UDim2.new(1, -24, 0, 42), UDim2.fromOffset(12, 88), 12, C.Muted)
+            local caption = owned and "ВЗЯТЬ" or weapon.Price .. "\nКУПИТЬ"
+            if data.TestMode and not owned then caption = "ТЕСТЕР\nВЗЯТЬ" end
+            if not affordable then caption = weapon.Price .. " монет\nНЕ ХВАТАЕТ" end
+            local b = button(r, caption, UDim2.fromOffset(92, 62), UDim2.new(1, -102, 0, 14),
+                affordable and accent or C.Bg)
+            b.Name = "WeaponBuy_" .. weapon.Id
+            b.TextSize = 12; b.Active = affordable; b.AutoButtonColor = affordable
+            if not affordable then b.TextColor3 = C.Muted end
+            if affordable then
+                b.Activated:Connect(function() Action:FireServer("WeaponBuy", "", weapon.Id) end)
+            end
+        end
+        local note = row("Покупка сохраняется. Нажми «ВЗЯТЬ», чтобы вернуть купленное оружие в рюкзак. Выбери его на панели предметов; ЛКМ — атака. Мушкет перезаряжается автоматически после выстрела.", C.Muted, 90)
+        note.LayoutOrder = #WeaponCatalog.List + 1
     else
         modalTitle.Text = "МАСТЕР УДОЧЕК · " .. (data.TestMode and "∞ монет · ТЕСТЕР" or data.Coins .. " монет")
         for index, rod in ipairs(Config.Rods) do
@@ -516,6 +550,7 @@ Update.OnClientEvent:Connect(function(kind, payload)
     elseif kind == "Rejected" then
         stageName = "Idle"; sessionId = nil; pendingRelease = false; updateStage(); notify(payload.Text, C.Gold)
     elseif kind == "Shop" then openModal("shop")
+    elseif kind == "WeaponShop" then openModal("weapons")
     elseif kind == "Shake" then trackText.Text = "Рыба подплывает ближе…"
     elseif kind == "Stage" then
         stageName = payload.Stage; sessionId = stageName ~= "Idle" and payload.Id or nil

@@ -1,5 +1,6 @@
 -- lune run tests/combat_diagnostics.luau
--- Read-only diagnostic probes of the user's verbatim supplied scripts.
+-- Read-only probes of the preserved user-supplied combat routines. Weapon
+-- ownership/issuance moved to Main.WeaponShop and is tested separately.
 -- These findings are intentionally separate from passing baseline tests; they
 -- do not silently fix code the user explicitly requested to preserve.
 local Environment = require("./helpers/combat_environment")
@@ -14,7 +15,7 @@ local function setup(kind)
     local player = env:AddPlayer(1, true)
     local victim = env:Character("Victim")
     env:StartServer()
-    player.Backpack[kind or "Saber"].Parent = player.Character
+    bank[kind or "Saber"]:Clone().Parent = player.Character
     return env, player, victim
 end
 
@@ -36,14 +37,6 @@ do
 end
 do
     local env, player = setup()
-    local newcomer = env:AddPlayer(2); env:Flush()
-    newcomer.Backpack:Destroy()
-    env:Node("Backpack", "Backpack", newcomer)
-    newcomer.Character = env:Character("Respawn")
-    newcomer.CharacterAdded:Fire(newcomer.Character); env:Flush()
-    if not newcomer.Backpack.Saber and not newcomer.Backpack.Musket then
-        found("PlayerAdded issues weapons only once; a fresh Backpack on respawn receives no Saber or Musket.")
-    end
     local nextChar, hum = env:Character("LateRespawn"); hum.MaxHealth = 200; hum.Health = 1
     player.Character = nextChar; player.CharacterAdded:Fire(nextChar)
     if hum.MaxHealth ~= 100 or hum.Health ~= 100 then
@@ -72,15 +65,6 @@ do
     end
 end
 do
-    local env = Environment.new()
-    local player = env:AddPlayer(1, true)
-    env:StartServer() -- Weapons folder is deliberately not present yet.
-    env:Execute("src/combat/WeaponPlaceholders.server.luau"); env:Flush()
-    if not player.Backpack.Saber and not player.Backpack.Musket then
-        found("If weapon construction starts after initial give(), the scripts have no retry; initial weapons depend on startup ordering.")
-    end
-end
-do
     local function run(fps)
         local env = Environment.new()
         local char = env:Character()
@@ -102,5 +86,5 @@ do
     end
 end
 
-print("Verbatim combat diagnostics: " .. #findings .. " reproducible findings.")
+print("Preserved combat diagnostics: " .. #findings .. " reproducible findings.")
 for index, message in ipairs(findings) do print(index .. ". " .. message) end

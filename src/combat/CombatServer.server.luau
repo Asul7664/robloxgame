@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerStorage = game:GetService("ServerStorage")
 
 local function ensureRemotes()
 	local folder = ReplicatedStorage:FindFirstChild("Combat") or Instance.new("Folder")
@@ -128,27 +127,12 @@ local function applyHealth(char)
 	end
 end
 
-local function give(player)
-	local pack = player:WaitForChild("Backpack")
-	local bank = ServerStorage:FindFirstChild("Weapons")
-	if not bank then
-		return
-	end
-	for _, name in { "Saber", "Musket" } do
-		local src = bank:FindFirstChild(name)
-		if src and not pack:FindFirstChild(name) then
-			src:Clone().Parent = pack
-		end
-	end
-end
-
+-- WeaponShop in QuietCove.Main grants purchased Tools from the saved profile.
 Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(applyHealth)
-	task.defer(give, player)
 end)
 for _, player in Players:GetPlayers() do
 	if player.Character then
 		applyHealth(player.Character)
 	end
-	task.defer(give, player)
 end

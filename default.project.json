@@ -48,7 +48,8 @@
     },
     "Workspace": {
       "$path": "world-text.project.json",
-      "$ignoreUnknownInstances": true
+      "$ignoreUnknownInstances": true,
+      "WeaponStall": {"$path": "assets/weapons/WeaponStall.rbxmx"}
     }
   }
 }

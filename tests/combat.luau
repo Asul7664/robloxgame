@@ -13,19 +13,25 @@ local function setup(kind)
     local player = env:AddPlayer(1, true)
     local victim, hum = env:Character("Victim")
     env:StartServer()
-    local tool = player.Backpack[kind or "Saber"]; tool.Parent = player.Character
+    -- The shop owns issuance now. Equip a purchased-model fixture explicitly;
+    -- isolated CombatServer tests must not depend on its old free weapon grant.
+    local tool = bank[kind or "Saber"]:Clone(); tool.Parent = player.Character
     return env, player, victim, hum, tool
 end
 
--- Server health setup and issuance execute with both already-present and newly
--- joining players. The issuing source must survive, and clones are per player.
+-- CombatServer owns health/remotes, while the profile-backed shop owns weapons.
+-- Loading it for existing or newly joining players must never grant free tools.
 do
-    local env, player = setup()
+    local env = Environment.new()
+    local bank = env:Node("Folder", "Weapons", env.Storage)
+    env:Weapon("Saber", bank); env:Weapon("Musket", bank)
+    local player = env:AddPlayer(1, true)
+    env:StartServer()
     check(player.Character.Humanoid.Health == 100 and player.Character.Humanoid.MaxHealth == 100, "Existing player starts at 100 health")
-    check(player.Character.Saber ~= env.Storage.Weapons.Saber, "Issued saber is a clone")
-    check(player.Backpack.Musket ~= env.Storage.Weapons.Musket, "Issued musket is a clone")
+    check(not player.Backpack.Saber and not player.Character.Saber, "CombatServer does not grant a free saber")
+    check(not player.Backpack.Musket and not player.Character.Musket, "CombatServer does not grant a free musket")
     local newcomer = env:AddPlayer(2); env:Flush()
-    check(newcomer.Backpack.Saber and newcomer.Backpack.Musket, "Joining player receives both weapons")
+    check(not newcomer.Backpack.Saber and not newcomer.Backpack.Musket, "Joining player receives no weapons outside the shop")
     local char, hum = env:Character("Respawn")
     hum.MaxHealth = 250; hum.Health = 5
     newcomer.Character = char; newcomer.CharacterAdded:Fire(char)
