@@ -12,6 +12,8 @@ local CatchReveal = require(script.Parent:WaitForChild("CatchReveal"))
 local WaterJump = require(script.Parent:WaitForChild("WaterJump"))
 local VoyageUI = require(script.Parent:WaitForChild("VoyageUI"))
 local QuestUI = require(script.Parent:WaitForChild("QuestUI"))
+local DodgeSettings = require(shared:WaitForChild("SideDodge"))
+local SideDodgeController = require(script.Parent:WaitForChild("SideDodgeController"))
 local ModelPreview = require(script.Parent:WaitForChild("ModelPreview"))
 local CatchThumbnails = require(script.Parent:WaitForChild("CatchThumbnails"))
 local CastEffects = require(script.Parent:WaitForChild("CastEffects"))
@@ -25,7 +27,7 @@ local function landingPlaying()
     -- not be mounted. An active local visual must also finish before the card.
     return workspace:GetServerTimeNow() < landingEndsAt or landingEffects:OwnerPlaying()
 end
-local voyage, quests
+local voyage, quests, dodge
 local Action, Update = shared:WaitForChild("Action"), shared:WaitForChild("Update")
 local C = {Bg = Color3.fromRGB(14, 32, 43), Panel = Color3.fromRGB(23, 47, 60),
     Ink = Color3.fromRGB(237, 242, 230), Muted = Color3.fromRGB(169, 194, 198),
@@ -342,6 +344,7 @@ local function updateStage()
     end
 end
 local function openModal(mode)
+    if dodge and dodge:IsBusy() then return end
     if stageName ~= "Idle" then notify("Сначала закончи или отмени рыбалку."); return end
     catchReveal:Hide(true)
     if voyage then voyage:Close() end
@@ -350,7 +353,7 @@ local function openModal(mode)
 end
 local function closeModal() modal.Visible = false; panel.Visible = true end
 voyage = VoyageUI.new(gui,Config,Action,{
-    CanOpen=function()return stageName=="Idle" and not catchReveal:IsVisible()end,
+    CanOpen=function()return stageName=="Idle" and not catchReveal:IsVisible() and not (dodge and dodge:IsBusy())end,
     OnOpen=function()if quests then quests:Close()end;modal.Visible=false;panel.Visible=false end,
     OnClose=function()panel.Visible=not modal.Visible and not catchReveal:IsVisible() and not (quests and quests:IsOpen())end,
     Quiet=function()return catchReveal:IsVisible() or (quests and quests:IsOpen())end,
@@ -360,6 +363,7 @@ quests = QuestUI.new(gui, Config, function(periodKind, taskId)
     Action:FireServer("QuestClaim", periodKind, taskId)
 end, {
     CanOpen = function()
+        if dodge and dodge:IsBusy() then return false end
         if stageName ~= "Idle" or landingPlaying() or catchReveal:IsVisible() then
             notify("Сначала закончи рыбалку и закрой карточку улова."); return false
         end
@@ -394,6 +398,7 @@ bagTab.Activated:Connect(function() shownMode = "bag"; renderModal() end)
 bookTab.Activated:Connect(function() shownMode = "book"; renderModal() end)
 cancelButton.Activated:Connect(function() if sessionId then Action:FireServer("Cancel", sessionId) end end)
 local function press(input)
+    if dodge and dodge:IsBusy() then return end
     if not input or input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
     if stageName=="Landing" or landingPlaying() then return end
     if catchReveal:IsVisible() then
@@ -429,6 +434,7 @@ if RunService:IsStudio() then
         Alive=function()return gui.Parent~=nil end,
         CanPreview=function()
             return stageName=="Idle" and not modal.Visible and not quests:IsOpen() and not landingPlaying()
+                and not (dodge and dodge:IsBusy())
                 and (not catchReveal:IsVisible() or catchReveal.Host:GetAttribute("Preview")==true)
                 and not (voyage and (voyage:IsOpen() or voyage:IsDriving()))
         end,
@@ -449,9 +455,19 @@ if RunService:IsStudio() then
 end
 local previewIndex = 0 -- Studio only, presentation without reward remotes
 local worldPreviewIndex = 0
+dodge = SideDodgeController.new(player, DodgeSettings, function(side, id)
+    Action:FireServer("Dodge", side, id)
+end, function()
+    return data ~= nil and stageName == "Idle" and not modal.Visible and not quests:IsOpen()
+        and not landingPlaying() and not catchReveal:IsVisible()
+        and not voyage:IsOpen() and not voyage:IsDriving() and not UIS:GetFocusedTextBox()
+end)
 UIS.InputBegan:Connect(function(input, processed)
     if processed or UIS:GetFocusedTextBox() then return end
-    if input.KeyCode == Enum.KeyCode.P and RunService:IsStudio() then
+    if input.KeyCode == Enum.KeyCode[DodgeSettings.LEFT_KEY] then dodge:Request("Left")
+    elseif input.KeyCode == Enum.KeyCode[DodgeSettings.RIGHT_KEY] then dodge:Request("Right")
+    elseif dodge:IsBusy() then return
+    elseif input.KeyCode == Enum.KeyCode.P and RunService:IsStudio() then
         if stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not landingPlaying() then
             previewIndex = previewIndex % #Config.Fish + 1
             local fish = Config.Fish[previewIndex]
@@ -475,9 +491,9 @@ UIS.InputEnded:Connect(function(input) release(input, false) end)
 UIS.WindowFocusReleased:Connect(function() release(nil, true) end)
 -- Space is never bound to fishing. Normal Roblox movement keeps its jump input.
 local waterJump = WaterJump.new(player, Config.WaterJump, function()
-    return stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not UIS:GetFocusedTextBox()
+    return not dodge:IsBusy() and stageName == "Idle" and not modal.Visible and not quests:IsOpen() and not UIS:GetFocusedTextBox()
 end)
-gui.Destroying:Connect(function() quests:Destroy();waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy() end)
+gui.Destroying:Connect(function() dodge:Destroy();quests:Destroy();waterJump:Destroy();thumbnails:Destroy();castEffects:Destroy();landingEffects:Destroy() end)
 player.CharacterRemoving:Connect(function()
     if studioPreview then pcall(studioPreview.Stop,studioPreview) end
     landingEffects:Clear();pendingCaught=nil;landingEndsAt=0
@@ -487,6 +503,7 @@ player.CharacterRemoving:Connect(function()
     activeInput = nil; holding = false; stageName = "Idle"; sessionId = nil; closeModal(); updateStage()
 end)
 Update.OnClientEvent:Connect(function(kind, payload)
+    dodge:Handle(kind,payload)
     castEffects:Handle(kind,payload)
     landingEffects:Handle(kind,payload)
     if voyage then voyage:Handle(kind,payload) end

@@ -11,6 +11,8 @@ local CastMath = require(shared:WaitForChild("CastMath"))
 local FightBalance = require(shared:WaitForChild("FightBalance"))
 local CatchLedger = require(shared:WaitForChild("CatchLedger"))
 local Quests = require(shared:WaitForChild("Quests"))
+local DodgeSettings = require(shared:WaitForChild("SideDodge"))
+local DodgeService = require(script.Parent:WaitForChild("DodgeService"))
 local TesterAccess = require(script.Parent:WaitForChild("TesterAccess"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 local World = require(script.Parent:WaitForChild("World"))
@@ -18,7 +20,7 @@ local Archipelago = require(script.Parent:WaitForChild("Archipelago"))
 local BoatService = require(script.Parent:WaitForChild("BoatService"))
 local Models = require(shared:WaitForChild("EquipmentModels"))
 local world = Archipelago.Attach(World.Build())
-local grantRod, boats
+local grantRod, boats, dodges
 local function remote(name)
     local r = shared:FindFirstChild(name)
     if not r then r = Instance.new("RemoteEvent"); r.Name = name; r.Parent = shared end
@@ -44,6 +46,10 @@ local function send(player, kind, data)
     if player.Parent == Players then Update:FireClient(player, kind, data) end
 end
 local function notice(player, text) send(player, "Notice", {Text = text}) end
+dodges = DodgeService.new(DodgeSettings, send, function(player)
+    return sessions[player] ~= nil or not Profiles.Get(player)
+end)
+limitsPerSecond.Dodge = 4
 local function rootOf(player)
     local c = player.Character
     local h = c and c:FindFirstChildOfClass("Humanoid")
@@ -183,6 +189,7 @@ local function releaseCast(player, s)
 end
 local function beginCast(player)
     local function reject(text) send(player, "Rejected", {Text = text}) end
+    if dodges:IsActive(player) then reject("Дождись окончания уворота."); return end
     if sessions[player] then return end
     local data = Profiles.Get(player)
     if not data then reject("Профиль ещё загружается."); return end
@@ -279,6 +286,7 @@ world.Shop.RodsmithPrompt.Triggered:Connect(function(player)
     end
 end)
 local function travel(player, toReef)
+    if dodges:IsActive(player) then return end
     local origin = toReef and world.Ferry or world.ReturnFerry
     local data = Profiles.Get(player)
     if not data or not allow(player, "Travel", 1) or not nearby(player, origin.Position, 18) then return end
@@ -294,9 +302,10 @@ local function travel(player, toReef)
 end
 world.Ferry.Travel.Triggered:Connect(function(p) travel(p, true) end)
 world.ReturnFerry.Travel.Triggered:Connect(function(p) travel(p, false) end)
-boats = BoatService.new(Config,world,Profiles,send,sync,function(p)return sessions[p] ~= nil end)
+boats = BoatService.new(Config,world,Profiles,send,sync,function(p)return sessions[p] ~= nil or dodges:IsActive(p) end)
 Action.OnServerEvent:Connect(function(player, kind, id, value)
     if type(kind) ~= "string" or not limitsPerSecond[kind] or not allow(player, kind, limitsPerSecond[kind]) then return end
+    if kind == "Dodge" then dodges:Request(player, id, value, workspace:GetServerTimeNow()); return end
     if kind == "Ready" then
         sync(player)
         -- Late joiners get current lines too, but never other players' rewards.
@@ -352,6 +361,7 @@ Action.OnServerEvent:Connect(function(player, kind, id, value)
 end)
 local accumulator, environment = 0, 0
 RunService.Heartbeat:Connect(function(dt)
+    dodges:Step(workspace:GetServerTimeNow())
     environment = environment + dt
     Lighting.ClockTime = (11 + environment / 30) % 24 -- 12-minute full day.
     accumulator = accumulator + math.min(dt, 0.25)
@@ -429,6 +439,7 @@ local function playerAdded(player)
     local stats = Instance.new("Folder"); stats.Name = "leaderstats"; stats.Parent = player
     for _, name in ipairs({"Coins", "Level", "Caught"}) do local v = Instance.new("IntValue"); v.Name = name; v.Parent = stats end
     connections[player] = player.CharacterAdded:Connect(function(character)
+        dodges:Remove(player)
         finish(player)
         task.spawn(function()
             local untilTime=os.clock()+20
@@ -450,6 +461,7 @@ local function playerAdded(player)
 end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
+    dodges:Remove(player)
     finish(player)
     if connections[player] then connections[player]:Disconnect(); connections[player] = nil end
     limits[player] = nil; cooldowns[player] = nil; loading[player] = nil

@@ -62,7 +62,7 @@ function methods:FindFirstChildOfClass(class)
     return nil
 end
 function methods:GetChildren() return table.clone(self.Children) end
-function methods:IsA(class) return self.ClassName == class end
+function methods:IsA(class) return self.ClassName == class or (class == "BasePart" and self.ClassName == "Part") end
 function methods:GetAttribute(key) return self.Attributes[key] end
 function methods:SetAttribute(key, value) self.Attributes[key] = value end
 function methods:Destroy() self.Parent = nil; self.Destroyed = true end
@@ -101,8 +101,8 @@ function Environment.new()
     local replicated = node("ReplicatedStorage")
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
-    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels"}) do child(shared, "ModuleScript", name) end
-    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService"}) do child(server, "ModuleScript", name) end
+    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge"}) do child(shared, "ModuleScript", name) end
+    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService"}) do child(server, "ModuleScript", name) end
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
     action.OnServerEvent = signal()
@@ -123,7 +123,7 @@ function Environment.new()
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
     local fakeTask = {spawn = function(callback, ...) return callback(...) end, wait = function() return nil end}
-    local fakeEnum = {PartType = {Ball = "Ball"}, HumanoidStateType = {Swimming = "Swimming"}}
+    local fakeEnum = {PartType = {Ball = "Ball"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding"}}
     local world = {Model = node("Model"), Spots = {Cove = {Name = "Тихая бухта", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
         Spawn = V.new(0, 4, 0), ReefSpawn = V.new(450, 4, -650)}
     world.Merchant, world.Shop, world.Ferry, world.ReturnFerry = node("Part"), node("Part"), node("Part"), node("Part")
@@ -161,7 +161,8 @@ function Environment.new()
     self.modules.BoatService, self.modules.EquipmentModels = boats, models
     local paths = {Config = "src/shared/Config.luau", BrainrotExpansion = "src/shared/BrainrotExpansion.luau",
         Quests = "src/shared/Quests.luau", CatchLedger = "src/shared/CatchLedger.luau",
-        CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau"}
+        CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",
+        SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau"}
     local function environment(scriptNode)
         return {game = game, workspace = workspace, script = scriptNode, os = fakeOs, task = fakeTask,
             Enum = fakeEnum, Vector3 = V, CFrame = CF, Color3 = roblox.Color3,
@@ -199,7 +200,9 @@ function Environment:Player(id, tester)
 end
 function Environment:Character()
     local character = node("Model", "Character")
+    character.Parent = self.World.Model
     local humanoid = child(character, "Humanoid", "Humanoid")
+    humanoid.Died = signal()
     humanoid.Health, humanoid.WalkSpeed, humanoid.JumpPower, humanoid.JumpHeight, humanoid.AutoRotate = 100, 16, 50, 7.2, true
     local root = child(character, "Part", "HumanoidRootPart"); root.Position = V.new(0, 4, 0)
     return character
