@@ -8,7 +8,11 @@
       "$ignoreUnknownInstances": true,
       "QuietCove": {
         "$path": "src/shared",
-        "$ignoreUnknownInstances": true
+        "$ignoreUnknownInstances": true,
+        "CreatureAssets": {
+          "$className": "Folder",
+          "$ignoreUnknownInstances": true
+        }
       },
       "Combat": {
         "$className": "Folder",
