@@ -73,11 +73,23 @@ local function client(animationIDs)
     local env={Time=0,Objects={},Requests={},RayCount=0,CanUse=true,Loads=0}
     local function object(class)
         local o={ClassName=class,Children={},Attributes={},Name=class}
+        function o:IsA(name)return self.ClassName==name or (name=="BasePart" and self.ClassName=="Part")end
         function o:FindFirstChild(name)
             for _,ch in ipairs(env.Objects)do if ch.Parent==self and ch.Name==name and not ch.Destroyed then return ch end end
         end
         function o:FindFirstChildOfClass(name)
             for _,ch in ipairs(env.Objects)do if ch.Parent==self and ch.ClassName==name and not ch.Destroyed then return ch end end
+        end
+        function o:GetDescendants()
+            local result={}
+            for _,child in ipairs(env.Objects)do
+                local parent=child.Parent
+                while parent do
+                    if parent==self then table.insert(result,child);break end
+                    parent=parent.Parent
+                end
+            end
+            return result
         end
         function o:GetAttribute(key)return self.Attributes[key]end
         function o:SetAttribute(key,value)self.Attributes[key]=value end
@@ -104,7 +116,7 @@ local function client(animationIDs)
     end
     local player={CharacterAdded=signal(),CharacterRemoving=signal()}
     local c,h,r,a=character();player.Character=c
-    local run={Heartbeat=signal(),PostSimulation=signal()}
+    local run={Heartbeat=signal(),PostSimulation=signal(),PreAnimation=signal(),PreSimulation=signal()}
     local world={GetServerTimeNow=function()return env.Time end}
     function world:Raycast(origin,vector,params)
         env.RayCount+=1
@@ -116,8 +128,13 @@ local function client(animationIDs)
         AnimationPriority={Action="Action"},ActuatorRelativeTo={World="World"},
         VelocityConstraintMode={Vector="Vector"},ForceLimitMode={PerAxis="PerAxis"},RaycastFilterType={Exclude="Exclude"}}
     local fakeOs=table.clone(os);fakeOs.clock=function()return env.Time end
-    local globals={Vector3=V,Enum=enum,os=fakeOs,workspace=world,
+    local globals={Vector3=V,CFrame=CF,Enum=enum,os=fakeOs,workspace=world,
+        script={Parent={WaitForChild=function(_,name)return name end}},
         game={GetService=function()return run end},Instance={new=object},RaycastParams={new=function()return {}end}}
+    globals.require=function(name)
+        assert(name=="DodgeAnimator","Unexpected dodge dependency")
+        return luau.load(fs.readFile("src/client/DodgeAnimator.luau"),{environment=globals})()
+    end
     local settings=luau.load(fs.readFile("src/shared/SideDodge.luau"),{environment=globals})()
     if animationIDs then settings.Animations={Left="rbxassetid://123",Right="rbxassetid://456"}end
     local controller=luau.load(fs.readFile("src/client/SideDodgeController.luau"),{environment=globals})()
@@ -137,7 +154,9 @@ local function client(animationIDs)
             self.Horizontal=velocity
         end
         if air then self.YVelocity=(self.YVelocity or 0)-196.2*dt;self.Y=(self.Y or 0)+self.YVelocity*dt end
-        self.Time+=dt;run.PostSimulation:Fire(dt);run.Heartbeat:Fire(dt)
+        self.Time+=dt
+        run.PreAnimation:Fire(dt);run.PreSimulation:Fire(dt)
+        run.PostSimulation:Fire(dt);run.Heartbeat:Fire(dt)
     end
     function env:Respawn()
         player.CharacterRemoving:Fire(player.Character)

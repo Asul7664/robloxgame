@@ -1,25 +1,27 @@
 -- Short action layered into QuietCoveClient. Roblox keeps its normal movement controller.
 local RunService = game:GetService("RunService")
+local DodgeAnimator = require(script.Parent:WaitForChild("DodgeAnimator"))
 local Controller = {}
 Controller.__index = Controller
 function Controller.new(player, settings, request, canUse)
     local self=setmetatable({Player=player, Settings=settings, Send=request, CanUse=canUse,
-        Tracks={}, Connections={}, Serial=0, NextAt=0}, Controller)
+        Tracks={}, Connections={}, Serial=0, NextAt=0, Pose=DodgeAnimator.new()}, Controller)
     local function bind(character)
-        self:_finish(); self:_clearTracks()
+        self:_finish(true); self:_clearTracks()
         if self.Died then self.Died:Disconnect(); self.Died=nil end
         if self.CreatedAttachment then self.CreatedAttachment:Destroy(); self.CreatedAttachment=nil end
         self:_clearPending()
         self.Character=character; self.NextAt=0
         character:SetAttribute("LocalDodgePendingUntil",nil)
         character:SetAttribute("LocalDodgeActive",false)
+        character:SetAttribute("LocalDodgePoseActive",false)
         local h=character:FindFirstChildOfClass("Humanoid")
-        if h then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
+        if h then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish(true)end)end
     end
     table.insert(self.Connections,player.CharacterAdded:Connect(bind))
     table.insert(self.Connections,player.CharacterRemoving:Connect(function(character)
         if self.Character==character then
-            self:_clearPending(); self:_finish(); self:_clearTracks(); self.Character=nil
+            self:_clearPending(); self:_finish(true); self:_clearTracks(); self.Character=nil
             if self.Died then self.Died:Disconnect();self.Died=nil end
             if self.CreatedAttachment then self.CreatedAttachment:Destroy();self.CreatedAttachment=nil end
         end
@@ -34,7 +36,7 @@ function Controller:_clearPending()
 end
 function Controller:IsBusy()
     if self.Pending and os.clock()-self.Pending.At > self.Settings.REQUEST_TIMEOUT then self:_clearPending() end
-    return self.Active~=nil or self.Pending~=nil
+    return self.Active~=nil or self.Pending~=nil or self.Pose:IsPlaying()
 end
 function Controller:_clearTracks()
     for _,entry in pairs(self.Tracks)do
@@ -66,7 +68,7 @@ function Controller:Request(side)
         or h:GetState()==Enum.HumanoidStateType.PlatformStanding
         or self.Settings.Stunned(character,h,workspace:GetServerTimeNow())then return false end
     local direction=self.Settings.Direction(root.CFrame,side);if not direction then return false end
-    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
+    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish(true)end)end
     self.Serial=self.Serial%2147483647+1
     self.Pending={Id=self.Serial,Character=character,Side=side,Direction=direction,At=os.clock()}
     -- The expiry is local input coordination, never a server immunity flag.
@@ -75,7 +77,8 @@ function Controller:Request(side)
     self.Send(side,self.Serial)
     return true
 end
-function Controller:_finish()
+function Controller:_finish(immediate)
+    if immediate then self.Pose:Cancel() else self.Pose:Release() end
     local state=self.Active
     if not state then return end
     self.Active=nil
@@ -107,7 +110,7 @@ function Controller:Handle(kind,payload)
         or h:GetState()==Enum.HumanoidStateType.Swimming
         or h:GetState()==Enum.HumanoidStateType.PlatformStanding
         or self.Settings.Stunned(c,h,workspace:GetServerTimeNow())then return end
-    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish()end)end
+    if not self.Died then self.Died=h.Died:Connect(function()self:_clearPending();self:_finish(true)end)end
     local attachment=root:FindFirstChild("RootAttachment")
     if not attachment then
         -- Some R6 characters lack the standard attachment. Create exactly one
@@ -135,6 +138,8 @@ function Controller:Handle(kind,payload)
         if state.Track.Length>0 then
             state.Track:AdjustSpeed(state.Track.Length/self.Settings.DASH_TIME);state.TrackTimed=true
         end
+    else
+        self.Pose:Play(c,pending.Side,self.Settings.DASH_TIME,self.Settings.POSE_RECOVERY)
     end
     lv.VectorVelocity=state.Direction*self.Settings.DASH_SPEED
     -- Do not create a force into a nearby wall, even for the first physics frame.
@@ -159,7 +164,7 @@ function Controller:_step(state,dt)
     if self.Player.Character~=state.Character or not state.Root.Parent or h.Health<=0 or h.Sit or h.SeatPart
         or state.Root.Anchored or h:GetState()==Enum.HumanoidStateType.PlatformStanding
         or self.Settings.Stunned(state.Character,h,workspace:GetServerTimeNow())
-        or h:GetState()==Enum.HumanoidStateType.Swimming then self:_finish();return end
+        or h:GetState()==Enum.HumanoidStateType.Swimming then self:_finish(true);return end
     local t=(os.clock()-state.Started)/self.Settings.DASH_TIME
     if state.Track and not state.TrackTimed and state.Track.Length>0 then
         state.Track:AdjustSpeed(state.Track.Length/self.Settings.DASH_TIME);state.TrackTimed=true
@@ -178,7 +183,7 @@ function Controller:_step(state,dt)
     end
 end
 function Controller:Destroy()
-    self:_clearPending();self:_finish();self:_clearTracks()
+    self:_clearPending();self:_finish(true);self:_clearTracks();self.Pose:Destroy()
     if self.Died then self.Died:Disconnect();self.Died=nil end
     if self.CreatedAttachment then self.CreatedAttachment:Destroy();self.CreatedAttachment=nil end
     for _,connection in ipairs(self.Connections)do connection:Disconnect()end

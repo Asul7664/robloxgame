@@ -229,6 +229,7 @@ function Environment.new()
     local playerScripts = self:Node("PlayerScripts")
     self.ClientScript = self:Node("LocalScript", "CombatClient", playerScripts)
     self:Node("ModuleScript", "WeaponCamera", playerScripts)
+    self:Node("ModuleScript", "DodgeAnimator", playerScripts)
     local tweenService = {}
     function tweenService:Create(target, info, goals)
         local record = {Target = target, Info = info, Goals = goals, At = self.Owner.Time}
@@ -278,7 +279,7 @@ function Environment.new()
         require = function(module)
             if not self.Modules[module.Name] then
                 local paths = {Config = "src/combat/Config.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau",
-                    WeaponCamera = "src/client/WeaponCamera.luau"}
+                    WeaponCamera = "src/client/WeaponCamera.luau", DodgeAnimator = "src/client/DodgeAnimator.luau"}
                 self.Modules[module.Name] = self:Execute(assert(paths[module.Name], module.Name))
             end
             return self.Modules[module.Name]

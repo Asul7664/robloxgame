@@ -385,7 +385,7 @@ do
     local env = Environment.new(); local player = env:AddPlayer(1, true)
     local saber = env:Weapon("Saber", player.Character); env:StartClient()
     local c = player.Character
-    for _, attribute in ipairs({"Dodging", "LocalDodgeActive", "CombatUIBlocked", "Stunned"}) do
+    for _, attribute in ipairs({"Dodging", "LocalDodgeActive", "LocalDodgePoseActive", "CombatUIBlocked", "Stunned"}) do
         c:SetAttribute(attribute, true); env:Click(); env:Advance(.3)
         check(#env.Requests == 0 and not c:GetAttribute("CombatAttacking"), attribute .. " blocks new combat input")
         c:SetAttribute(attribute, false)

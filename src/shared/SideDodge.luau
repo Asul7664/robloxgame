@@ -12,11 +12,12 @@ local Dodge = {
     WALL_CHECK = 2,
     FADE_IN = 0.035,
     FADE_OUT = 0.12,
+    POSE_RECOVERY = 0.12, -- Smooth return after the built-in sidestep animation.
     WEIGHT_FADE_START = 0.65,
     REQUEST_TIMEOUT = 0.8,
     Animations = {
-        Left = "rbxassetid://0", -- TODO: replace with your published left sidestep animation.
-        Right = "rbxassetid://0", -- TODO: replace with your published right sidestep animation.
+        Left = "rbxassetid://0", -- Built-in pose; optionally replace with your published sidestep.
+        Right = "rbxassetid://0", -- Built-in pose; optionally replace with your published sidestep.
     },
 }
 function Dodge.EaseOut(t)

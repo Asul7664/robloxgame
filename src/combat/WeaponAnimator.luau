@@ -128,6 +128,12 @@ local function restore(state)
 end
 local function kinematic(state, enabled)
 	if state.Kinematic == enabled then return end
+	-- A newly equipped weapon can begin while dodge owns the rig. It must
+	-- not restore an equip-time snapshot before ever claiming those joints.
+	if not enabled and state.Kinematic ~= true then
+		state.Kinematic = false
+		return
+	end
 	state.Kinematic = enabled
 	for _, entry in ipairs(state.Constraints) do
 		if entry.Joint.Parent then
@@ -160,6 +166,7 @@ end
 local function paused(state)
 	return state.Character:GetAttribute("Dodging") == true
 		or state.Character:GetAttribute("LocalDodgeActive") == true
+		or state.Character:GetAttribute("LocalDodgePoseActive") == true
 		or state.Character:GetAttribute("CombatUIBlocked") == true
 end
 local function worldFrame(state, part, cache)
@@ -276,7 +283,9 @@ local function update(state, dt)
 	if paused(state) then
 		finish(state, false)
 		kinematic(state, false)
-		state.Weight = 0
+		-- Dodge captures and returns the carried pose. Keep its weight so the
+		-- handoff cannot drop the supporting arm before aim resumes.
+		if state.Character:GetAttribute("CombatUIBlocked") == true then state.Weight = 0 end
 		return
 	end
 	kinematic(state, true)
@@ -318,11 +327,9 @@ function Animator.stop(character)
 	for _, connection in ipairs(state.Connections) do connection:Disconnect() end
 	restore(state)
 	kinematic(state, false)
-	-- The original Tool/RightGrip values are never altered during a swing.
-	-- Restore the snapshot as well so cancellation cannot retain a wrist offset.
-	for joint, transform in pairs(state.Original) do
-		if alive(joint) then joint.Transform = transform end
-	end
+	-- restore() removes only our last overlay. An equip-time snapshot can
+	-- contain a walking or dodge pose owned by another animator, so writing it
+	-- again here would leave that old pose behind after a hotbar change.
 	finish(state, false)
 end
 
@@ -381,7 +388,12 @@ function Animator.setWeapon(character, tool)
 	states[character] = state
 	-- Remove yesterday's overlay BEFORE Animator runs, then sample today's
 	-- walking/idle pose afterwards. In particular, torso twist never accumulates.
-	table.insert(state.Connections, RunService.PreAnimation:Connect(function() restore(state) end))
+	table.insert(state.Connections, RunService.PreAnimation:Connect(function()
+		restore(state)
+		-- Yield constraint ownership in the earlier phase, before any dodge
+		-- PreSimulation callback can claim it; listener order does not matter.
+		if paused(state) then kinematic(state, false) end
+	end))
 	table.insert(state.Connections, RunService.PreSimulation:Connect(function(dt) update(state, dt) end))
 	if state.Humanoid then
 		table.insert(state.Connections, state.Humanoid.Died:Connect(function() Animator.stop(character) end))

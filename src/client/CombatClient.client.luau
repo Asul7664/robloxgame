@@ -139,6 +139,7 @@ local function canAttack()
 		and not WeaponCamera.IsUIBlocked(player)
 		and c:GetAttribute("CombatUIBlocked") ~= true
 		and c:GetAttribute("Dodging") ~= true and c:GetAttribute("LocalDodgeActive") ~= true
+		and c:GetAttribute("LocalDodgePoseActive") ~= true
 		and os.clock() >= (c:GetAttribute("LocalDodgePendingUntil") or 0)
 		and c:GetAttribute("Stunned") ~= true and h:GetAttribute("Stunned") ~= true
 end
