@@ -40,6 +40,26 @@ local function setup(kind)
     return env, player, victim, hum, tool
 end
 
+-- Adapter metadata cannot be read from native joints. Corroborate the strict
+-- doubles with real serialized Roblox Instances, then run all animator tests
+-- below against that stricter contract (including the native R6 Weld adapter).
+do
+    local env = Environment.new()
+    for _, class in ipairs({"Motor6D", "Weld"}) do
+        local joint = env:Node(class)
+        local native = roblox.Instance.new(class)
+        for _, marker in ipairs({"IsConstraint", "IsWeld"}) do
+            local ok = pcall(function() return joint[marker] end)
+            check(not ok, class .. " double rejects non-Instance metadata " .. marker)
+            local nativeOk = pcall(function() return native[marker] end)
+            check(not nativeOk, class .. " native Instance also rejects " .. marker)
+        end
+        check(joint:IsA(class) and joint.C0 == CF.new() and joint.C1 == CF.new(),
+            "Strict metadata checks preserve valid joint properties and methods")
+        native:Destroy()
+    end
+end
+
 -- CombatServer owns health/remotes, while the profile-backed shop owns weapons.
 -- Loading it for existing or newly joining players must never grant free tools.
 do
@@ -349,7 +369,9 @@ do
     env:Click(); local shots = #env.Requests
     check(env.Requests[shots].Remote == "Shot", "Musket sends a shot request")
     check(env.Requests[shots].Args[1] == musket:FindFirstChild("Muzzle", true).WorldPosition, "Musket fires from its muzzle")
-    check(env.Requests[shots].Args[2] == env.World.CurrentCamera.CFrame.LookVector, "Musket requests camera aim direction")
+    local cam = env.World.CurrentCamera
+    local far = cam.CFrame.Position + cam.CFrame.LookVector * (140 + (env.Requests[shots].Args[1] - cam.CFrame.Position).Magnitude)
+    near(env.Requests[shots].Args[2]:Dot((far - env.Requests[shots].Args[1]).Unit), 1, "A missed reticle ray converges from muzzle to its far aim point")
     env:Advance(.4); env:Click(); check(#env.Requests == shots, "Empty magazine prevents fire during reload")
     env:Advance(1.2); env:Click(); check(#env.Requests == shots, "Reload still blocks fire at 1.6 seconds")
     env:Advance(.11); env:Click(); check(#env.Requests == shots + 1, "Musket fires again after 1.7 seconds")
@@ -398,6 +420,192 @@ do
     env.ClientScript:Destroy()
 end
 
+-- The reticle is native UI at the actual viewport centre, appears on equip
+-- without waiting a frame and never steals click input from the weapon.
+do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    local hum = player.Character.Humanoid
+    local baseline = V.new(.3, -.2, .1); hum.CameraOffset = baseline
+    env:StartClient()
+    local gui = player.PlayerGui.MusketAim
+    check(gui and not gui.Enabled and gui.IgnoreGuiInset and not gui.ResetOnSpawn, "Reticle starts hidden and ignores the top-bar inset across respawns")
+    local reticle = gui.Reticle
+    check(reticle.Position.X.Scale == .5 and reticle.Position.Y.Scale == .5
+        and reticle.Position.X.Offset == 0 and reticle.Position.Y.Offset == 0
+        and reticle.AnchorPoint == roblox.Vector2.new(.5, .5), "Reticle stays exactly at viewport centre")
+    check(reticle.Size.X.Offset == 32 and reticle.Size.Y.Offset == 32, "Reticle uses the requested compact 32 pixel footprint")
+    local interactive = false
+    for _, object in ipairs(gui:GetDescendants()) do
+        if object:IsA("TextButton") or object:IsA("ImageButton") or object.Active == true then interactive = true end
+    end
+    check(not interactive and reticle.Ring and reticle.Dot, "Drawn reticle has ring and centre dot without interactive UI")
+    local musket = env:Weapon("Musket", player.Character)
+    check(gui.Enabled and not env.UIS.MouseIconEnabled, "Equipping immediately enables reticle and hides the saved cursor icon")
+    env:Advance(.03)
+    check(hum.CameraOffset.X > baseline.X and hum.CameraOffset.X < baseline.X + 2.2, "Shoulder framing eases in from its custom baseline")
+    env:Advance(.57)
+    local aimed = baseline + V.new(2.2, .5, 0)
+    check(hum.CameraOffset == aimed, "Shoulder framing settles on baseline plus the intended contribution")
+    local quiet = env:Node("ScreenGui", "QuietCoveUI", player.PlayerGui)
+    local window = env:Node("Frame", "InventoryAndShop", quiet); window.Visible = true
+    env:Advance(.02)
+    check(not gui.Enabled and env.UIS.MouseIconEnabled, "Opening an existing game menu hides reticle and restores the cursor icon")
+    env:Advance(.6); check(hum.CameraOffset == baseline, "Menu shoulder release returns exactly to its original custom offset")
+    window.Visible = false; env:Advance(.6)
+    check(gui.Enabled and not env.UIS.MouseIconEnabled and hum.CameraOffset == aimed, "Closing menu resumes one shoulder contribution without accumulating it")
+    env.FocusedTextBox = {}; env:Advance(.02)
+    check(not gui.Enabled and env.UIS.MouseIconEnabled, "Chat focus hides reticle and releases the cursor")
+    env.FocusedTextBox = nil; env:Advance(.6)
+    env.Gui.MenuIsOpen = true; env:Advance(.02)
+    check(not gui.Enabled, "Escape menu hides the aim reticle")
+    env.Gui.MenuIsOpen = false; env:Advance(.6)
+    musket.Parent = player.Backpack
+    check(not gui.Enabled and env.UIS.MouseIconEnabled, "Unequip hides reticle and restores cursor immediately")
+    env:Advance(.6); check(hum.CameraOffset == baseline, "Unequip fades only its own offset contribution")
+    musket.Parent = player.Character; env:Advance(.6)
+    hum.Health = 0; hum.Died:Fire()
+    check(not gui.Enabled and env.UIS.MouseIconEnabled and hum.CameraOffset == baseline, "Death hides reticle and force-restores cursor and camera baseline")
+    env:Respawn(player)
+    check(player.PlayerGui.MusketAim == gui and not gui.Enabled, "Respawn preserves a single reticle GUI in hidden state")
+    env:Weapon("Musket", player.Character)
+    check(gui.Enabled, "New life can immediately show the existing reticle")
+    env.ClientScript:Destroy()
+    check(gui.Destroyed and not player.PlayerGui.MusketAim and env.Run.RenderStepped:Count() == 0, "Destroy removes reticle UI and render sync")
+end
+do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    env.UIS.MouseIconEnabled = false
+    env.UIS.MouseBehavior = env.Enum.MouseBehavior.LockCurrentPosition
+    player.Character.Humanoid.AutoRotate = false
+    local musket = env:Weapon("Musket", player.Character)
+    env:StartClient(); env:Advance(.2)
+    musket.Parent = player.Backpack
+    check(not env.UIS.MouseIconEnabled and env.UIS.MouseBehavior == env.Enum.MouseBehavior.LockCurrentPosition,
+        "Unequip restores a previously hidden icon and the exact previous mouse mode")
+    check(not player.Character.Humanoid.AutoRotate, "Unequip preserves a false pre-existing AutoRotate setting")
+    env.ClientScript:Destroy()
+end
+
+-- Camera ray selects the centre-reticle point; the request still originates at
+-- the actual muzzle and converges there instead of travelling parallel to it.
+for _, scenario in ipairs({"hit", "miss", "behind", "degenerate", "missing_position"}) do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    local camera = env.World.CurrentCamera
+    camera.CFrame = CF.new(2.2, 2, 6); camera.Focus = CF.new(2.2, 2, 0)
+    local musket = env:Weapon("Musket", player.Character)
+    musket.Barrel.CFrame = CF.new(1, 0, 0)
+    local muzzle = musket:FindFirstChild("Muzzle", true)
+    muzzle.Position = V.new(0, 2, 0)
+    local origin = muzzle.WorldPosition
+    local target = V.new(2.2, 2, -4)
+    local hitPart = env:Node("Part", "Target", env.World)
+    if scenario == "hit" then env.RayResult = {Instance = hitPart, Position = target}
+    elseif scenario == "behind" then env.RayResult = {Instance = hitPart, Position = V.new(2.2, 2, 4)}
+    elseif scenario == "degenerate" then env.RayResult = {Instance = hitPart, Position = origin}
+    elseif scenario == "missing_position" then env.RayResult = {Instance = hitPart} end
+    env:StartClient(); env:Click()
+    local request = env.Requests[#env.Requests]
+    check(request.Remote == "Shot" and request.Args[1] == origin, scenario .. ": shot starts from actual muzzle")
+    local ray = env.Rays[1]
+    check(ray.Origin == camera.CFrame.Position and ray.Params.FilterType == env.Enum.RaycastFilterType.Exclude
+        and ray.Params.FilterDescendantsInstances[1] == player.Character, scenario .. ": reticle query starts at camera and excludes own avatar")
+    local aimDistance = 140 + (origin - camera.CFrame.Position).Magnitude
+    near(ray.Direction.Magnitude, aimDistance, scenario .. ": reticle query covers full muzzle range even from an offset camera")
+    local point = scenario == "hit" and target or camera.CFrame.Position + camera.CFrame.LookVector * aimDistance
+    near(request.Args[2]:Dot((point - origin).Unit), 1, scenario .. ": muzzle ray converges to valid reticle point or safe far fallback")
+    near(request.Args[2].Magnitude, 1, scenario .. ": requested shot direction is normalized")
+    if scenario == "hit" then
+        local toTarget = target - origin
+        near((origin + request.Args[2] * toTarget.Magnitude - target).Magnitude, 0, "Close target lies on the muzzle ray despite camera and muzzle lateral offset")
+        check(math.abs(request.Args[2].X) > .1, "Close reticle convergence differs meaningfully from a parallel camera ray")
+    else check(request.Args[2]:Dot(camera.CFrame.LookVector) > 0, scenario .. ": close camera obstruction never shoots backwards") end
+    env.ClientScript:Destroy()
+end
+
+-- Maximum third-person zoom puts the camera behind the muzzle. A reachable
+-- victim can therefore be much farther than 140 studs from the camera itself.
+do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    local camera = env.World.CurrentCamera
+    camera.CFrame = CF.new(2.2, 2, 70); camera.Focus = CF.new(2.2, 2, 0)
+    local musket = env:Weapon("Musket", player.Character)
+    musket.Barrel.CFrame = CF.new(1, -1.5, -4)
+    local muzzle = musket:FindFirstChild("Muzzle", true)
+    muzzle.Position = V.new(0, 2, 0)
+    local origin = muzzle.WorldPosition
+    local point = camera.CFrame.Position + camera.CFrame.LookVector * 190
+    local part = env:Node("Part", "ReachableTarget", env.World)
+    env.RayHandler = function(rayOrigin, direction)
+        if direction.Magnitude >= (point - rayOrigin).Magnitude then return {Instance = part, Position = point} end
+        return nil
+    end
+    env:StartClient(); env:Click()
+    local request = env.Requests[#env.Requests]
+    check((point - origin).Magnitude < 140 and (point - camera.CFrame.Position).Magnitude > 140,
+        "Zoomed-out target is within muzzle range despite exceeding a camera-only 140 stud ray")
+    local ray = env.Rays[1]
+    check(ray.Direction.Magnitude >= 190, "Zoomed-out reticle query actually reaches the camera-visible target")
+    near(ray.Direction.Magnitude, 140 + (origin - camera.CFrame.Position).Magnitude, "Camera query includes its separation from the muzzle")
+    local targetDistance = (point - request.Args[1]).Magnitude
+    near((request.Args[1] + request.Args[2] * targetDistance - point).Magnitude, 0,
+        "Zoomed-out muzzle shot intersects the full-range reticle target rather than a nearer fallback point")
+    env.ClientScript:Destroy()
+end
+
+-- A camera-visible target can still be occluded right in front of the barrel.
+-- Run both real entrypoints so server geometry, rather than the client's chosen
+-- reticle target, decides whether damage lands.
+do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    local target = env:Character("VisibleTarget")
+    local musket = env:Weapon("Musket", player.Character)
+    musket.Barrel.CFrame = CF.new(1, 0, 0)
+    musket:FindFirstChild("Muzzle", true).Position = V.new(0, 2, 0)
+    local muzzle = musket:FindFirstChild("Muzzle", true).WorldPosition
+    local camera = env.World.CurrentCamera
+    camera.CFrame = CF.new(2.2, 2, 6); camera.Focus = CF.new(2.2, 2, 0)
+    local wall = env:Node("Part", "BarrelWall", env.World)
+    local targetPoint = V.new(2.2, 2, -4)
+    env.RayHandler = function(origin, direction)
+        if origin == camera.CFrame.Position then return {Instance = target.Torso, Position = targetPoint} end
+        return {Instance = wall, Position = origin + direction.Unit * .5}
+    end
+    env:StartServer(); env:StartClient(); env:Click()
+    check(#env.Rays == 2, "Client reticle and authoritative server muzzle each perform their own geometry query")
+    check(env.Rays[2].Origin == muzzle and env.Rays[2].Params.FilterDescendantsInstances[1] == player.Character, "Authoritative ray starts at barrel and excludes attacker")
+    near(env.Rays[2].Direction.Magnitude, 140, "Server muzzle ray keeps the configured weapon range")
+    check(#target.Humanoid.DamageCalls == 0 and env.Messages[#env.Messages].Args[1] == false, "Near muzzle wall blocks damage even when camera reticle sees the victim")
+    env.ClientScript:Destroy()
+end
+
+-- Recoil changes FOV and the gun pose, while WeaponCamera alone owns shoulder
+-- CameraOffset. Hit confirmation and repeated magazines cannot accumulate it.
+do
+    local env = Environment.new(); local player = env:AddPlayer(1, true)
+    local baseline = V.new(.2, .1, -.1)
+    local hum = player.Character.Humanoid; hum.CameraOffset = baseline
+    local camera = env.World.CurrentCamera; camera.FieldOfView = 82
+    local musket = env:Weapon("Musket", player.Character)
+    env:StartClient(); env:Advance(.6)
+    local aimed = baseline + V.new(2.2, .5, 0)
+    for index = 1, 3 do
+        env:Click()
+        check(#env.Requests == index and hum.CameraOffset == aimed, "Shot " .. index .. " leaves settled shoulder offset untouched")
+        env.Combat.ConfirmHit.OnClientEvent:Fire(true)
+        check(hum.CameraOffset == aimed, "Hit confirmation leaves the shoulder framing untouched")
+        env:Advance(.35)
+        check(camera.FieldOfView == 82 and hum.CameraOffset == aimed, "Completed hit recoil restores FOV without altering offset ownership")
+        env:Advance(1.37)
+        check(hum.CameraOffset == aimed, "Reload preserves exactly one shoulder contribution")
+    end
+    local offsetTween = false
+    for _, tween in ipairs(env.Tweens) do if tween.Goals.CameraOffset ~= nil then offsetTween = true end end
+    check(not offsetTween, "CombatClient never creates a recoil tween that writes Humanoid.CameraOffset")
+    musket.Parent = player.Backpack; env:Advance(.6)
+    check(hum.CameraOffset == baseline and camera.FieldOfView == 82, "Repeated firing leaves no residual camera offset or FOV drift after unequip")
+    env.ClientScript:Destroy()
+end
+
 -- A gun magazine belongs to the character life, not the equipped slot: putting
 -- the tool away and taking it back must not skip the 1.7 second reload.
 do
@@ -406,19 +614,24 @@ do
     local camera = env.World.CurrentCamera; camera.FieldOfView = 82
     local hum = player.Character.Humanoid; hum.CameraOffset = V.new(.2, .1, -.1)
     local offset = hum.CameraOffset
-    env:StartClient(); env:Click()
+    env:StartClient(); env:Advance(.6)
+    local aimedOffset = offset + V.new(2.2, .5, 0)
+    near((hum.CameraOffset - aimedOffset).Magnitude, 0, "Equipped musket adds its shoulder framing to the existing offset")
+    env:Click()
     check(#env.Requests == 1, "First magazine shot is sent")
     env:Advance(.1); musket.Parent = player.Backpack
-    check(camera.FieldOfView == 82 and hum.CameraOffset == offset, "Unequip cancels recoil and restores captured FOV and offset")
+    check(camera.FieldOfView == 82, "Unequip cancels recoil and restores captured FOV")
     check(hum.AutoRotate and env.UIS.MouseBehavior == env.Enum.MouseBehavior.Default, "Unequip restores normal camera and facing settings")
-    musket.Parent = player.Character; env:Click(); env:Advance(.6)
+    env:Advance(.6)
+    check(hum.CameraOffset == offset, "Shoulder fade on unequip restores the custom baseline exactly")
+    musket.Parent = player.Character; env:Click()
     check(#env.Requests == 1, "Switching back cannot reset the empty magazine")
     env:Advance(.9); env:Click()
     check(#env.Requests == 1, "Re-equipped musket remains empty at 1.6 seconds")
     env:Advance(.11); env:Click()
     check(#env.Requests == 2, "The original reload timer completes after 1.7 seconds")
     env:Advance(.4)
-    check(camera.FieldOfView == 82 and hum.CameraOffset == offset, "Completed recoil restores custom camera settings")
+    check(camera.FieldOfView == 82 and hum.CameraOffset == aimedOffset, "Completed recoil preserves shoulder framing without FOV or offset drift")
     env:Click(); env:Advance(.1)
     local nextChar, previous = env:Respawn(player)
     check(not previous:GetAttribute("CombatAttacking") and previous.ChildAdded:Count() == 0 and previous.ChildRemoved:Count() == 0, "Respawn removes old character action and tool listeners")
@@ -436,6 +649,7 @@ do
     check(env.UIS.InputBegan:Count() == 0 and env.Combat.ConfirmHit.OnClientEvent:Count() == 0, "Script teardown disconnects input and hit-confirm handlers")
     check(player.CharacterAdded:Count() == 0 and player.CharacterRemoving:Count() == 0, "Script teardown disconnects character lifecycle handlers")
     check(nextChar.Humanoid.HealthChanged:Count() == 0 and not player.PlayerGui.HealthBar, "Script teardown removes health UI and its health listener")
+    check(env.Run.RenderStepped:Count() == 0 and not player.PlayerGui.MusketAim, "Script teardown removes reticle and its render sync")
     check(replacement.Parent == nextChar, "Cleanup preserves equipped tool ownership")
 end
 

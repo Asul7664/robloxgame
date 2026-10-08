@@ -1,10 +1,13 @@
 -- The standard Roblox CameraModule still owns orbit, zoom and occlusion.
--- Equipping a musket only locks the cursor and turns the character with that camera.
+-- Musket aim adds a right-shoulder offset; default zoom and occlusion stay intact.
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 
 local TURN_RATE = 28
+local SHOULDER_OFFSET = Vector3.new(2.2, 0.5, 0)
+local SHOULDER_BLEND_TIME = 0.15
+local FIRST_PERSON_DISTANCE = 1
 local serial = 0
 local WeaponCamera = {}
 WeaponCamera.__index = WeaponCamera
@@ -46,8 +49,8 @@ function WeaponCamera.new(player, canAim, onAim)
     self:_bind(player.Character)
     -- Lock before the normal camera samples mouse delta, then reassert it after
     -- that module updates MouseBehavior. No second camera controller is created.
-    RunService:BindToRenderStep(self.InputStep, Enum.RenderPriority.Camera.Value - 1, function()
-        self:_prepare()
+    RunService:BindToRenderStep(self.InputStep, Enum.RenderPriority.Camera.Value - 1, function(dt)
+        self:_prepare(dt)
     end)
     RunService:BindToRenderStep(self.FacingStep, Enum.RenderPriority.Camera.Value + 1, function(dt)
         self:_face(dt)
@@ -97,11 +100,36 @@ function WeaponCamera:_restoreDeferred(force)
     end
 end
 
+function WeaponCamera:_resetShoulder()
+    local saved = self.Shoulder
+    self.Shoulder = nil
+    if saved and saved.Humanoid.Parent then saved.Humanoid.CameraOffset = saved.BaseOffset end
+end
+
+function WeaponCamera:_stepShoulder(dt, camera)
+    local saved = self.Shoulder
+    if not saved then return end
+    if not saved.Humanoid.Parent or not saved.Character.Parent then self:_resetShoulder(); return end
+    local target = Vector3.zero
+    if self.Active then
+        -- Preserve normal first-person zoom: moving its subject sideways would
+        -- put the camera outside the head. Third person keeps the shoulder view.
+        local distance = camera and camera.Focus and (camera.CFrame.Position - camera.Focus.Position).Magnitude
+        if not distance or distance > FIRST_PERSON_DISTANCE then target = SHOULDER_OFFSET end
+    end
+    local alpha = 1 - math.exp(-3 * math.clamp(dt or 0, 0, 0.1) / SHOULDER_BLEND_TIME)
+    saved.Value = saved.Value:Lerp(target, alpha)
+    if (saved.Value - target).Magnitude < 0.0001 then saved.Value = target end
+    saved.Humanoid.CameraOffset = saved.BaseOffset + saved.Value
+    if not self.Active and saved.Value == Vector3.zero then self:_resetShoulder() end
+end
+
 function WeaponCamera:_release(force)
     local state = self.Active
     self.Active = nil
     if state then
         UserInputService.MouseBehavior = state.MouseBehavior
+        UserInputService.MouseIconEnabled = state.MouseIconEnabled
         if self.OnAim then self.OnAim(state.Character, nil) end
         if state.Humanoid.Parent then
             if not force and dodging(state.Character) then
@@ -113,6 +141,7 @@ function WeaponCamera:_release(force)
             end
         end
     end
+    if force then self:_resetShoulder() end
     self:_restoreDeferred(force)
 end
 
@@ -135,32 +164,42 @@ function WeaponCamera:_allowed()
     return humanoid, root, camera
 end
 
-function WeaponCamera:_prepare()
+function WeaponCamera:_prepare(dt)
     if self.Destroyed then return end
     self:_restoreDeferred()
-    local humanoid, root = self:_allowed()
-    if not humanoid then self:_release(); return end
+    local humanoid, root, camera = self:_allowed()
+    if not humanoid then self:_release(); self:_stepShoulder(dt); return end
     self:_watchHumanoid(humanoid)
     local state = self.Active
     if state and (state.Humanoid ~= humanoid or state.Root ~= root) then
-        self:_release()
+        self:_release(true)
         state = nil
     end
     if not state then
         -- A dodge which began before equipping the musket owns AutoRotate until
         -- it finishes. Leave its captured facing and settings untouched.
-        if dodging(self.Character) then return end
+        if dodging(self.Character) then self:_stepShoulder(dt); return end
+        if self.Shoulder and self.Shoulder.Humanoid ~= humanoid then self:_resetShoulder() end
+        if not self.Shoulder then
+            -- One owner for CameraOffset; recoil is handled by FOV/weapon pose,
+            -- so it cannot overwrite the captured offset or accumulate a drift.
+            self.Shoulder = {Character = self.Character, Humanoid = humanoid,
+                BaseOffset = humanoid.CameraOffset, Value = Vector3.zero}
+        end
         state = {
             Character = self.Character,
             Humanoid = humanoid,
             Root = root,
             AutoRotate = humanoid.AutoRotate,
             MouseBehavior = UserInputService.MouseBehavior,
+            MouseIconEnabled = UserInputService.MouseIconEnabled,
         }
         self.Active = state
     end
     UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+    UserInputService.MouseIconEnabled = false
     humanoid.AutoRotate = false
+    self:_stepShoulder(dt, camera)
 end
 
 function WeaponCamera:_face(dt)
@@ -169,6 +208,7 @@ function WeaponCamera:_face(dt)
     local humanoid, root, camera = self:_allowed()
     if humanoid ~= state.Humanoid or root ~= state.Root then self:_release(); return end
     UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+    UserInputService.MouseIconEnabled = false
     -- Sidestep must retain its original facing; camera orbit can continue.
     if dodging(state.Character) then return end
     humanoid.AutoRotate = false

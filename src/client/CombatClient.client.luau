@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local combat = ReplicatedStorage:WaitForChild("Combat")
@@ -47,16 +48,15 @@ local function clearRecoil()
 	if not saved then return end
 	for _, tween in ipairs(saved.Tweens) do tween:Cancel() end
 	if saved.Camera.Parent then saved.Camera.FieldOfView = saved.FieldOfView end
-	if saved.Humanoid and saved.Humanoid.Parent then saved.Humanoid.CameraOffset = saved.Offset end
 end
 
-local function kickCamera(pitch, fov, duration)
+local function kickCamera(fov, duration)
 	clearRecoil()
 	local camera = workspace.CurrentCamera
 	if not camera then return end
-	local hum = character() and character():FindFirstChildOfClass("Humanoid")
-	local saved = {Camera = camera, FieldOfView = camera.FieldOfView,
-		Humanoid = hum, Offset = hum and hum.CameraOffset, Tweens = {}}
+	-- WeaponCamera owns CameraOffset, including the shoulder framing. Recoil
+	-- uses FOV and the existing weapon pose without pulling that framing back.
+	local saved = {Camera = camera, FieldOfView = camera.FieldOfView, Tweens = {}}
 	recoil = saved
 	local function tween(object, seconds, properties)
 		local value = TweenService:Create(object, TweenInfo.new(seconds, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
@@ -64,13 +64,11 @@ local function kickCamera(pitch, fov, duration)
 		value:Play()
 	end
 	tween(camera, .06, {FieldOfView = saved.FieldOfView + fov})
-	if hum then tween(hum, .05, {CameraOffset = saved.Offset + Vector3.new(pitch, .05, 0)}) end
 	task.delay(.06, function()
 		if recoil ~= saved then return end
 		if camera.Parent then tween(camera, duration, {FieldOfView = saved.FieldOfView}) end
-		if hum and hum.Parent then tween(hum, .18, {CameraOffset = saved.Offset}) end
 	end)
-	task.delay(.06 + math.max(duration, .18), function()
+	task.delay(.06 + duration, function()
 		if recoil == saved then clearRecoil() end
 	end)
 end
@@ -81,6 +79,58 @@ local weaponCamera = WeaponCamera.new(player, function()
 end, function(c, pitch)
 	animator.setAimPitch(c, pitch or 0)
 end)
+
+-- A drawn reticle needs no uploaded image asset and stays aligned with the
+-- viewport centre, including the top-bar inset. It never captures mouse input.
+local aimGui = Instance.new("ScreenGui")
+aimGui.Name = "MusketAim"
+aimGui.ResetOnSpawn = false
+aimGui.IgnoreGuiInset = true
+aimGui.DisplayOrder = 30
+aimGui.Enabled = false
+aimGui.Parent = player:WaitForChild("PlayerGui")
+local reticle = Instance.new("Frame")
+reticle.Name = "Reticle"
+reticle.AnchorPoint = Vector2.new(.5, .5)
+reticle.Position = UDim2.fromScale(.5, .5)
+reticle.Size = UDim2.fromOffset(32, 32)
+reticle.BackgroundTransparency = 1
+reticle.Active = false
+reticle.Parent = aimGui
+local function mark(name, size, position, color, round, stroke)
+	local frame = Instance.new("Frame")
+	frame.Name = name
+	frame.AnchorPoint = Vector2.new(.5, .5)
+	frame.Size = size
+	frame.Position = position
+	frame.BackgroundColor3 = color
+	frame.BackgroundTransparency = stroke and 1 or 0
+	frame.BorderSizePixel = 0
+	frame.Active = false
+	frame.Parent = reticle
+	if round then Instance.new("UICorner", frame).CornerRadius = UDim.new(1, 0) end
+	if stroke then
+		local line = Instance.new("UIStroke")
+		line.Color = color; line.Thickness = stroke; line.Parent = frame
+	end
+	return frame
+end
+local white = Color3.fromRGB(236, 240, 234)
+local dark = Color3.fromRGB(37, 52, 52)
+mark("Outline", UDim2.fromOffset(19, 19), UDim2.fromScale(.5, .5), dark, true, 4)
+mark("Ring", UDim2.fromOffset(19, 19), UDim2.fromScale(.5, .5), white, true, 2)
+mark("Dot", UDim2.fromOffset(3, 3), UDim2.fromScale(.5, .5), white, true)
+for _, offset in ipairs({Vector2.new(-14, 0), Vector2.new(14, 0), Vector2.new(0, -14), Vector2.new(0, 14)}) do
+	local vertical = offset.X == 0
+	mark("TickOutline", UDim2.fromOffset(vertical and 4 or 7, vertical and 7 or 4),
+		UDim2.new(.5, offset.X, .5, offset.Y), dark, true)
+	mark("Tick", UDim2.fromOffset(vertical and 2 or 5, vertical and 5 or 2),
+		UDim2.new(.5, offset.X, .5, offset.Y), white, true)
+end
+local function syncReticle()
+	aimGui.Enabled = weaponCamera:IsAiming() and not WeaponCamera.IsUIBlocked(player)
+end
+table.insert(lifetimeConnections, RunService.RenderStepped:Connect(syncReticle))
 
 local function canAttack()
 	local c = character()
@@ -107,6 +157,7 @@ local function setEquipped(value)
 	cancelAction()
 	equipped = value
 	weaponCamera:SetTool(value)
+	syncReticle()
 	if boundCharacter then animator.setWeapon(boundCharacter, value) end
 end
 
@@ -173,7 +224,7 @@ local function saber()
 		pendingHit = {Reply = reply, Character = c, Tool = t, Serial = serial}
 		if tr then tr.Enabled = true end
 		whoosh(c:FindFirstChild("HumanoidRootPart") or t)
-		kickCamera(swingCombo == 3 and .25 or .1, swingCombo == 3 and -4 or -2, .2)
+		kickCamera(swingCombo == 3 and -4 or -2, .2)
 		swingRemote:FireServer(swingCombo)
 		task.delay(config.Saber.Active, function()
 			if actionSerial == serial and tr then tr.Enabled = false end
@@ -212,6 +263,25 @@ local function puff(origin, dir)
 	game:GetService("Debris"):AddItem(p, 0.7)
 end
 
+local function shotDirection(c, camera, origin)
+	local forward = camera.CFrame.LookVector
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.FilterDescendantsInstances = {c}
+	-- Aim through the reticle, then converge from the actual muzzle. A parallel
+	-- muzzle ray would miss the reticle after moving the camera to the shoulder.
+	-- The camera can be zoomed far behind the player; cover the complete muzzle
+	-- range from there while leaving the server's weapon range unchanged.
+	local aimDistance = config.Musket.Range + (origin - camera.CFrame.Position).Magnitude
+	local farPoint = camera.CFrame.Position + forward * aimDistance
+	local hit = workspace:Raycast(camera.CFrame.Position, forward * aimDistance, params)
+	local point = hit and hit.Position or farPoint
+	local direction = point - origin
+	-- Close camera occluders can be behind the muzzle: never shoot backwards.
+	if direction.Magnitude < .001 or direction:Dot(forward) <= 0 then direction = farPoint - origin end
+	return direction.Magnitude > .001 and direction.Unit or forward
+end
+
 local function musket()
 	if busy or reloading or ammo <= 0 or not canAttack() then
 		return
@@ -235,9 +305,9 @@ local function musket()
 	end
 	local muzzle = t:FindFirstChild("Muzzle", true)
 	local origin = muzzle and muzzle.WorldPosition or (root.Position + Vector3.new(0, 1.4, 0))
-	local dir = camera.CFrame.LookVector
+	local dir = shotDirection(c, camera, origin)
 	animator.playMusket(c, "kick")
-	kickCamera(0.55, -8, 0.28)
+	kickCamera(-8, .28)
 	local s = Instance.new("Sound")
 	s.SoundId = "rbxasset://sounds/Rocket whoosh 01.wav"
 	s.Volume = 0.85
@@ -280,7 +350,7 @@ table.insert(lifetimeConnections, confirmRemote.OnClientEvent:Connect(function(d
 	if pending and pending.Character == character() and pending.Tool == tool() and pending.Serial == actionSerial then
 		if pending.Reply then pending.Reply(didHit) end
 		pendingHit = nil
-		if didHit and canAttack() then kickCamera(.22, -2, .12) end
+		if didHit and canAttack() then kickCamera(-2, .12) end
 	end
 end))
 
@@ -338,6 +408,7 @@ end
 local function unbindCharacter()
 	cancelAction()
 	weaponCamera:SetTool(nil)
+	syncReticle()
 	if boundCharacter then animator.stop(boundCharacter) end
 	for _, connection in ipairs(characterConnections) do connection:Disconnect() end
 	characterConnections = {}
@@ -365,6 +436,7 @@ local function bindCharacter(c)
 	if boundCharacter ~= c then return end
 	table.insert(characterConnections, hum.Died:Connect(function()
 		cancelAction(); weaponCamera:SetTool(nil); animator.stop(c)
+		syncReticle()
 		equipped = nil
 	end))
 	updateTool()
@@ -377,6 +449,7 @@ table.insert(lifetimeConnections, player.CharacterRemoving:Connect(function(c)
 end))
 script.Destroying:Connect(function()
 	unbindCharacter(); weaponCamera:Destroy()
+	aimGui:Destroy()
 	for _, connection in ipairs(lifetimeConnections) do connection:Disconnect() end
 	lifetimeConnections = {}
 end)

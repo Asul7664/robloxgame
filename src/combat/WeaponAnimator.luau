@@ -26,7 +26,9 @@ local function pose(right, left, torso, rightElbow, leftElbow, wrist)
 	}
 end
 local GUARD = pose({ 52, -14, 10 }, { 16, 12, -18 }, { 2, -7, 0 }, 24, 32)
-local AIM = pose({ 88, 34, -8 }, { 80, -35, 17 }, { 3, 0, -2 }, 34, 38, { 0, 0, 0 })
+-- A slight side-on stance leaves the trigger hand in front of the right
+-- shoulder. The muzzle therefore clears the body in the shoulder camera.
+local AIM = pose({ 88, 40, -8 }, { 74, -65, 5 }, { 0, -30, 0 }, 34, 38, { 0, 0, 0 })
 local CUTS = {
 	{
 		Name = "Диагональный удар",
@@ -176,8 +178,8 @@ local function aimGrip(state, current, weight)
 	local pivot = (parent * joint.C0).Position
 	local recoil = math.max(0, AIM.Right.X - current.Right.X) * .4
 	-- The model's barrel is local +Y. Keep its muzzle facing the same horizontal
-	-- direction as the camera-controlled root, even when the trigger arm crosses
-	-- the chest; merely rotating the shoulder would point it sideways.
+	-- direction as the camera-controlled root. The arm controls the hold point;
+	-- this world-space rotation keeps shoulder posing from turning it sideways.
 	local desired = CFrame.new(pivot) * rotation(state.Root.CFrame)
 		* CFrame.Angles(-math.pi / 2 + state.AimPitch + math.rad(recoil), 0, 0)
 		* CFrame.new(-joint.C1.Position)
@@ -185,17 +187,58 @@ local function aimGrip(state, current, weight)
 	state.Applied[joint] = base
 	joint.Transform = base:Lerp(joint.C0:Inverse() * parent:Inverse() * desired * joint.C1, weight)
 end
+local function supportGrip(state, weight)
+	local shoulder = state.Joints.LeftShoulder
+	local handle = state.Tool:FindFirstChild("Handle")
+	local hand = state.Character:FindFirstChild(state.R15 and "LeftHand" or "Left Arm")
+	if not alive(shoulder) or not handle or not hand then return end
+	local parent = worldFrame(state, shoulder.Part0, {})
+	local pivotFrame = parent * shoulder.C0
+	local pivot = pivotFrame.Position
+	local target = worldFrame(state, handle, {}):PointToWorldSpace(state.SupportLocal)
+	-- R6's square palm is the end of the whole arm. R15 has a separate hand.
+	local size = hand.Size
+	local palm = state.R15 and Vector3.new(-size.X * .08, -size.Y * .28, -size.Z * .18)
+		or Vector3.new(-size.X * .43, -size.Y * .475, -size.Z * .40)
+	local elbow = state.R15 and state.Joints.LeftElbow
+	if alive(elbow) then
+		local elbowFrame = worldFrame(state, elbow.Part0, {}) * elbow.C0
+		local first = (elbowFrame.Position - pivot).Magnitude
+		local second = (worldFrame(state, hand, {}):PointToWorldSpace(palm) - elbowFrame.Position).Magnitude
+		if first > .01 and second > .01 then
+			local distance = math.clamp((target - pivot).Magnitude, math.abs(first - second) + .01, first + second - .01)
+			local bend = math.acos(math.clamp((distance * distance - first * first - second * second) / (2 * first * second), -1, 1))
+			local axes = rotation(elbow.C0)
+			elbow.Transform = elbow.Transform:Lerp(axes:Inverse() * CFrame.Angles(bend, 0, 0) * axes, weight)
+		end
+	end
+	local from = worldFrame(state, hand, {}):PointToWorldSpace(palm) - pivot
+	local to = target - pivot
+	if from.Magnitude < .01 or to.Magnitude < .01 then return end
+	local cross = from.Unit:Cross(to.Unit)
+	local cosine = math.clamp(from.Unit:Dot(to.Unit), -1, 1)
+	if cross.Magnitude < 1e-5 then return end
+	local correction = CFrame.fromAxisAngle(cross.Unit, math.acos(cosine))
+	local desired = rotation(pivotFrame):Inverse() * correction * rotation(pivotFrame * shoulder.Transform)
+	-- Rotate around the original shoulder attachment only; no translated C0,
+	-- floating shoulder, root correction, or extra movement controller.
+	shoulder.Transform = shoulder.Transform:Lerp(desired, weight)
+end
 local function bodyPose(state, current, weight)
 	refreshGrip(state)
 	local right, left = current.Right, current.Left
 	if state.R15 then
-		right = Vector3.new(right.X * .64, right.Y, right.Z)
+		-- The articulated R15 arm reaches farther than R6's single block, so
+		-- use less inward shoulder yaw to keep the trigger beside the body.
+		right = Vector3.new(right.X * .64, state.Kind == "Musket" and right.Y * .55 or right.Y, right.Z)
 		left = Vector3.new(left.X * .64, left.Y, left.Z)
 	end
 	local pitch = state.Kind == "Musket" and math.deg(state.AimPitch) or 0
 	if pitch ~= 0 then
-		right += Vector3.new(pitch, 0, 0)
-		left += Vector3.new(pitch * .8, 0, 0)
+		-- Wrist/grip alignment supplies the remaining camera pitch. Lifting the
+		-- entire arm by 45 degrees would pull the stock away from the support hand.
+		right += Vector3.new(pitch * .35, 0, 0)
+		left += Vector3.new(pitch * .35, 0, 0)
 	end
 	overlay(state, "RightShoulder", right, weight, true)
 	overlay(state, "LeftShoulder", left, weight, true)
@@ -206,6 +249,7 @@ local function bodyPose(state, current, weight)
 	overlay(state, "Neck", Vector3.new(-current.Torso.X * .35, -current.Torso.Y * .45, -current.Torso.Z * .3), weight, false)
 	if state.Kind == "Musket" then
 		aimGrip(state, current, weight)
+		supportGrip(state, weight)
 	elseif state.R15 then
 		overlay(state, "RightWrist", current.Wrist, weight, true)
 	else
@@ -259,7 +303,7 @@ local function update(state, dt)
 		else
 			-- The stock and both hands give together, then settle back into aim.
 			local kick = (1 - math.clamp(action.Elapsed / .28, 0, 1)) ^ 2
-			current = blend(AIM, pose({ 76, 34, -8 }, { 72, -35, 17 }, { -3, 0, -2 }, 44, 46, { 0, 0, 0 }), kick)
+			current = blend(AIM, pose({ 76, 40, -8 }, { 66, -65, 5 }, { -3, -30, 0 }, 44, 46, { 0, 0, 0 }), kick)
 			if action.Elapsed >= .28 then finish(state, true) end
 		end
 	end
@@ -297,6 +341,14 @@ function Animator.setWeapon(character, tool)
 		R15 = character:FindFirstChild("RightUpperArm") ~= nil,
 		LastPose = kind == "Saber" and GUARD or AIM,
 	}
+	if kind == "Musket" then
+		local handle, forestock = tool:FindFirstChild("Handle"), tool:FindFirstChild("Forestock")
+		-- Hold the nearby rear section: a short musket should not require a
+		-- blocky R6 arm to stretch across the chest to the middle of the barrel.
+		state.SupportLocal = handle and forestock and handle.CFrame:ToObjectSpace(forestock.CFrame)
+			:PointToWorldSpace(Vector3.new(-forestock.Size.X * .20, -forestock.Size.Y * .44, -forestock.Size.Z * .12))
+			or Vector3.new(-.046, .2212, -.0074)
+	end
 	local descendants = character:GetDescendants()
 	for _, joint in ipairs(descendants) do
 		if (joint:IsA("Motor6D") or joint.Name == "RightGrip" and joint:IsA("Weld")) and joint.Part0 and joint.Part1 then
@@ -321,7 +373,7 @@ function Animator.setWeapon(character, tool)
 		local joint = state.Joints[name]
 		if joint then
 			state.Original[joint] = joint.Transform
-			if joint.IsConstraint then
+			if type(joint) == "table" and rawget(joint, "IsConstraint") then
 				table.insert(state.Constraints, { Joint = joint.Source, Previous = joint.Source.IsKinematic })
 			end
 		end

@@ -140,6 +140,11 @@ function Environment:Node(class, name, parent)
         properties.OnServerEvent, properties.OnClientEvent = signal(), signal()
     elseif class == "Part" then
         properties.Size = V.new(1, 1, 1)
+    elseif class == "Camera" then
+        properties.CFrame = CF.new(0, 2, 8)
+        properties.Focus = CF.new(0, 2, 0)
+        properties.FieldOfView = 70
+        properties.ViewportSize = roblox.Vector2.new(1280, 720)
     end
     local object
     object = setmetatable({_properties = properties}, {
@@ -151,6 +156,11 @@ function Environment:Node(class, name, parent)
             if methods[key] then return methods[key] end
             if properties[key] ~= nil then return properties[key] end
             for _, child in ipairs(properties.Children) do if child.Name == key then return child end end
+            if (class == "Motor6D" or class == "Weld") and (key == "IsConstraint" or key == "IsWeld") then
+                -- These are adapter-table markers, never native Instance
+                -- properties. Roblox throws here rather than returning nil.
+                error(key .. " is not a valid member of " .. class)
+            end
         end,
         __newindex = function(_, key, value)
             if key == "Parent" then
@@ -208,7 +218,8 @@ function Environment.new()
         return self.Owner.BoxParts or {}
     end
     function self.World:Raycast(origin, direction, params)
-        table.insert(self.Owner.Rays, {Origin = origin, Direction = direction, Params = params})
+        table.insert(self.Owner.Rays, {Origin = origin, Direction = direction, Params = params, At = self.Owner.Time})
+        if self.Owner.RayHandler then return self.Owner.RayHandler(origin, direction, params, #self.Owner.Rays) end
         return self.Owner.RayResult
     end
     local combat = self:Node("Folder", "Combat", self.Replicated)
