@@ -19,6 +19,7 @@ end}
 env.World.Spots={Dunes={Name='Пески Сахура',Center=r.Vector3.new(0,4,0),Radius=25,Level=3}}
 env.Config.IslandById.Dunes.Weights={sahur=100}
 env:Start()
+check(not env.ServerStorage:FindFirstChild('StudioSahur'),'Published server exposes no test shortcut')
 local player=env:Player(505);env.Players.PlayerAdded:Fire(player)
 local data=env.Profiles.Get(player);data.Rod=#env.Config.Rods;data.XP=env.Config.XPPerLevel*3
 local function hook()
@@ -58,4 +59,29 @@ check(states[player]==nil,'Disconnect clears encounter')
 local rejoin=env:Player(505);env.Players.PlayerAdded:Fire(rejoin)
 local restored=env.Profiles.Get(rejoin)
 check(#restored.Bag==1 and restored.TotalCaught==1,'Save/rejoin retains win and never awards unfinished fight')
+-- The Studio command must start the real reward path without granting fish.
+local studio=Environment.new()
+studio.RunService.IsStudio=function() return true end
+local serviceNode=studio.server.Profiles:Clone();serviceNode.Name='SahurService';serviceNode.Parent=studio.server
+local starts,active=0,false
+studio.modules.SahurService={new=function()
+    return {IsActive=function() return active end,Remove=function() active=false end,Step=function() end,
+        Start=function(_,p,token,record,zone)
+            starts+=1;active=true
+            check(record.Species=='sahur' and record.Kg==studio.Config.ById.sahur.MinKg,'Shortcut constructs record on server')
+            check(zone==studio.World.Spots.Dunes and type(token)=='string','Shortcut uses Dunes and server token')
+            return true
+        end}
+end}
+studio.World.Spots.Dunes={Name='Пески Сахура',Center=r.Vector3.new(-1350,8,-1545),Radius=25,Level=3}
+studio:Start()
+local sp=studio:Player(606);studio.Players.PlayerAdded:Fire(sp)
+local shortcut=studio.ServerStorage:FindFirstChild('StudioSahur')
+check(shortcut~=nil,'Studio installs server-only shortcut')
+check(not shortcut.OnInvoke(sp),'Missing model is rejected')
+local template=studio:Character();template.Name='SahurBoss';template.Parent=studio.ServerStorage
+check(shortcut.OnInvoke(sp),'Shortcut immediately starts fight')
+check((sp.Character.HumanoidRootPart.Position-(studio.World.Spots.Dunes.Center+r.Vector3.new(0,2,0))).Magnitude<.001,'Shortcut places player on Dunes deck')
+check(#studio.Profiles.Get(sp).Bag==0,'Shortcut grants no unearned fish')
+check(not shortcut.OnInvoke(sp) and starts==1,'Repeated shortcut cannot duplicate encounter')
 print('PASS Sahur reward integration: '..checks..' checks')

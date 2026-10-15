@@ -29,6 +29,18 @@ require(game.ServerScriptService.QuietCove.SahurStudioInstall).Selected()
    catch template is replaced. An already doubled cleaned asset is not doubled
    again, and the earlier Command Bar `QC_SahurBaseScale` marker is respected.
 
+For an immediate test, restart Play after pulling updates, switch Studio to
+**Server**, and run in Command Bar:
+
+```lua
+local ok, reason = game.ServerStorage.StudioSahur:Invoke(game.Players:GetPlayers()[1])
+assert(ok, reason)
+```
+
+This teleports the first test player to Dunes and starts the same encounter
+immediately. The fish still requires victory. The BindableFunction exists only
+in Studio, never in a published server.
+
 The one-time local clone preserves native MeshPart mesh data and texture
 references. Neither template is mapped to Rojo, avoiding unsupported mesh
 property changes; existing unknown models are preserved by the project config.

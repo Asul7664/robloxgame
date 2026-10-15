@@ -162,6 +162,31 @@ local function finish(player, reason)
         Update:FireAllClients("CatchVisualEnd",{UserId=player.UserId,Id=s.Id})
     elseif reason then notice(player, reason) end
 end
+-- Studio-only shortcut; uses the real encounter/reward path, never a remote.
+if RunService:IsStudio() then
+    local shortcut=Instance.new("BindableFunction")
+    shortcut.Name="StudioSahur";shortcut.Parent=ServerStorage
+    shortcut.OnInvoke=function(player)
+        if not player or player.Parent~=Players then return false,"Игрок ещё не появился." end
+        local root,humanoid=rootOf(player)
+        local data=Profiles.Get(player)
+        local zone=world.Spots.Dunes
+        if not root or not data then return false,"Дождись загрузки персонажа и профиля." end
+        if not ServerStorage:FindFirstChild("SahurBoss") then return false,"Сначала установи модель командой SahurStudioInstall.Selected()." end
+        if not zone then return false,"Остров Пески Сахура ещё не создан." end
+        if humanoid.SeatPart then return false,"Сначала выйди из лодки." end
+        if dodges:IsActive(player) then return false,"Дождись окончания уворота." end
+        if sahur and sahur:IsActive(player) then return false,"Бой с Сахуром уже идёт." end
+        if #data.Bag>=Config.BagCapacity then return false,"Освободи место в рюкзаке." end
+        finish(player)
+        local position=zone.Center+Vector3.new(0,2,0)
+        root.CFrame=CFrame.lookAt(position,position+Vector3.new(0,0,-10))
+        root.AssemblyLinearVelocity=Vector3.zero
+        local fish=Config.ById.sahur
+        local record={Species=fish.Id,Kg=fish.MinKg,Mutation="normal",Value=Config.Value(fish,fish.MinKg,"normal")}
+        return getSahur():Start(player,HttpService:GenerateGUID(false),record,zone,Config.IslandById.Dunes)
+    end
+end
 local function chooseFish(zone, rod, power)
     local pool, total = {}, 0
     local night = Lighting.ClockTime >= 18 or Lighting.ClockTime < 6
