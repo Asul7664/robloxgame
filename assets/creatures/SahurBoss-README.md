@@ -49,15 +49,26 @@ Source code continues to sync normally. Do not run the original imported scripts
 ## Gameplay
 
 Reeling in `sahur` at **Пески Сахура / Dunes** releases fishing controls and
-starts a personal encounter. Sahur first rises vertically out of the water,
-then moves onto that island's fishing deck. He walks toward the fisher at
-11 studs/s within 95 studs, uses line-of-sight/pathfinding, and stops at edges.
+starts a personal encounter. Sahur makes exactly one high, continuous leap
+from the water onto the island's central ground lane (north of its center,
+clear of the temple and trees). An include-filtered raycast finds the actual
+ground surface, and the imported rig's root/pivot offsets are respected.
+He turns toward the fisher before landing, absorbs impact for .24 seconds,
+then walks at 11 studs/s. He remains engaged within the 145-stud encounter
+leash, follows walking routes around obstacles, and stops before unsafe edges.
+All subsequent jumping and climbing are disabled in Humanoid and pathfinding;
+an unexpected jump waypoint is rejected. Waypoint progress uses horizontal
+distance so the enlarged rig's elevated root cannot stall a floor-level route.
 He has 280 HP and a visible health bar. Only the fisher's existing weapons can
 damage this encounter; there is no new weapon or client damage remote.
 
 A bat attack has a .52-second visible windup, .18-second swing and .58-second
 recovery. The body, shoulders, elbow, free arm and legs animate together on each
-client using server timestamps. Hit direction commits at windup; sidestepping
+client using server timestamps. The bat reaches contact at the server's .52s
+damage time, with a broad windup, torso rotation and decelerating follow-through.
+Walking cadence comes from measured planar velocity, with loaded knees,
+ankle rollover, pelvis weight transfer and free-arm balance; an obstructed
+boss's feet settle instead of marching in place. Hit direction commits at windup; sidestepping
 out of the strike or existing server IFrame immunity avoids its 24 damage.
 
 The server uses the existing damage entry for both weapons and the boss. Fish,
@@ -68,7 +79,9 @@ cannot convert an unfinished encounter into a saved catch. On other islands,
 the existing ordinary Sahur catch behavior is unchanged.
 
 Tune `src/shared/SahurBossSettings.luau` for health, speed, damage, ranges and
-timing. Poses are in `src/shared/SahurBossPose.luau`; there are no animation IDs
+timing. `SpawnArcHeight` controls the one-time leap, `RiseTime` its duration,
+and `StrideLength` walking cadence relative to actual movement. Poses are in
+`src/shared/SahurBossPose.luau`; there are no animation IDs
 to upload. No third-party model scripts are reused.
 
 ## Validation and limits
@@ -77,6 +90,7 @@ Run from the repository root:
 
 ```sh
 lune run tests/sahur_boss.luau
+lune run tests/sahur_animation.luau
 lune run tests/sahur_reward.luau
 lune run tests/combat.luau
 lune run tests/quest_server.luau
@@ -89,5 +103,6 @@ IFrames, reward transactions, persistence, and pose continuity through engine
 doubles. They do not run Studio rendering, physics, pathfinding or verify access
 to the original externally hosted meshes/textures. The build is a script/model
 overlay, not an exported complete user place. In Studio, verify the water exit,
-foot placement, bat swing, health bar, both weapons, dodging, death/reset cleanup,
+single high leap onto actual land, no later jumps, foot placement, bat swing,
+health bar, both weapons, dodging, death/reset cleanup,
 and a single inventory award after victory.

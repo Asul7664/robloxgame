@@ -19,6 +19,52 @@ local function living(player)
     local humanoid = character and character:FindFirstChildOfClass('Humanoid')
     if root and humanoid and humanoid.Health > 0 then return root, humanoid end
 end
+local function horizontal(vector)
+    return Vector3.new(vector.X,0,vector.Z)
+end
+local function facing(position,target,fallback)
+    local direction=horizontal(target-position)
+    return CFrame.lookAt(position,position+(direction.Magnitude>.01 and direction.Unit or fallback))
+end
+local function landingPoint(island,footHeight)
+    local archipelago=workspace:FindFirstChild('QuietCoveArchipelago')
+    local model=archipelago and archipelago:FindFirstChild(island.Id)
+    if not model then return nil end
+    local floors={}
+    for _,name in {'Shore','Plateau','IslandPath'} do
+        local part=model:FindFirstChild(name)
+        if part and part:IsA('BasePart') and part.CanCollide then table.insert(floors,part) end
+    end
+    if #floors==0 then return nil end
+    local x,z=island.X,island.Z-island.Radius*settings.LandingInset
+    local params=RaycastParams.new();params.FilterType=Enum.RaycastFilterType.Include
+    params.FilterDescendantsInstances=floors;params.RespectCanCollide=true
+    local ground=workspace:Raycast(Vector3.new(x,80,z),Vector3.new(0,-120,0),params)
+    if not ground or ground.Material==Enum.Material.Water or ground.Normal.Y<.65 then return nil end
+    return ground.Position+Vector3.new(0,footHeight+.05,0)
+end
+local function groundParams(s)
+    local ignored={s.Model}
+    local encounters=workspace:FindFirstChild('SahurEncounters')
+    if encounters then table.insert(ignored,encounters) end
+    for _,player in Players:GetPlayers() do
+        if player.Character then table.insert(ignored,player.Character) end
+    end
+    local params=RaycastParams.new();params.FilterType=Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances=ignored;params.RespectCanCollide=true
+    return params
+end
+local function walkable(s,goal,params)
+    local travel=horizontal(goal-s.Root.Position)
+    if travel.Magnitude<.01 then return false end
+    local ahead=s.Root.Position+travel.Unit*math.min(4,travel.Magnitude)
+    local ground=workspace:Raycast(ahead+Vector3.new(0,4,0),
+        Vector3.new(0,-(s.FootHeight+4+settings.MaxDropHeight+1),0),params)
+    if not ground or ground.Material==Enum.Material.Water or ground.Normal.Y<.6 then return false end
+    local feet=s.Root.Position.Y-s.FootHeight
+    return ground.Position.Y-feet<=settings.MaxStepHeight
+        and feet-ground.Position.Y<=settings.MaxDropHeight
+end
 function Service.new(reward, notice)
     return setmetatable({States={}, Reward=reward, Notice=notice}, Service)
 end
@@ -75,22 +121,31 @@ function Service:Start(player, token, record, zone, island)
     model:SetAttribute('QCSahurOwner',player.UserId)
     model:SetAttribute('SahurEmerging',true)
     humanoid.MaxHealth=settings.Health;humanoid.Health=settings.Health
-    humanoid.WalkSpeed=0;humanoid.BreakJointsOnDeath=false
+    humanoid.WalkSpeed=0;humanoid.BreakJointsOnDeath=false;humanoid.AutoRotate=true
     humanoid.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None
     humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
+    -- The sole leap is the scripted spawn arc. Ground AI cannot jump or climb.
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
+    humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
+    humanoid.AutoJumpEnabled=false;humanoid.JumpPower=0;humanoid.JumpHeight=0;humanoid.Jump=false
+    humanoid.MaxSlopeAngle=50
     root.Anchored=true
-    -- Travel out of water to the island's own fishing deck, not a remote island.
     local footHeight=humanoid.HipHeight+root.Size.Y/2
-    local destination=zone.Center+Vector3.new(0,footHeight-.5,-6)
+    -- Land on the island's central ground lane, clear of temple/trees/pier.
+    local destination=landingPoint(island,footHeight)
+    if not destination then model:Destroy();return false,'Не найдено безопасное место на суше Песков Сахура.' end
     local origin=Vector3.new(zone.Center.X,-footHeight-3,zone.Center.Z-17)
     local folder=workspace:FindFirstChild('SahurEncounters')
     if not folder then folder=Instance.new('Folder');folder.Name='SahurEncounters';folder.Parent=workspace end
-    placeRoot(model,root,CFrame.lookAt(origin,Vector3.new(target.Position.X,origin.Y,target.Position.Z)))
+    local started=workspace:GetServerTimeNow()
+    model:SetAttribute('SahurSpawnAt',started)
+    placeRoot(model,root,facing(origin,destination,Vector3.new(0,0,1)))
     model.Parent=folder
     CollectionService:AddTag(model,'QCSahurBoss')
     local s={Model=model,Root=root,Humanoid=humanoid,Character=player.Character,Token=token,Record=record,
-        At=workspace:GetServerTimeNow(),Origin=origin,Destination=destination,Home=destination,
-        NextAttack=0,ThinkAt=0,NextPath=0,PathIndex=1,Path={},UpdatingPath=false,Won=false}
+        At=started,Origin=origin,Destination=destination,Home=destination,FootHeight=footHeight,Landed=false,
+        NextAttack=0,ThinkAt=0,NextPath=0,PathIndex=1,Path={},UpdatingPath=false,Won=false,
+        LastProgressAt=started,LastProgressPosition=destination,FollowPath=false}
     s.UpdateBar=healthBar(model,humanoid);s.UpdateBar()
     self.States[player]=s
     s.Died=humanoid.Died:Connect(function()
@@ -111,14 +166,52 @@ function Service:_path(player,s,target,now)
     if s.UpdatingPath or now<s.NextPath then return end
     s.NextPath=now+1.1;s.UpdatingPath=true
     task.spawn(function()
-        local path=PathfindingService:CreatePath({AgentRadius=2.6,AgentHeight=12,AgentCanJump=true,WaypointSpacing=5})
-        local ok=pcall(function() path:ComputeAsync(s.Root.Position,target) end)
+        local radius=math.max(s.Root.Size.X,s.Root.Size.Z)/2+.3
+        local path=PathfindingService:CreatePath({AgentRadius=radius,AgentHeight=13,
+            AgentCanJump=false,AgentCanClimb=false,WaypointSpacing=5})
+        local origin=s.Root.Position-Vector3.new(0,s.FootHeight-.25,0)
+        local ok=pcall(function() path:ComputeAsync(origin,target) end)
         if self.States[player]~=s then return end
         s.UpdatingPath=false
         if ok and path.Status==Enum.PathStatus.Success then
-            s.Path=path:GetWaypoints();s.PathIndex=math.min(2,#s.Path)
+            local waypoints=path:GetWaypoints()
+            for _,point in waypoints do
+                if point.Action==Enum.PathWaypointAction.Jump then s.Path={};return end
+            end
+            s.Path=waypoints;s.PathIndex=math.min(2,#s.Path)
         else s.Path={} end
     end)
+end
+function Service:_chase(player,s,target,visible,now)
+    local flat=horizontal(target.Position-s.Root.Position)
+    local moving=flat.Magnitude>settings.AttackRange*.8
+    s.Humanoid.WalkSpeed=moving and settings.WalkSpeed or 0
+    s.Model:SetAttribute('SahurMoving',moving)
+    if not moving then
+        s.Humanoid:Move(Vector3.zero);s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position
+        return
+    end
+    if horizontal(s.Root.Position-s.LastProgressPosition).Magnitude>.8 then
+        s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position
+    end
+    local stalled=now-s.LastProgressAt>1.1
+    local params=groundParams(s)
+    local directSafe=walkable(s,target.Position,params)
+    local goal=target.Position
+    if s.FollowPath or not visible or not directSafe or stalled then
+        s.FollowPath=true
+        local floor=workspace:Raycast(target.Position+Vector3.new(0,4,0),Vector3.new(0,-24,0),params)
+        self:_path(player,s,floor and floor.Position+Vector3.new(0,.25,0) or goal,now)
+        local point=s.Path[s.PathIndex]
+        while point and horizontal(point.Position-s.Root.Position).Magnitude<settings.WaypointTolerance do
+            s.PathIndex+=1;point=s.Path[s.PathIndex]
+        end
+        if point then goal=point.Position
+        elseif visible and directSafe and not stalled then s.FollowPath=false
+        else goal=s.Root.Position end
+    end
+    if walkable(s,goal,params) then s.Humanoid:MoveTo(goal)
+    else s.Humanoid:Move(Vector3.zero);s.Model:SetAttribute('SahurMoving',false) end
 end
 function Service:Step(now)
     for player,s in pairs(self.States) do
@@ -128,19 +221,30 @@ function Service:Step(now)
             self:Remove(player,'Бой с Сахуром прерван. Улов не получен.')
         elseif now-s.At<settings.RiseTime then
             local t=math.clamp((now-s.At)/settings.RiseTime,0,1)
-            local crest=Vector3.new(s.Origin.X,s.Destination.Y+1,s.Origin.Z)
-            local u=t<.68 and t/.68 or (t-.68)/.32;u=u*u*(3-2*u)
-            local position=t<.68 and s.Origin:Lerp(crest,u) or crest:Lerp(s.Destination,u)
-            placeRoot(s.Model,s.Root,CFrame.lookAt(position,Vector3.new(target.Position.X,position.Y,target.Position.Z)))
+            -- Exactly one continuous arc; no second jump is used to clear shore.
+            local position=s.Origin:Lerp(s.Destination,t)+Vector3.new(0,4*settings.SpawnArcHeight*t*(1-t),0)
+            local travelFrame=facing(position,s.Destination,Vector3.new(0,0,1))
+            local targetFrame=facing(position,target.Position,travelFrame.LookVector)
+            local turn=math.clamp((t-.65)/.35,0,1);turn=turn*turn*(3-2*turn)
+            placeRoot(s.Model,s.Root,travelFrame:Lerp(targetFrame,turn))
         else
-            if s.Root.Anchored then
+            s.Humanoid.Jump=false
+            if not s.Landed then
+                s.Landed=true;s.RecoveryUntil=now+settings.LandingRecovery
+                placeRoot(s.Model,s.Root,facing(s.Destination,target.Position,Vector3.new(0,0,-1)))
                 s.Root.Anchored=false;s.Root:SetNetworkOwner(nil)
+                s.Root.AssemblyLinearVelocity=Vector3.zero;s.Root.AssemblyAngularVelocity=Vector3.zero
                 s.Model:SetAttribute('SahurEmerging',false)
+                s.Model:SetAttribute('SahurLandingAt',now)
+                s.Model:SetAttribute('SahurMoving',false)
+                s.LastProgressAt=now;s.LastProgressPosition=s.Destination
             end
             s.UpdateBar()
             local delta=target.Position-s.Root.Position
             local flat=Vector3.new(delta.X,0,delta.Z)
-            if s.AttackAt then
+            if now<s.RecoveryUntil then
+                s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
+            elseif s.AttackAt then
                 s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
                 if not s.Hit and now>=s.AttackAt+settings.Windup then
                     s.Hit=true
@@ -158,8 +262,9 @@ function Service:Step(now)
                 end
                 if now>=s.AttackAt+settings.Windup+settings.Strike+settings.Recovery then
                     s.AttackAt=nil;s.Humanoid.AutoRotate=true
+                    s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position
                 end
-            elseif flat.Magnitude<=settings.AttackRange and now>=s.NextAttack then
+            elseif flat.Magnitude<=settings.AttackRange and math.abs(delta.Y)<=9 and now>=s.NextAttack then
                 s.AttackAt=now;s.Hit=false;s.NextAttack=now+settings.AttackCooldown
                 s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
                 s.Facing=flat.Magnitude>.01 and flat.Unit or s.Root.CFrame.LookVector
@@ -172,29 +277,7 @@ function Service:Step(now)
                 params.FilterDescendantsInstances={s.Model}
                 local sight=workspace:Raycast(s.Root.Position,delta,params)
                 local visible=not sight or sight.Instance:IsDescendantOf(player.Character)
-                local moving=flat.Magnitude>settings.AttackRange*.8 and flat.Magnitude<=settings.DetectionRange
-                s.Humanoid.WalkSpeed=moving and settings.WalkSpeed or 0
-                s.Model:SetAttribute('SahurMoving',moving)
-                if moving then
-                    local goal=target.Position
-                    if not visible then
-                        self:_path(player,s,goal,now)
-                        local waypoint=s.Path[s.PathIndex]
-                        if waypoint and (waypoint.Position-s.Root.Position).Magnitude<5 then
-                            s.PathIndex+=1;waypoint=s.Path[s.PathIndex]
-                        end
-                        if waypoint then
-                            goal=waypoint.Position
-                            if waypoint.Action==Enum.PathWaypointAction.Jump then s.Humanoid.Jump=true end
-                        else goal=s.Root.Position end
-                    end
-                    -- Do not chase over a pier edge into deep water.
-                    local travel=goal-s.Root.Position
-                    local ahead=travel.Magnitude>.01 and s.Root.Position+travel.Unit*4 or s.Root.Position
-                    local ground=workspace:Raycast(ahead+Vector3.new(0,4,0),Vector3.new(0,-20,0),params)
-                    if travel.Magnitude>.01 and ground and ground.Material~=Enum.Material.Water then s.Humanoid:MoveTo(goal)
-                    else s.Humanoid:Move(Vector3.zero) end
-                else s.Humanoid:Move(Vector3.zero) end
+                self:_chase(player,s,target,visible,now)
             end
         end
     end
