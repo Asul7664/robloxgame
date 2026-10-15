@@ -17,6 +17,7 @@ end
 
 local combat = ensureRemotes()
 local config = require(combat:WaitForChild("Config"))
+local Damage = require(combat:WaitForChild("Damage"))
 local swingRemote = combat:WaitForChild("Swing")
 local shotRemote = combat:WaitForChild("Shot")
 local confirmRemote = combat:WaitForChild("ConfirmHit")
@@ -34,21 +35,7 @@ local function living(model)
 end
 
 local function damage(attacker, victimHum, amount)
-	local model = victimHum.Parent
-	if model:GetAttribute("IFrame") then
-		return false
-	end
-	if victimHum.Parent == attacker then
-		return false
-	end
-	victimHum:TakeDamage(amount)
-	model:SetAttribute("IFrame", true)
-	task.delay(0.28, function()
-		if model.Parent then
-			model:SetAttribute("IFrame", false)
-		end
-	end)
-	return true
+	return Damage.Apply(attacker, victimHum, amount)
 end
 
 swingRemote.OnServerEvent:Connect(function(player, combo)

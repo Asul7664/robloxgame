@@ -18,6 +18,7 @@
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
         "Config": {"$path": "src/combat/Config.luau"},
+        "Damage": {"$path": "src/combat/Damage.luau"},
         "WeaponAnimator": {"$path": "src/combat/WeaponAnimator.luau"}
       }
     },

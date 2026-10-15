@@ -224,6 +224,7 @@ function Environment.new()
     end
     local combat = self:Node("Folder", "Combat", self.Replicated)
     self:Node("ModuleScript", "Config", combat)
+    self:Node("ModuleScript", "Damage", combat)
     self:Node("ModuleScript", "WeaponAnimator", combat)
     self.Combat = combat
     local playerScripts = self:Node("PlayerScripts")
@@ -278,7 +279,7 @@ function Environment.new()
         end,
         require = function(module)
             if not self.Modules[module.Name] then
-                local paths = {Config = "src/combat/Config.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau",
+                local paths = {Config = "src/combat/Config.luau", Damage = "src/combat/Damage.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau",
                     WeaponCamera = "src/client/WeaponCamera.luau", DodgeAnimator = "src/client/DodgeAnimator.luau"}
                 self.Modules[module.Name] = self:Execute(assert(paths[module.Name], module.Name))
             end

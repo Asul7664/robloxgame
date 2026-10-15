@@ -23,7 +23,7 @@ local Archipelago = require(script.Parent:WaitForChild("Archipelago"))
 local BoatService = require(script.Parent:WaitForChild("BoatService"))
 local Models = require(shared:WaitForChild("EquipmentModels"))
 local world = Archipelago.Attach(World.Build())
-local grantRod, boats, dodges, weaponShop
+local grantRod, boats, dodges, weaponShop, sahur
 local function remote(name)
     local r = shared:FindFirstChild(name)
     if not r then r = Instance.new("RemoteEvent"); r.Name = name; r.Parent = shared end
@@ -95,6 +95,22 @@ local function sync(player)
     end
     send(player, "Profile", {Data = data, MemoryOnly = Profiles.MemoryOnly})
     syncQuests(player, data)
+end
+local function getSahur()
+    if not sahur then
+        local SahurService = require(script.Parent:WaitForChild("SahurService"))
+        sahur = SahurService.new(function(player, record, token)
+            local data = Profiles.Get(player)
+            if not data or not CatchLedger.Reserve(data,Config,record,token) then
+                notice(player,"Не удалось добавить Сахура: проверь место в рюкзаке.");return
+            end
+            Quests.RecordCatch(data,Config,record,"Dunes",workspace:GetServerTimeNow(),player.UserId)
+            local award = CatchLedger.Commit(data,Config,token)
+            sync(player)
+            if award then send(player,"Caught",award) end
+        end, notice)
+    end
+    return sahur
 end
 weaponShop = WeaponShop.new(WeaponCatalog, Profiles, ServerStorage:WaitForChild("Weapons"),
     workspace:WaitForChild("WeaponStall"):WaitForChild("Counter"), send, sync, function(player)
@@ -198,6 +214,7 @@ local function releaseCast(player, s)
 end
 local function beginCast(player)
     local function reject(text) send(player, "Rejected", {Text = text}) end
+    if sahur and sahur:IsActive(player) then reject("Сначала победи Сахура или покинь бой."); return end
     if dodges:IsActive(player) then reject("Дождись окончания уворота."); return end
     if sessions[player] then return end
     local data = Profiles.Get(player)
@@ -233,6 +250,15 @@ local function catchFish(player, s)
     local roll=rng:NextNumber()
     local mutation=roll<0.02 and "gold" or (roll<0.10 and "glow" or "normal")
     local record={Species=fish.Id,Kg=kg,Mutation=mutation,Value=Config.Value(fish,kg,mutation)}
+    if fish.Id=="sahur" and s.ZoneId=="Dunes" then
+        -- Release fishing controls first so both weapons and sidesteps work.
+        -- No persisted catch reservation exists until the encounter is won.
+        finish(player)
+        if not getSahur():Start(player,s.Id,record,s.Zone,Config.IslandById.Dunes) then
+            notice(player,"Не удалось начать бой с Сахуром. Проверь модель ServerStorage.SahurBoss.")
+        end
+        return
+    end
     if not CatchLedger.Reserve(data,Config,record,s.Id) then finish(player,"Не удалось зарезервировать улов.");return end
     s.PendingCatch=true
     -- The catch is earned now; Landing is presentation only. This guarded,
@@ -372,6 +398,7 @@ end)
 local accumulator, environment = 0, 0
 RunService.Heartbeat:Connect(function(dt)
     dodges:Step(workspace:GetServerTimeNow())
+    if sahur then sahur:Step(workspace:GetServerTimeNow()) end
     environment = environment + dt
     Lighting.ClockTime = (11 + environment / 30) % 24 -- 12-minute full day.
     accumulator = accumulator + math.min(dt, 0.25)
@@ -449,6 +476,7 @@ local function playerAdded(player)
     local stats = Instance.new("Folder"); stats.Name = "leaderstats"; stats.Parent = player
     for _, name in ipairs({"Coins", "Level", "Caught"}) do local v = Instance.new("IntValue"); v.Name = name; v.Parent = stats end
     connections[player] = player.CharacterAdded:Connect(function(character)
+        if sahur then sahur:Remove(player) end
         dodges:Remove(player)
         finish(player)
         task.spawn(function()
@@ -471,6 +499,7 @@ local function playerAdded(player)
 end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
+    if sahur then sahur:Remove(player) end
     dodges:Remove(player)
     finish(player)
     if connections[player] then connections[player]:Disconnect(); connections[player] = nil end
