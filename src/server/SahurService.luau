@@ -8,6 +8,11 @@ local settings = require(RS:WaitForChild('QuietCove'):WaitForChild('SahurBossSet
 local Damage = require(RS:WaitForChild('Combat'):WaitForChild('Damage'))
 local Service = {}
 Service.__index = Service
+local function placeRoot(model,root,frame)
+    -- Imported rigs can have a foot-level PrimaryPart pivot. PivotTo expects
+    -- that pivot frame, while emergence coordinates describe the root center.
+    model:PivotTo(frame*root.PivotOffset)
+end
 local function living(player)
     local character = player.Character
     local root = character and character:FindFirstChild('HumanoidRootPart')
@@ -45,14 +50,19 @@ local function healthBar(model, humanoid)
     end
 end
 function Service:Start(player, token, record, zone, island)
-    if self:IsActive(player) then return false end
+    if self:IsActive(player) then return false,'Бой с Сахуром уже идёт.' end
     local template=ServerStorage:FindFirstChild('SahurBoss')
     local target=living(player)
-    if not template or not target or not island then return false end
+    if not template then return false,'Не установлена модель ServerStorage.SahurBoss.' end
+    if not template:IsA('Model') then return false,'ServerStorage.SahurBoss должен быть моделью.' end
+    if not target then return false,'Персонаж не готов или погиб.' end
+    if not island then return false,'Не найдены Пески Сахура.' end
     local model=template:Clone()
     local root=model:FindFirstChild('HumanoidRootPart')
     local humanoid=model:FindFirstChildOfClass('Humanoid')
-    if not root or not humanoid then model:Destroy(); return false end
+    if not root or not root:IsA('BasePart') or not humanoid then
+        model:Destroy();return false,'В модели Сахура не найдены HumanoidRootPart и Humanoid.'
+    end
     -- Defense in depth for a template accidentally replaced with an unclean copy.
     for _,item in model:GetDescendants() do
         if item:IsA('LuaSourceContainer') then item:Destroy()
@@ -75,7 +85,7 @@ function Service:Start(player, token, record, zone, island)
     local origin=Vector3.new(zone.Center.X,-footHeight-3,zone.Center.Z-17)
     local folder=workspace:FindFirstChild('SahurEncounters')
     if not folder then folder=Instance.new('Folder');folder.Name='SahurEncounters';folder.Parent=workspace end
-    model:PivotTo(CFrame.lookAt(origin,Vector3.new(target.Position.X,origin.Y,target.Position.Z)))
+    placeRoot(model,root,CFrame.lookAt(origin,Vector3.new(target.Position.X,origin.Y,target.Position.Z)))
     model.Parent=folder
     CollectionService:AddTag(model,'QCSahurBoss')
     local s={Model=model,Root=root,Humanoid=humanoid,Character=player.Character,Token=token,Record=record,
@@ -121,7 +131,7 @@ function Service:Step(now)
             local crest=Vector3.new(s.Origin.X,s.Destination.Y+1,s.Origin.Z)
             local u=t<.68 and t/.68 or (t-.68)/.32;u=u*u*(3-2*u)
             local position=t<.68 and s.Origin:Lerp(crest,u) or crest:Lerp(s.Destination,u)
-            s.Model:PivotTo(CFrame.lookAt(position,Vector3.new(target.Position.X,position.Y,target.Position.Z)))
+            placeRoot(s.Model,s.Root,CFrame.lookAt(position,Vector3.new(target.Position.X,position.Y,target.Position.Z)))
         else
             if s.Root.Anchored then
                 s.Root.Anchored=false;s.Root:SetNetworkOwner(nil)

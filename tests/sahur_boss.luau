@@ -30,7 +30,10 @@ local function model()
     h.Move=function(self,v) self.LastMove=v end
     h.MoveTo=function(self,v) self.LastGoal=v end
     m.HumanoidRootPart.SetNetworkOwner=function(self,owner) self.NetworkOwner=owner end
-    m.PivotTo=function(self,cf) self.HumanoidRootPart.CFrame=cf end
+    m.HumanoidRootPart.PivotOffset=r.CFrame.new(.355,-7.249,-.837)*r.CFrame.Angles(0,.12,0)
+    m.PivotTo=function(self,cf)
+        self.HumanoidRootPart.CFrame=cf*self.HumanoidRootPart.PivotOffset:Inverse()
+    end
     return m,h
 end
 local template=model();template.Parent=env.Storage
@@ -46,9 +49,12 @@ local function start()
     return service.States[player]
 end
 local state=start()
+check((state.Root.Position-state.Origin).Magnitude<.001,'Imported pivot does not offset root emergence position')
 check(wins==0 and service:IsActive(player),'Spawn does not award fish')
 check(not service:Start(player,'duplicate',{},zone,{}),'Second concurrent encounter rejected')
 check(not damage.Apply(player.Character,state.Humanoid,18),'Emergence cannot be damaged')
+service:Step(state.At+settings.RiseTime-.00001)
+check((state.Root.Position-state.Destination).Magnitude<.001,'Imported pivot lands root at intended deck height')
 service:Step(state.At+settings.RiseTime+.01)
 check(not state.Root.Anchored and state.Root.NetworkOwner==nil,'Emergence hands physics to server')
 state.Root.CFrame=r.CFrame.new(0,10,6)
