@@ -15,6 +15,16 @@ end
 local function xAngle(frame) return math.deg(math.atan2(frame.LookVector.Y,-frame.LookVector.Z)) end
 local env=Environment.new()
 local settings=env:Execute('src/shared/SahurBossSettings.luau')
+local shared=env:Node('Folder','QuietCove',env.Replicated)
+env:Node('ModuleScript','SahurAttackClip',shared)
+env:Node('ModuleScript','SahurBossSettings',shared)
+local clip=env:Execute('src/shared/SahurAttackClip.luau')
+local beforePose=env.Globals.require
+env.Globals.require=function(module)
+    if module.Name=='SahurAttackClip' then return clip end
+    if module.Name=='SahurBossSettings' then return settings end
+    return beforePose(module)
+end
 local pose=env:Execute('src/shared/SahurBossPose.luau')
 local function sample(phase,weight)
     return pose.Sample(10,nil,true,settings,{Phase=phase,Weight=weight or 1})
@@ -62,10 +72,11 @@ for _,boundary in {0,settings.Windup*.73,settings.Windup,settings.Windup+setting
     nearPoses(pose.Sample(boundary-.000001,0,false,settings),pose.Sample(boundary+.000001,0,false,settings),
         .001,'Continuous attack transition '..boundary)
 end
-local wind=pose.Sample(settings.Windup*.73,0,false,settings)
-local contact=pose.Sample(settings.Windup,0,false,settings)
+local wind=pose.Sample(settings.Windup*.82,0,false,settings)
+local contact=pose.Sample(settings.Windup+settings.Strike*.67,0,false,settings)
 check(difference(wind.RightShoulder,contact.RightShoulder)>3,'Bat arm has a broad deliberate windup and strike')
-check(xAngle(contact.RightShoulder)>20,'Downswing has reached its forward contact pose at authoritative damage time')
+check(difference(wind.RightElbow,CF.new())<.0001 and difference(contact.RightWrist,CF.new())<.0001,
+    'Imported bat shaft and head remain rigid through the strike')
 check(difference(wind.Waist,contact.Waist)>1,'Torso rotates through the strike instead of an isolated swinging arm')
 check(contact.Root.Position.Z<wind.Root.Position.Z-.1,'Planted strike transfers body weight toward the opponent')
 for _,phase in {.1,.4,.7,1.0} do
@@ -153,8 +164,6 @@ for _,item in asset:GetDescendants() do
 end
 local root=model.HumanoidRootPart
 root.AssemblyLinearVelocity=V.zero
-local shared=env:Node('Folder','QuietCove',env.Replicated)
-env:Node('ModuleScript','SahurBossSettings',shared)
 env:Node('ModuleScript','SahurBossPose',shared)
 local added,removed=Environment.Signal(),Environment.Signal()
 env.Services.CollectionService={GetTagged=function() return {model} end,
@@ -184,6 +193,12 @@ check(difference(joints.RightHip.C0,bases[joints.RightHip])<.001,'Stopping again
 model:SetAttribute('SahurAttackAt',env.Time-.2)
 env:Advance(.05)
 check(difference(joints.RightShoulder.C0,bases[joints.RightShoulder])>.2,'Existing tagged skeleton performs the actual strike')
+local activeAt=env.Time
+model:SetAttribute('SahurAttackAt',activeAt-settings.Windup)
+env:Advance(settings.Strike*.67)
+local expected=clip.Sample(env.Time-model:GetAttribute('SahurAttackAt'),settings)
+check(difference(joints.RightShoulder.C0,bases[joints.RightShoulder]*expected.RightShoulder)<.0001,
+    'Visible club follows the exact server timeline during contact without smoothing lag')
 local late=env:Node('Motor6D','LeftWrist',root)
 local lateBase=CF.new(1,2,3);late.C0=lateBase
 model.DescendantAdded:Fire(late)

@@ -54,7 +54,7 @@ from the water onto the island's central ground lane (north of its center,
 clear of the temple and trees). An include-filtered raycast finds the actual
 ground surface, and the imported rig's root/pivot offsets are respected.
 He turns toward the fisher before landing, absorbs impact for .24 seconds,
-then walks at 11 studs/s. He remains engaged within the 145-stud encounter
+then walks at 14 studs/s. He remains engaged within the 145-stud encounter
 leash, follows walking routes around obstacles, and stops before unsafe edges.
 All subsequent jumping and climbing are disabled in Humanoid and pathfinding;
 an unexpected jump waypoint is rejected. Waypoint progress uses horizontal
@@ -62,14 +62,49 @@ distance so the enlarged rig's elevated root cannot stall a floor-level route.
 He has 280 HP and a visible health bar. Only the fisher's existing weapons can
 damage this encounter; there is no new weapon or client damage remote.
 
-A bat attack has a .52-second visible windup, .18-second swing and .58-second
-recovery. The body, shoulders, elbow, free arm and legs animate together on each
-client using server timestamps. The bat reaches contact at the server's .52s
-damage time, with a broad windup, torso rotation and decelerating follow-through.
-Walking cadence comes from measured planar velocity, with loaded knees,
-ankle rollover, pelvis weight transfer and free-arm balance; an obstructed
-boss's feet settle instead of marching in place. Hit direction commits at windup; sidestepping
-out of the strike or existing server IFrame immunity avoids its 24 damage.
+A bat attack has a .52-second visible windup, .18-second active swing and
+.58-second recovery. `SahurAttackClip.luau` authors a rear-foot load, raised
+backswing, fast diagonal **downward** strike, follow-through and recovery.
+Native two-bone leg IK keeps both ankle positions and sole orientations fixed
+through the weight transfer. The free arm balances the body and the neck
+counter-rotates toward the committed opponent. The renderer fades the first
+.10 seconds from its preceding movement pose, then follows the exact server
+curve without extra contact smoothing lag.
+
+The imported auto-rigger split the SAME bat across RightUpperArm,
+RightLowerArm and RightHand. Its R15 elbow/wrist/grip are inside the bat,
+not the anatomical elbow/palm. Both right elbow and wrist therefore stay
+neutral in **every** walk, leap, landing and attack pose. The shoulder and
+thorax move the intact right-arm/bat assembly; no original mesh is replaced.
+A future separately rigged club would allow independent elbow articulation.
+
+`SahurClub.luau` computes server-side forward kinematics from original Motor6D
+baselines and the same clip. Two capsules fitted to the embedded physical
+hulls follow the real shaft and thick end. During the active window the server
+samples at most 1/120 second apart and sweeps them against actual body boxes,
+excluding root parts/accessories/tools. Contact must have clear line of sight;
+a successful hit uses the existing Damage entrypoint exactly once per swing.
+There is no broad frontal damage cone or client hit report. Existing server
+IFrame immunity blocks damage. A sidestep outside the actual trajectory misses.
+
+He approaches within 7.3 studs, smoothly turns before committing and keeps
+his strike direction fixed. Think/path refreshes take .075/.65 seconds. Walking
+cadence follows measured planar velocity, with loaded knees, ankle rollover,
+pelvis weight transfer and free-arm balance; blocked feet settle rather than
+marching in place. The one arrival leap remains the only permitted jump.
+
+An editable native KeyframeSequence is in
+`ReplicatedStorage.QuietCove.SahurHeavyStrike` via Rojo and in
+`assets/animations/SahurHeavyStrike.rbxm/.rbxmx`. It is a 120 Hz sampled export
+of the same authored curve (Action, non-looping), not a second runtime track.
+Regenerate it after editing the source or phase lengths:
+
+```sh
+lune run tools/sahur/export_attack.luau
+```
+
+No animation upload/ID or model reinstall is needed for these code updates.
+See `assets/animations/README.md` for editor use and export details.
 
 The server uses the existing damage entry for both weapons and the boss. Fish,
 XP, bestiary and quest progress are committed through the existing CatchLedger
@@ -91,6 +126,8 @@ Run from the repository root:
 ```sh
 lune run tests/sahur_boss.luau
 lune run tests/sahur_animation.luau
+lune run tests/sahur_attack_clip.luau
+lune run tests/sahur_club.luau
 lune run tests/sahur_reward.luau
 lune run tests/combat.luau
 lune run tests/quest_server.luau

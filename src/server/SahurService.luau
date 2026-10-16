@@ -5,6 +5,8 @@ local RS = game:GetService('ReplicatedStorage')
 local CollectionService = game:GetService('CollectionService')
 local PathfindingService = game:GetService('PathfindingService')
 local settings = require(RS:WaitForChild('QuietCove'):WaitForChild('SahurBossSettings'))
+local Clip = require(RS.QuietCove:WaitForChild('SahurAttackClip'))
+local Club = require(RS.QuietCove:WaitForChild('SahurClub'))
 local Damage = require(RS:WaitForChild('Combat'):WaitForChild('Damage'))
 local Service = {}
 Service.__index = Service
@@ -109,6 +111,10 @@ function Service:Start(player, token, record, zone, island)
     if not root or not root:IsA('BasePart') or not humanoid then
         model:Destroy();return false,'В модели Сахура не найдены HumanoidRootPart и Humanoid.'
     end
+    local rig=Club.Capture(model)
+    if not rig then
+        model:Destroy();return false,'Повреждён скелет Сахура: не найдена цепочка дубинки.'
+    end
     -- Defense in depth for a template accidentally replaced with an unclean copy.
     for _,item in model:GetDescendants() do
         if item:IsA('LuaSourceContainer') then item:Destroy()
@@ -145,7 +151,7 @@ function Service:Start(player, token, record, zone, island)
     local s={Model=model,Root=root,Humanoid=humanoid,Character=player.Character,Token=token,Record=record,
         At=started,Origin=origin,Destination=destination,Home=destination,FootHeight=footHeight,Landed=false,
         NextAttack=0,ThinkAt=0,NextPath=0,PathIndex=1,Path={},UpdatingPath=false,Won=false,
-        LastProgressAt=started,LastProgressPosition=destination,FollowPath=false}
+        LastProgressAt=started,LastProgressPosition=destination,FollowPath=false,Rig=rig,LastStepAt=started}
     s.UpdateBar=healthBar(model,humanoid);s.UpdateBar()
     self.States[player]=s
     s.Died=humanoid.Died:Connect(function()
@@ -164,7 +170,7 @@ function Service:Start(player, token, record, zone, island)
 end
 function Service:_path(player,s,target,now)
     if s.UpdatingPath or now<s.NextPath then return end
-    s.NextPath=now+1.1;s.UpdatingPath=true
+    s.NextPath=now+settings.PathInterval;s.UpdatingPath=true
     task.spawn(function()
         local radius=math.max(s.Root.Size.X,s.Root.Size.Z)/2+.3
         local path=PathfindingService:CreatePath({AgentRadius=radius,AgentHeight=13,
@@ -184,7 +190,10 @@ function Service:_path(player,s,target,now)
 end
 function Service:_chase(player,s,target,visible,now)
     local flat=horizontal(target.Position-s.Root.Position)
-    local moving=flat.Magnitude>settings.AttackRange*.8
+    -- Being close across a wall is not a valid melee position. Keep routing
+    -- around the obstacle instead of idling forever inside attack distance.
+    local moving=flat.Magnitude>settings.AttackRange*.86 or not visible
+    s.Humanoid.AutoRotate=true
     s.Humanoid.WalkSpeed=moving and settings.WalkSpeed or 0
     s.Model:SetAttribute('SahurMoving',moving)
     if not moving then
@@ -194,7 +203,7 @@ function Service:_chase(player,s,target,visible,now)
     if horizontal(s.Root.Position-s.LastProgressPosition).Magnitude>.8 then
         s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position
     end
-    local stalled=now-s.LastProgressAt>1.1
+    local stalled=now-s.LastProgressAt>settings.StuckTime
     local params=groundParams(s)
     local directSafe=walkable(s,target.Position,params)
     local goal=target.Position
@@ -213,8 +222,41 @@ function Service:_chase(player,s,target,visible,now)
     if walkable(s,goal,params) then s.Humanoid:MoveTo(goal)
     else s.Humanoid:Move(Vector3.zero);s.Model:SetAttribute('SahurMoving',false) end
 end
+local function visibleTo(s,character,point)
+    local params=RaycastParams.new();params.FilterType=Enum.RaycastFilterType.Exclude
+    params.FilterDescendantsInstances={s.Model};params.RespectCanCollide=true
+    local ray=workspace:Raycast(s.Root.Position,point-s.Root.Position,params)
+    return not ray or ray.Instance:IsDescendantOf(character)
+end
+function Service:_swing(s,character,victim,elapsed)
+    local activeStart,activeEnd=Clip.ContactWindow(settings)
+    local last=s.HitElapsed or 0
+    local from,to=math.max(last,activeStart),math.min(elapsed,activeEnd)
+    local rootFrame=s.Root.CFrame
+    local previousRoot=s.HitRoot or rootFrame
+    -- A correction/teleport cannot drag a damaging trail across the island.
+    if (previousRoot.Position-rootFrame.Position).Magnitude>4 then previousRoot=rootFrame end
+    if not s.Hit and elapsed>=activeStart and last<=activeEnd and to>=from then
+        local function segments(time)
+            local t=elapsed>last and math.clamp((time-last)/(elapsed-last),0,1) or 1
+            return Club.Segments(s.Rig,previousRoot:Lerp(rootFrame,t),Clip.Sample(time,settings))
+        end
+        local previous=segments(from)
+        local count=math.max(1,math.ceil((to-from)/settings.HitSampleTime))
+        for index=0,count do
+            local current=segments(from+(to-from)*index/count)
+            local point=Club.Contact(previous,current,character)
+            if point and visibleTo(s,character,point) and Damage.Apply(s.Model,victim,settings.Damage) then
+                s.Hit=true;break
+            end
+            previous=current
+        end
+    end
+    s.HitElapsed=elapsed;s.HitRoot=rootFrame
+end
 function Service:Step(now)
     for player,s in pairs(self.States) do
+        local dt=math.clamp(now-s.LastStepAt,0,.1);s.LastStepAt=now
         local target, victim=living(player)
         if player.Parent~=Players or player.Character~=s.Character or not target or not s.Model.Parent
             or now-s.At>settings.Lifetime or (target.Position-s.Home).Magnitude>settings.LeashRange then
@@ -246,37 +288,35 @@ function Service:Step(now)
                 s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
             elseif s.AttackAt then
                 s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
-                if not s.Hit and now>=s.AttackAt+settings.Windup then
-                    s.Hit=true
-                    -- Deliberately commit to the telegraphed facing; a sidestep can evade.
-                    local forward=s.Facing
-                    local side=Vector3.new(-forward.Z,0,forward.X)
-                    local distance=flat:Dot(forward)
-                    if distance>=-1 and distance<=settings.AttackRange+2 and math.abs(flat:Dot(side))<=3.6
-                        and math.abs(delta.Y)<=9 then
-                        local params=RaycastParams.new();params.FilterType=Enum.RaycastFilterType.Exclude
-                        params.FilterDescendantsInstances={s.Model}
-                        local ray=workspace:Raycast(s.Root.Position,target.Position-s.Root.Position,params)
-                        if not ray or ray.Instance:IsDescendantOf(player.Character) then Damage.Apply(s.Model,victim,settings.Damage) end
-                    end
-                end
+                -- Keep committed yaw, while preserving server physics position.
+                s.Root.CFrame=facing(s.Root.Position,s.Root.Position+s.Facing,s.Facing)
+                self:_swing(s,player.Character,victim,now-s.AttackAt)
                 if now>=s.AttackAt+settings.Windup+settings.Strike+settings.Recovery then
                     s.AttackAt=nil;s.Humanoid.AutoRotate=true
+                    s.Model:SetAttribute('SahurAttackAt',nil)
                     s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position
                 end
-            elseif flat.Magnitude<=settings.AttackRange and math.abs(delta.Y)<=9 and now>=s.NextAttack then
-                s.AttackAt=now;s.Hit=false;s.NextAttack=now+settings.AttackCooldown
+            elseif flat.Magnitude<=settings.AttackRange and math.abs(delta.Y)<=9 and now>=s.NextAttack
+                and visibleTo(s,player.Character,target.Position) then
                 s.Humanoid.WalkSpeed=0;s.Humanoid:Move(Vector3.zero)
-                s.Facing=flat.Magnitude>.01 and flat.Unit or s.Root.CFrame.LookVector
-                s.Root.CFrame=CFrame.lookAt(s.Root.Position,s.Root.Position+s.Facing)
-                s.Humanoid.AutoRotate=false;s.Model:SetAttribute('SahurAttackAt',now)
+                -- Turn smoothly before committing; never snap 180 degrees or
+                -- steer the active strike after a player has sidestepped it.
+                local desired=flat.Magnitude>.01 and flat.Unit or s.Root.CFrame.LookVector
+                local look=horizontal(s.Root.CFrame.LookVector).Unit
+                s.Humanoid.AutoRotate=false
+                local yaw=math.atan2(look:Cross(desired).Y,look:Dot(desired))
+                local turn=yaw*(1-math.exp(-settings.TurnRate*dt))
+                s.Root.CFrame=CFrame.new(s.Root.Position)*s.Root.CFrame.Rotation*CFrame.Angles(0,turn,0)
                 s.Model:SetAttribute('SahurMoving',false)
+                if math.abs(yaw-turn)<=math.rad(settings.AttackFacingAngle) then
+                    s.AttackAt=now;s.Hit=false;s.NextAttack=now+settings.AttackCooldown
+                    s.HitElapsed=0;s.HitRoot=s.Root.CFrame
+                    s.Facing=s.Root.CFrame.LookVector
+                    s.Model:SetAttribute('SahurAttackAt',now)
+                end
             elseif now>=s.ThinkAt then
-                s.ThinkAt=now+.15
-                local params=RaycastParams.new();params.FilterType=Enum.RaycastFilterType.Exclude
-                params.FilterDescendantsInstances={s.Model}
-                local sight=workspace:Raycast(s.Root.Position,delta,params)
-                local visible=not sight or sight.Instance:IsDescendantOf(player.Character)
+                s.ThinkAt=now+settings.ThinkInterval
+                local visible=visibleTo(s,player.Character,target.Position)
                 self:_chase(player,s,target,visible,now)
             end
         end

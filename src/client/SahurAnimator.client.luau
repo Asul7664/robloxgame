@@ -43,6 +43,10 @@ connections[3]=RunService.PreSimulation:Connect(function(dt)
             local attackAt=model:GetAttribute('SahurAttackAt')
             local attackDuration=settings.Windup+settings.Strike+settings.Recovery
             local attacking=type(attackAt)=='number' and now>=attackAt and now<attackAt+attackDuration
+            if attacking and state.AttackAt~=attackAt then
+                state.AttackAt=attackAt;state.Entry={}
+                for joint,base in pairs(state.Joints) do state.Entry[joint]=base:Inverse()*joint.C0 end
+            elseif not attacking then state.AttackAt=nil;state.Entry=nil end
             if root then
                 -- Intention is not movement: a blocked boss stops stepping.
                 local velocity=root.AssemblyLinearVelocity
@@ -68,7 +72,17 @@ connections[3]=RunService.PreSimulation:Connect(function(dt)
                 SpawnAt=model:GetAttribute('SahurSpawnAt'), LandingAt=model:GetAttribute('SahurLandingAt'),
             })
             for joint,base in pairs(state.Joints) do
-                if joint.Parent then joint.C0=joint.C0:Lerp(base*(pose[joint.Name] or CFrame.new()),blend)
+                if joint.Parent then
+                    local offset=pose[joint.Name] or CFrame.new()
+                    if attacking then
+                        local enter=math.clamp((now-attackAt)/.10,0,1)
+                        enter=enter*enter*(3-2*enter)
+                        local initial=state.Entry[joint] or offset
+                        -- Fade only the entry. Additional exponential smoothing
+                        -- during contact would put the visible bat behind the
+                        -- server's exact authored curve and its damage sweep.
+                        joint.C0=base*initial:Lerp(offset,enter)
+                    else joint.C0=joint.C0:Lerp(base*offset,blend) end
                 else
                     -- A streamed-out joint may be reparented later. Restore
                     -- its base before a later discovery captures it again.

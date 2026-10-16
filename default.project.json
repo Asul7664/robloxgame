@@ -9,6 +9,7 @@
       "QuietCove": {
         "$path": "src/shared",
         "$ignoreUnknownInstances": true,
+        "SahurHeavyStrike": {"$path": "assets/animations/SahurHeavyStrike.rbxmx"},
         "CreatureAssets": {
           "$className": "Folder",
           "$ignoreUnknownInstances": true
