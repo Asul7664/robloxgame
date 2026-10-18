@@ -239,6 +239,12 @@ targetAt(r.CFrame.new(40,10,-29.4))
 service:Step(chaseAt)
 check(state.Humanoid.LastGoal==player.Character.HumanoidRootPart.Position,'Landed Sahur follows moving player')
 check(not state.Humanoid.Jump and state.Humanoid.WalkSpeed==settings.WalkSpeed,'Chase uses walking only')
+targetAt(r.CFrame.new(state.Root.Position+r.Vector3.new(settings.AttackRange+settings.ApproachDistance*.5,-4.2,0)))
+service:Step(chaseAt+.06)
+check(math.abs(state.Humanoid.WalkSpeed-(settings.ApproachSpeed+settings.WalkSpeed)*.5)<.001,
+    'Visible approach eases speed before committing to melee')
+targetAt(r.CFrame.new(40,10,-29.4));service:Step(chaseAt+.12)
+check(state.Humanoid.WalkSpeed==settings.WalkSpeed,'Distance pursuit resumes full speed after approach')
 env.RayResult={Instance=floor}
 env.TestWaypoints={
     {Position=r.Vector3.new(0,7.4,-29.4),Action=g.Enum.PathWaypointAction.Walk},

@@ -62,13 +62,15 @@ connections[3]=RunService.PreSimulation:Connect(function(dt)
             if speed>settings.WalkSpeed*4 then speed=0 end -- Replicated teleport.
             speed=math.min(speed,settings.WalkSpeed*1.35)
             state.Speed+=(speed-state.Speed)*(1-math.exp(-step*12))
-            local target=math.clamp(state.Speed/settings.WalkSpeed,0,1)
+            -- Keep a full grounded stride at approach speed as well as pursuit.
+            local target=math.clamp(state.Speed/settings.GaitReferenceSpeed,0,1)
             state.Weight+=(target-state.Weight)*(1-math.exp(-step*10))
             -- 6.2 studs matches the doubled rig's ~3.8-stud support travel
             -- over 62% of a cycle; cadence follows distance, never the clock.
-            state.Phase=(state.Phase+state.Speed*step/(settings.StrideLength or 6.2)*TAU)%TAU
+            state.Phase=(state.Phase+speed*step/(settings.StrideLength or 6.2)*TAU)%TAU
             local pose=Pose.Sample(now,attackAt,model:GetAttribute('SahurMoving'),settings,{
                 Phase=state.Phase, Weight=state.Weight, Emerging=emerging,
+                Pace=state.Speed/settings.GaitReferenceSpeed,
                 SpawnAt=model:GetAttribute('SahurSpawnAt'), LandingAt=model:GetAttribute('SahurLandingAt'),
             })
             for joint,base in pairs(state.Joints) do

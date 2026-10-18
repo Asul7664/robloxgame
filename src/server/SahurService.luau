@@ -194,7 +194,11 @@ function Service:_chase(player,s,target,visible,now)
     -- around the obstacle instead of idling forever inside attack distance.
     local moving=flat.Magnitude>settings.AttackRange*.86 or not visible
     s.Humanoid.AutoRotate=true
-    s.Humanoid.WalkSpeed=moving and settings.WalkSpeed or 0
+    -- Cover distance briskly, then ease into a grounded melee approach.
+    -- Occluded targets still need full-speed routing around their obstacle.
+    local approach=visible and math.clamp((flat.Magnitude-settings.AttackRange)/settings.ApproachDistance,0,1) or 1
+    local speed=settings.ApproachSpeed+(settings.WalkSpeed-settings.ApproachSpeed)*approach
+    s.Humanoid.WalkSpeed=moving and speed or 0
     s.Model:SetAttribute('SahurMoving',moving)
     if not moving then
         s.Humanoid:Move(Vector3.zero);s.LastProgressAt=now;s.LastProgressPosition=s.Root.Position

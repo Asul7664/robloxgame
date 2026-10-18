@@ -54,7 +54,8 @@ from the water onto the island's central ground lane (north of its center,
 clear of the temple and trees). An include-filtered raycast finds the actual
 ground surface, and the imported rig's root/pivot offsets are respected.
 He turns toward the fisher before landing, absorbs impact for .24 seconds,
-then walks at 14 studs/s. He remains engaged within the 145-stud encounter
+then pursues at 18 studs/s, easing toward 14 studs/s over the final eight
+studs before melee range. He remains engaged within the 145-stud encounter
 leash, follows walking routes around obstacles, and stops before unsafe edges.
 All subsequent jumping and climbing are disabled in Humanoid and pathfinding;
 an unexpected jump waypoint is rejected. Waypoint progress uses horizontal
@@ -88,8 +89,9 @@ There is no broad frontal damage cone or client hit report. Existing server
 IFrame immunity blocks damage. A sidestep outside the actual trajectory misses.
 
 He approaches within 7.3 studs, smoothly turns before committing and keeps
-his strike direction fixed. Think/path refreshes take .075/.65 seconds. Walking
-cadence follows measured planar velocity, with loaded knees, ankle rollover,
+his strike direction fixed. Think/path refreshes take .05/.5 seconds. Walking
+cadence follows measured planar velocity directly, with a stronger forward
+upper-body lean and free-arm counterbalance at pursuit speed, with loaded knees, ankle rollover,
 pelvis weight transfer and free-arm balance; blocked feet settle rather than
 marching in place. The one arrival leap remains the only permitted jump.
 

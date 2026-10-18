@@ -54,26 +54,27 @@ local function leg(phase)
     end
     return hip,knee,math.clamp(-hip-knee+roll,-28,42)
 end
-local function walk(phase)
+local function walk(phase,pace)
     local rightHip,rightKnee,rightAnkle = leg(phase)
     local leftHip,leftKnee,leftAnkle = leg(phase+math.pi)
     local transfer = math.sin(phase)
+    local urgency=math.clamp(((pace or 1)-1)/.35,0,1)
     -- Lower the pelvis over the loaded, bent support leg. This small native
     -- rig compensation prevents mid/late-stance feet hovering over the deck.
     local loadedDrop=.16*math.max(0,math.cos(phase*2-math.pi*1.6))
     return {
         Root=CFrame.new(transfer*.085,-.05-.028*math.cos(phase*2)-loadedDrop,0)
             *angle(0,transfer*2,-transfer*1.6),
-        Waist=angle(3,-transfer*4,transfer*1.2),
-        Neck=angle(-2,transfer*2,-transfer*.5),
+        Waist=angle(3+urgency*5,-transfer*(4+urgency*2),transfer*1.2),
+        Neck=angle(-2-urgency*3,transfer*2,-transfer*.5),
         RightHip=angle(rightHip,0,transfer*.6), LeftHip=angle(leftHip,0,transfer*.6),
         RightKnee=angle(rightKnee,0,0), LeftKnee=angle(leftKnee,0,0),
         RightAnkle=angle(rightAnkle,0,0), LeftAnkle=angle(leftAnkle,0,0),
         -- The loaded bat arm swings less; the free arm balances the stride.
         RightShoulder=angle(-rightHip*.27,transfer*2,4),
-        LeftShoulder=angle(-leftHip*.55,-transfer*3,-5),
+        LeftShoulder=angle(-leftHip*(.55+urgency*.15),-transfer*3,-5-urgency*3),
         RightElbow=IDENTITY,
-        LeftElbow=angle(9+math.max(0,-leftHip)*.45,0,0),
+        LeftElbow=angle(9+urgency*5+math.max(0,-leftHip)*.45,0,0),
         RightWrist=IDENTITY, LeftWrist=angle(-3,transfer*2,0),
     }
 end
@@ -139,6 +140,6 @@ function Pose.Sample(now, attackAt, moving, settings, motion)
     local weight=motion.Weight
     if type(weight)~='number' then weight=moving and 1 or 0 end
     local phase=type(motion.Phase)=='number' and motion.Phase or now*8.1
-    return blend(rest,walk(phase),math.clamp(weight,0,1))
+    return blend(rest,walk(phase,motion.Pace),math.clamp(weight,0,1))
 end
 return Pose

@@ -64,6 +64,12 @@ check(maxSwingFlex>maxSupportFlex*2,'Support knee carries weight while the retur
 check(maxRoot-minRoot>.09 and maxRoot-minRoot<.2,'Body weight transfers vertically without an excessive bounce')
 local one=sample(.7,1)
 local zero=sample(.7,0)
+local brisk=pose.Sample(10,nil,true,settings,{Phase=.7,Weight=1,Pace=settings.WalkSpeed/settings.GaitReferenceSpeed})
+check(xAngle(brisk.Waist)>xAngle(one.Waist)+3,'Fast pursuit leans the upper body into movement')
+check(difference(brisk.LeftShoulder,one.LeftShoulder)>.1,'Free arm balances the faster pursuit')
+for _,name in {'Root','RightHip','LeftHip','RightKnee','LeftKnee','RightAnkle','LeftAnkle','RightElbow','RightWrist'} do
+    check(difference(brisk[name],one[name])<.0001,'Fast upper-body posture preserves grounded feet and rigid bat / '..name)
+end
 check(difference(one.LeftShoulder,zero.LeftShoulder)>difference(one.RightShoulder,zero.RightShoulder),
     'Free arm counterbalances the bat rather than swinging both arms identically')
 nearPoses(zero,pose.Sample(10,nil,false,settings),.0001,'Zero measured motion blends to breathing idle')
