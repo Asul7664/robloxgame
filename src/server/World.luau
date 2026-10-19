@@ -2,7 +2,7 @@
 local World = {}
 local Config = require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("Config"))
 local Workspace = game:GetService("Workspace")
-local Lighting = game:GetService("Lighting")
+local Visuals = require(script.Parent:WaitForChild("WorldVisuals"))
 local function part(parent, name, size, position, color, material)
     local p = Instance.new("Part")
     p.Name, p.Size, p.Position = name, size, position
@@ -97,18 +97,13 @@ function World.Build()
     local reef = Config.IslandById.Reef
     local waterSize = (Config.Ocean.HalfExtent + 100) * 2
     Workspace.Terrain:FillBlock(CFrame.new(0, -14, 0), Vector3.new(waterSize, 28, waterSize), Enum.Material.Water)
-    Workspace.Terrain.WaterColor = Color3.fromRGB(31, 139, 155)
-    Workspace.Terrain.WaterTransparency = 0.25; Workspace.Terrain.WaterWaveSize = 0.18
-    Workspace.Terrain.WaterWaveSpeed = 8
-    Lighting.ClockTime = 11; Lighting.Brightness = 2.4
-    Lighting.Ambient = Color3.fromRGB(92, 115, 128); Lighting.OutdoorAmbient = Color3.fromRGB(120, 144, 153)
-    Lighting.FogColor = Color3.fromRGB(153, 208, 213)
-    Lighting.FogStart = 1200; Lighting.FogEnd = Config.Ocean.HalfExtent * 2
+    Visuals.ApplyEnvironment()
     local oceanPreview = Workspace:FindFirstChild("QuietCoveOceanPreview")
     if oceanPreview then oceanPreview:Destroy() end
     local existing = Workspace:FindFirstChild("QuietCoveMap")
     if existing then
         syncReef(existing)
+        Visuals.ApplyMap(existing)
         return refs(existing)
     end
     local preview = Workspace:FindFirstChild("StartHere")
@@ -175,6 +170,7 @@ function World.Build()
     for i = 0, 7 do
         part(model, "BeachStep", Vector3.new(5, 1, 14), Vector3.new(77 - i * 3, i - 1, 7), {215, 202, 161}, Enum.Material.Sand)
     end
+    Visuals.ApplyMap(model)
     return refs(model)
 end
 return World

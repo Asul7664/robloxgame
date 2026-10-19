@@ -7,6 +7,7 @@ local Lighting = game:GetService("Lighting")
 local ServerStorage = game:GetService("ServerStorage")
 local shared = RS:WaitForChild("QuietCove")
 local Config = require(shared:WaitForChild("Config"))
+local VisualTheme = require(shared:WaitForChild("VisualTheme"))
 local Reel = require(shared:WaitForChild("Reel"))
 local CastMath = require(shared:WaitForChild("CastMath"))
 local FightBalance = require(shared:WaitForChild("FightBalance"))
@@ -425,7 +426,7 @@ RunService.Heartbeat:Connect(function(dt)
     dodges:Step(workspace:GetServerTimeNow())
     if sahur then sahur:Step(workspace:GetServerTimeNow()) end
     environment = environment + dt
-    Lighting.ClockTime = (11 + environment / 30) % 24 -- 12-minute full day.
+    Lighting.ClockTime = (VisualTheme.Lighting.ClockTime + environment / 30) % 24 -- 12-minute full day.
     accumulator = accumulator + math.min(dt, 0.25)
     while accumulator >= 1 / 60 do
         accumulator = accumulator - 1 / 60

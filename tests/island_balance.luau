@@ -12,7 +12,8 @@ local function near(a,b,message)check((a-b).Magnitude<0.002,message)end
 local parts={Part=true,WedgePart=true,MeshPart=true,SpawnLocation=true}
 local Node={}
 local function new(class)
-    local properties={ClassName=class,Name=class,Children={},CFrame=CF.new(),Size=V.new(1,1,1),Pivot=CF.new()}
+    local properties={ClassName=class,Name=class,Children={},Attributes={},CFrame=CF.new(),Size=V.new(1,1,1),Pivot=CF.new(),
+        Color=roblox.Color3.fromRGB(163,162,165),Transparency=0,CanCollide=true,CanQuery=true,CanTouch=true}
     return setmetatable({_p=properties},{
         __index=function(self,key)
             if key=="Position"then return properties.CFrame.Position end
@@ -37,6 +38,8 @@ function Node:FindFirstChild(name)for _,child in ipairs(self.Children)do if chil
 function Node:WaitForChild(name)return assert(self:FindFirstChild(name),"Missing child "..name)end
 function Node:FindFirstChildOfClass(class)for _,child in ipairs(self.Children)do if child:IsA(class)then return child end end end
 function Node:GetChildren()return table.clone(self.Children)end
+function Node:GetAttribute(key)return self.Attributes[key]end
+function Node:SetAttribute(key,value)self.Attributes[key]=value end
 function Node:GetDescendants()
     local out={}
     local function visit(parent)for _,child in ipairs(parent.Children)do table.insert(out,child);visit(child)end end
@@ -77,6 +80,9 @@ local function load(name,path)
 end
 load("BrainrotExpansion","src/shared/BrainrotExpansion.luau")
 local config=load("Config","src/shared/Config.luau")
+load("VisualTheme","src/shared/VisualTheme.luau")
+load("WorldScenery","src/server/WorldScenery.luau")
+load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
 local archipelago=load("Archipelago","src/server/Archipelago.luau")
 local previous={Cove={0,0},Reef={262.5,-325},Moss={-950,475},Dunes={-825,-850},Bloom={825,475},Storm={975,-1050}}
@@ -155,10 +161,12 @@ if process.args[1]then
 else
     local map=child(workspace,"Model","QuietCoveMap")
     for _,name in ipairs({"Merchant","Rodsmith"})do child(child(map,"Model",name),"Part","Body")end
+    child(map,"Part","IslandSand",V.new(0,5,0)).Size=V.new(119,2,89)
     child(map,"Part","Ferry",V.new(17,9,-78))
     local reefPosition=V.new(previous.Reef[1],-1,previous.Reef[2])
     child(map,"Part","ReefRock",reefPosition)
-    child(map,"Part","PalmTrunk",reefPosition+V.new(15,20,10))
+    child(map,"Part","ReefSand",reefPosition+V.new(0,6.6,0)).Size=V.new(45,1.5,36)
+    child(map,"Part","PalmTrunk",reefPosition+V.new(15,20,10)).Size=V.new(1.8,17,1.8)
     child(map,"Part","ReturnFerry",reefPosition+V.new(6,10,-15))
     caption(child(map,"Part","ReefSign",reefPosition+V.new(-7,10,-37)))
     local folder=child(workspace,"Model","QuietCoveArchipelago")
@@ -167,6 +175,8 @@ else
         if island.Theme~="home"and island.Theme~="reef"then
             local model=child(folder,"Model",island.Id)
             child(model,"Part","IslandStone",V.new(old[1],-2,old[2]))
+            child(model,"Part","Plateau",V.new(old[1],6.5,old[2])).Size=V.new(1.5,island.Radius*1.78,island.Radius*1.78)
+            child(model,"Part","IslandPath",V.new(old[1],7.3,old[2])).Size=V.new(10,0.2,island.Radius*2+10)
             caption(child(model,"Part","FishingMarker",V.new(old[1]-10,9,old[2]-island.Radius-27)))
             caption(child(model,"Part","IslandBeacon",V.new(old[1],9,old[2]+18)))
         end
@@ -184,10 +194,13 @@ folder.Moss.Pivot=CF.new(-800,12,90)*CF.Angles(0.2,0.7,0.1)
 local additions=child(folder.Moss,"Model","PlayerDecoration")
 local extra=child(additions,"Part","RotatedDecoration",folder.Moss.IslandStone.Position+V.new(12,22,18))
 extra.CFrame=extra.CFrame*CF.Angles(0.3,0.5,0.2)
-local original,expected={},{ }
+local original,expected,originalPhysics={},{ },{}
 local reefAnchor=map.ReefRock.Position
 for _,object in ipairs(workspace:GetDescendants())do
-    if object:IsA("BasePart")then original[object]=object.CFrame;expected[object]=V.zero end
+    if object:IsA("BasePart")then
+        original[object]=object.CFrame;expected[object]=V.zero
+        originalPhysics[object]={Size=object.Size,CanCollide=object.CanCollide,CanQuery=object.CanQuery,CanTouch=object.CanTouch}
+    end
 end
 for _,object in ipairs(map:GetDescendants())do
     if object:IsA("BasePart")then
@@ -211,10 +224,35 @@ for _,island in ipairs(config.Islands)do
 end
 local count=#workspace:GetDescendants()
 local refs=archipelago.Attach(world.Build())
-check(#workspace:GetDescendants()==count,"Migration added duplicate geometry")
+local decoratedCount=#workspace:GetDescendants()
+check(decoratedCount>=count,"Migration removed saved geometry")
+local function isScenery(object)
+    local current=object.Parent
+    while current and current~=workspace do
+        if current.Name=="QCScenery"then return true end
+        current=current.Parent
+    end
+    return false
+end
+for _,object in ipairs(workspace:GetDescendants())do
+    if object:IsA("BasePart")and not original[object]then
+        check(isScenery(object),"Migration added gameplay geometry outside the scenery folders")
+        check(not object.CanCollide and not object.CanQuery and not object.CanTouch,"Decoration intercepts physics or shots")
+    end
+end
 for object,frame in pairs(original)do
+    check(object.Parent~=nil,"Migration removed an existing part")
     near(object.Position,frame.Position+expected[object],"Incorrect saved-part relocation: "..object.Name)
     near(object.CFrame.LookVector,frame.LookVector,"Relocation rotated user geometry")
+    near(object.Size,originalPhysics[object].Size,"Art pass resized existing geometry")
+    for _,key in ipairs({"CanCollide","CanQuery","CanTouch"})do
+        if object.Name=="PalmLeaf"and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
+            check(object:GetAttribute("QCOriginal"..key)==originalPhysics[object][key],"Retired frond lost its original query/touch flag")
+            check(object[key]==false,"Invisible retired frond intercepts queries or touch events")
+        else
+            check(object[key]==originalPhysics[object][key],"Art pass changed existing physics: "..key)
+        end
+    end
 end
 near(refs.ReefSpawn,V.new(config.IslandById.Reef.X,11,config.IslandById.Reef.Z-20),"Ferry destination mismatch")
 for _,island in ipairs(config.Islands)do
@@ -229,7 +267,7 @@ end
 local migrated={}
 for object in pairs(original)do migrated[object]=object.CFrame end
 archipelago.Attach(world.Build())
-check(#workspace:GetDescendants()==count,"Second Build duplicates geometry")
+check(#workspace:GetDescendants()==decoratedCount,"Second Build duplicates geometry")
 for object,frame in pairs(migrated)do near(object.Position,frame.Position,"Repeated migration drifts geometry")end
 
 -- A new place still builds without depending on a saved v6 scene.
@@ -238,5 +276,17 @@ local fresh=archipelago.Attach(world.Build())
 check(#fresh.Buyers==5,"New map lacks buyers")
 check(#workspace.QuietCoveArchipelago:GetChildren()==12,"Unexpected fresh island/dock count")
 check(workspace.Terrain.LastFill.Size.X==(config.Ocean.HalfExtent+100)*2,"Terrain does not cover the enlarged ocean")
+local freshCount=#workspace:GetDescendants()
+local freshDecorations=0
+for _,object in ipairs(workspace:GetDescendants())do
+    if object:IsA("BasePart")and isScenery(object)then
+        freshDecorations+=1
+        check(object.Anchored and not object.CanCollide and not object.CanTouch and not object.CanQuery,
+            "Fresh map decoration changes physics or weapon queries")
+    end
+end
+check(freshDecorations>300 and freshDecorations<420,"Full map decoration budget is unexpectedly empty or excessive")
+archipelago.Attach(world.Build())
+check(#workspace:GetDescendants()==freshCount,"Repeat Build duplicates fresh map scenery")
 print(string.format("PASS %d checks; Reef Patapim %.2f%% / Ambalabu %.2f%%; Moss %.2f%% / %.2f%%",checks,
     reef.patapim*100,reef.ambalabu*100,moss.patapim*100,moss.ambalabu*100))

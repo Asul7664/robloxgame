@@ -4,23 +4,25 @@
 -- their visible geometry into anchored Models, never collectible Tools.
 local fs = require("@lune/fs")
 local roblox = require("@lune/roblox")
+local luau = require("@lune/luau")
 
 local Instance = roblox.Instance
 local Vector3 = roblox.Vector3
 local CFrame = roblox.CFrame
 local Color3 = roblox.Color3
 local Enum = roblox.Enum
+local palette = luau.load(fs.readFile("src/shared/VisualTheme.luau"), {environment={Color3=Color3}})().Palette
 
 local origin = Vector3.new(24, 7.3, 8)
 local colors = {
-	wood = Color3.fromRGB(110, 69, 42),
-	plank = Color3.fromRGB(151, 100, 60),
-	trim = Color3.fromRGB(65, 39, 26),
-	brass = Color3.fromRGB(199, 153, 65),
-	rust = Color3.fromRGB(162, 57, 38),
-	canvas = Color3.fromRGB(234, 206, 147),
-	text = Color3.fromRGB(255, 239, 199),
-	rack = Color3.fromRGB(47, 38, 30),
+	wood = palette.Wood,
+	plank = palette.WoodLight,
+	trim = palette.WoodDark,
+	brass = palette.Gold,
+	rust = palette.Coral,
+	canvas = palette.Cream,
+	text = palette.Cream,
+	rack = palette.Ink,
 }
 
 local stall = Instance.new("Model")

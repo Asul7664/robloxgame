@@ -2,9 +2,7 @@
 local QuestUI = {}
 QuestUI.__index = QuestUI
 
-local C = {Bg = Color3.fromRGB(14, 32, 43), Panel = Color3.fromRGB(23, 47, 60),
-    Ink = Color3.fromRGB(237, 242, 230), Muted = Color3.fromRGB(169, 194, 198),
-    Aqua = Color3.fromRGB(95, 211, 200), Gold = Color3.fromRGB(250, 199, 111)}
+local C = require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("VisualTheme")).UI
 local function make(class, props, parent)
     local obj = Instance.new(class)
     for key, value in pairs(props) do obj[key] = value end

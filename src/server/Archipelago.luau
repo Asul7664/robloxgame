@@ -2,6 +2,7 @@
 -- Build() is idempotent, including when run from Studio's Command Bar.
 local Workspace=game:GetService("Workspace")
 local Config=require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("Config"))
+local Visuals=require(script.Parent:WaitForChild("WorldVisuals"))
 local A={}
 local function part(parent,name,x,y,z,sx,sy,sz,color,material,class)
     local p=Instance.new(class or "Part");p.Name=name;p.Size=Vector3.new(sx,sy,sz);p.CFrame=CFrame.new(x,y,z)
@@ -169,6 +170,7 @@ function A.Build()
                 caption(berth:FindFirstChild("DockSign"),d.Name.."\nM — карта · E у капитана")
             else dock(existing,d)end
         end
+        Visuals.ApplyArchipelago(existing)
         return existing
     end
     local folder=Instance.new("Model");folder.Name="QuietCoveArchipelago";folder.Parent=Workspace
@@ -180,6 +182,7 @@ function A.Build()
     part(folder,"HarborPath",0,7.25,38,11,0.15,56,{218,201,155},Enum.Material.Sand)
     local sign=part(folder,"HomeHarborSign",11,9,-8,0.6,4,0.6,{127,101,64},Enum.Material.Wood)
     label(sign,"ЛОДОЧНАЯ ВЕРФЬ → ЮГ\nM — карта островов",4.5,300)
+    Visuals.ApplyArchipelago(folder)
     return folder
 end
 function A.Attach(world)

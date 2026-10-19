@@ -27,7 +27,7 @@
         <bool name="CanCollide">true</bool>
         <bool name="CanQuery">true</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>14</X>
@@ -59,7 +59,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -91,7 +91,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -123,7 +123,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -155,7 +155,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -187,7 +187,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -219,7 +219,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -251,7 +251,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -283,7 +283,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -315,7 +315,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -347,7 +347,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>13.949997</X>
@@ -379,7 +379,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.3999939</X>
@@ -411,7 +411,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.58000183</X>
@@ -443,7 +443,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.3999939</X>
@@ -475,7 +475,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.58000183</X>
@@ -507,7 +507,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.3999939</X>
@@ -539,7 +539,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.58000183</X>
@@ -571,7 +571,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.3999939</X>
@@ -603,7 +603,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.58000183</X>
@@ -635,7 +635,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>14</X>
@@ -667,7 +667,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>14</X>
@@ -699,7 +699,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.27000427</X>
@@ -731,7 +731,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.27000427</X>
@@ -763,7 +763,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -795,7 +795,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -827,7 +827,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -859,7 +859,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -891,7 +891,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -923,7 +923,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -955,7 +955,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -987,7 +987,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1019,7 +1019,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1051,7 +1051,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1083,7 +1083,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1115,7 +1115,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1147,7 +1147,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1179,7 +1179,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1211,7 +1211,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1243,7 +1243,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1275,7 +1275,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1307,7 +1307,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1339,7 +1339,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1371,7 +1371,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1403,7 +1403,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1435,7 +1435,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1467,7 +1467,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1499,7 +1499,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1531,7 +1531,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1563,7 +1563,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">10631462</Color3uint8>
+        <Color3uint8 name="Color3uint8">16744593</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1595,7 +1595,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1627,7 +1627,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">1312</token>
         <Vector3 name="size">
           <X>1.0350037</X>
@@ -1659,7 +1659,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>11.5</X>
@@ -1696,8 +1696,8 @@
             <string name="Text">ОРУЖЕЙНАЯ ЛАВКА</string>
             <Color3 name="TextColor3">
               <R>1</R>
-              <G>0.9372549</G>
-              <B>0.78039217</B>
+              <G>0.96862745</G>
+              <B>0.8745098</B>
             </Color3>
             <bool name="TextScaled">true</bool>
             <float name="TextSize">54</float>
@@ -1750,7 +1750,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>11.699997</X>
@@ -1782,7 +1782,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>11.699997</X>
@@ -1814,7 +1814,7 @@
         <bool name="CanCollide">true</bool>
         <bool name="CanQuery">true</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>12.300003</X>
@@ -1857,7 +1857,7 @@
         <bool name="CanCollide">true</bool>
         <bool name="CanQuery">true</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>12.899994</X>
@@ -1889,7 +1889,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -1921,7 +1921,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -1953,7 +1953,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -1985,7 +1985,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2017,7 +2017,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2049,7 +2049,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2081,7 +2081,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2113,7 +2113,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2145,7 +2145,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2177,7 +2177,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2209,7 +2209,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>1.0399933</X>
@@ -2241,7 +2241,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>12.449997</X>
@@ -2273,7 +2273,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>12.449997</X>
@@ -5532,7 +5532,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">3089950</Color3uint8>
+        <Color3uint8 name="Color3uint8">1782350</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>5</X>
@@ -5565,7 +5565,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>4.899994</X>
@@ -5602,8 +5602,8 @@
             <string name="Text">1. САБЛЯ</string>
             <Color3 name="TextColor3">
               <R>1</R>
-              <G>0.9372549</G>
-              <B>0.78039217</B>
+              <G>0.96862745</G>
+              <B>0.8745098</B>
             </Color3>
             <bool name="TextScaled">true</bool>
             <float name="TextSize">44</float>
@@ -5656,7 +5656,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.08000183</X>
@@ -5688,7 +5688,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.08000183</X>
@@ -5720,7 +5720,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">3089950</Color3uint8>
+        <Color3uint8 name="Color3uint8">1782350</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>5</X>
@@ -5753,7 +5753,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>4.899994</X>
@@ -5790,8 +5790,8 @@
             <string name="Text">2. МУШКЕТ</string>
             <Color3 name="TextColor3">
               <R>1</R>
-              <G>0.9372549</G>
-              <B>0.78039217</B>
+              <G>0.96862745</G>
+              <B>0.8745098</B>
             </Color3>
             <bool name="TextScaled">true</bool>
             <float name="TextSize">44</float>
@@ -5844,7 +5844,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.08000183</X>
@@ -5876,7 +5876,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">13080897</Color3uint8>
+        <Color3uint8 name="Color3uint8">16763480</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.08000183</X>
@@ -5908,7 +5908,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">9921596</Color3uint8>
+        <Color3uint8 name="Color3uint8">14591332</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>11.199997</X>
@@ -5940,7 +5940,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.30000305</X>
@@ -5972,7 +5972,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.30000305</X>
@@ -6004,7 +6004,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>2.100006</X>
@@ -6036,7 +6036,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6068,7 +6068,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6100,7 +6100,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>2.100006</X>
@@ -6132,7 +6132,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6164,7 +6164,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6196,7 +6196,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">7226666</Color3uint8>
+        <Color3uint8 name="Color3uint8">12023878</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>2.100006</X>
@@ -6228,7 +6228,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6260,7 +6260,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">528</token>
         <Vector3 name="size">
           <X>0.11999512</X>
@@ -6292,7 +6292,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">15388307</Color3uint8>
+        <Color3uint8 name="Color3uint8">16775135</Color3uint8>
         <token name="Material">288</token>
         <Vector3 name="size">
           <X>0.4600067</X>
@@ -6306,9 +6306,9 @@
           <string name="Name">WarmShopLight</string>
           <float name="Brightness">0.8</float>
           <Color3 name="Color">
-            <R>0.91764706</R>
-            <G>0.80784315</G>
-            <B>0.5764706</B>
+            <R>1</R>
+            <G>0.96862745</G>
+            <B>0.8745098</B>
           </Color3>
           <float name="Range">12</float>
           <bool name="Shadows">false</bool>
@@ -6337,7 +6337,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.5700073</X>
@@ -6369,7 +6369,7 @@
         <bool name="CanCollide">false</bool>
         <bool name="CanQuery">false</bool>
         <bool name="CanTouch">false</bool>
-        <Color3uint8 name="Color3uint8">4269850</Color3uint8>
+        <Color3uint8 name="Color3uint8">7424307</Color3uint8>
         <token name="Material">1088</token>
         <Vector3 name="size">
           <X>0.5700073</X>

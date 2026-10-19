@@ -3,6 +3,10 @@
   "tree": {
     "$className": "DataModel",
     "$ignoreUnknownInstances": true,
+    "Lighting": {
+      "$path": "assets/environment/Lighting.rbxmx",
+      "$ignoreUnknownInstances": true
+    },
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "$ignoreUnknownInstances": true,

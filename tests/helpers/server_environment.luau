@@ -132,7 +132,7 @@ function Environment.new()
     local replicated = node("ReplicatedStorage")
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
-    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog"}) do child(shared, "ModuleScript", name) end
+    for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog", "VisualTheme"}) do child(shared, "ModuleScript", name) end
     for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels"}) do child(server, "ModuleScript", name) end
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
@@ -223,7 +223,8 @@ function Environment.new()
         Quests = "src/shared/Quests.luau", CatchLedger = "src/shared/CatchLedger.luau",
         CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",
         SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau",
-        WeaponCatalog = "src/shared/WeaponCatalog.luau", WeaponShop = "src/server/WeaponShop.luau"}
+        WeaponCatalog = "src/shared/WeaponCatalog.luau", WeaponShop = "src/server/WeaponShop.luau",
+        VisualTheme = "src/shared/VisualTheme.luau"}
     local function environment(scriptNode)
         return {game = game, workspace = workspace, script = scriptNode, os = fakeOs, task = fakeTask,
             Enum = fakeEnum, Vector3 = V, CFrame = CF, Color3 = roblox.Color3,

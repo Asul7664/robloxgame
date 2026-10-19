@@ -1,0 +1,85 @@
+<roblox version="4">
+  <Item class="Lighting" referent="0">
+    <Properties>
+      <string name="Name">Lighting</string>
+      <Color3 name="Ambient">
+        <R>0.4392157</R>
+        <G>0.49019608</G>
+        <B>0.5921569</B>
+      </Color3>
+      <float name="Brightness">2.6</float>
+      <float name="ClockTime">13</float>
+      <Color3 name="ColorShift_Bottom">
+        <R>0</R>
+        <G>0</G>
+        <B>0</B>
+      </Color3>
+      <Color3 name="ColorShift_Top">
+        <R>1</R>
+        <G>0.9411765</G>
+        <B>0.84705883</B>
+      </Color3>
+      <float name="EnvironmentDiffuseScale">0.65</float>
+      <float name="EnvironmentSpecularScale">0.45</float>
+      <float name="ExposureCompensation">0</float>
+      <Color3 name="FogColor">
+        <R>0.74509805</R>
+        <G>0.8784314</G>
+        <B>0.9764706</B>
+      </Color3>
+      <float name="FogEnd">6500</float>
+      <float name="FogStart">1800</float>
+      <bool name="GlobalShadows">true</bool>
+      <token name="LightingStyle">1</token>
+      <Color3 name="OutdoorAmbient">
+        <R>0.5921569</R>
+        <G>0.654902</G>
+        <B>0.73333335</B>
+      </Color3>
+      <bool name="PrioritizeLightingQuality">true</bool>
+      <float name="ShadowSoftness">0.4</float>
+    </Properties>
+    <Item class="Atmosphere" referent="1">
+      <Properties>
+        <string name="Name">QCAtmosphere</string>
+        <Color3 name="Color">
+          <R>0.74509805</R>
+          <G>0.87058824</G>
+          <B>1</B>
+        </Color3>
+        <Color3 name="Decay">
+          <R>0.5019608</R>
+          <G>0.63529414</G>
+          <B>0.8039216</B>
+        </Color3>
+        <float name="Density">0.16</float>
+        <float name="Glare">0.08</float>
+        <float name="Haze">0.45</float>
+        <float name="Offset">0.1</float>
+      </Properties>
+    </Item>
+    <Item class="BloomEffect" referent="2">
+      <Properties>
+        <string name="Name">QCBloom</string>
+        <bool name="Enabled">true</bool>
+        <float name="Intensity">0.12</float>
+        <float name="Size">20</float>
+        <float name="Threshold">0.95</float>
+      </Properties>
+    </Item>
+    <Item class="ColorCorrectionEffect" referent="3">
+      <Properties>
+        <string name="Name">QCColor</string>
+        <float name="Brightness">0</float>
+        <float name="Contrast">0.06</float>
+        <bool name="Enabled">true</bool>
+        <float name="Saturation">0.12</float>
+        <Color3 name="TintColor">
+          <R>1</R>
+          <G>1</G>
+          <B>1</B>
+        </Color3>
+      </Properties>
+    </Item>
+  </Item>
+</roblox>

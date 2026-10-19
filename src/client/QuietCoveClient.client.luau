@@ -30,10 +30,7 @@ local function landingPlaying()
 end
 local voyage, quests, dodge
 local Action, Update = shared:WaitForChild("Action"), shared:WaitForChild("Update")
-local C = {Bg = Color3.fromRGB(14, 32, 43), Panel = Color3.fromRGB(23, 47, 60),
-    Ink = Color3.fromRGB(237, 242, 230), Muted = Color3.fromRGB(169, 194, 198),
-    Aqua = Color3.fromRGB(95, 211, 200), Gold = Color3.fromRGB(250, 199, 111),
-    Red = Color3.fromRGB(233, 127, 116)}
+local C = require(shared:WaitForChild("VisualTheme")).UI
 local function create(class, props, parent)
     local obj = Instance.new(class)
     for k, v in pairs(props) do obj[k] = v end

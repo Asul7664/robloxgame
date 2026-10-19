@@ -4,6 +4,7 @@ local fs = require('@lune/fs')
 local luau = require('@lune/luau')
 local R = require('@lune/roblox')
 local source = fs.readFile('src/client/QuestUI.luau')
+local theme = luau.load(fs.readFile('src/shared/VisualTheme.luau'), {environment={Color3=R.Color3}})()
 local now = 0
 local checks = 0
 local function check(ok, message) checks += 1; assert(ok, message) end
@@ -38,6 +39,8 @@ function Methods:GetChildren() return table.clone(self.Children) end
 function Methods:FindFirstChild(name) for _, child in ipairs(self.Children) do if child.Name == name then return child end end end
 function Methods:Destroy() for _, child in ipairs(self:GetChildren()) do child:Destroy() end; self.Parent = nil end
 local UI = luau.load(source, {environment = {
+    game={GetService=function() return {WaitForChild=function() return {WaitForChild=function() return 'VisualTheme' end} end} end},
+    require=function(name) assert(name=='VisualTheme'); return theme end,
     Instance = {new = new}, Color3 = R.Color3, UDim = R.UDim, UDim2 = R.UDim2, Vector2 = R.Vector2,
     Enum = R.Enum, workspace = {GetServerTimeNow = function() return 1000 + now end}, os = {clock = function() return now end},
 }})()
