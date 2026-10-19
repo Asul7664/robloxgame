@@ -35,6 +35,14 @@ assert max((x-y).length for x,y in zip(body_before,body_after))<1e-6,'Moving arm
 error=max(abs((before[i]-before[0]).length-(after[i]-after[0]).length) for i in range(0,len(before),17))
 assert error<1e-4,'Club must stay rigid while elbow bends'
 body=bpy.data.objects['CarvedBody'];assert max(v.co.y for v in body.data.vertices)<1.11,'Face relief must not protrude out of the back'
+# Catch stale matrix_world/scale bugs before a tiny toenail can become a unit
+# sphere during foot turnout, and retain actual heel/forefoot proportions.
+bpy.context.view_layer.update()
+for o in art:
+ if o.name.startswith('ToeNail'):
+  assert max(o.dimensions)<.25,(o.name,tuple(o.dimensions),'Toenail scale was lost')
+ if o.name.startswith('SculptedFoot_'):
+  assert .85<o.dimensions.y<1.4 and o.dimensions.z<.60,'Foot must retain an anatomical arch and sole'
 # GLB is self-contained and contains both mesh data and skinning data.
 raw=(out/'OriginalSahur_Rigged.glb').read_bytes();magic,version,total=struct.unpack_from('<III',raw)
 assert magic==0x46546c67 and version==2 and total==len(raw)

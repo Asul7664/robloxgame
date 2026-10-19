@@ -1,8 +1,8 @@
 {
-  "weightedVertices": 129330,
-  "blendedJointVertices": 4126,
+  "weightedVertices": 385992,
+  "blendedJointVertices": 7019,
   "bones": 25,
-  "clubRigidError": 1.0511716950212247e-06,
+  "clubRigidError": 1.4729994108897415e-06,
   "fbxRoundTrip": true,
   "glbSelfContained": true,
   "note": "Static model/skin verification; not a finished game asset or animation visual test."

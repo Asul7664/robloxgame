@@ -1,7 +1,8 @@
 {
-  "meshes": 56,
+  "meshes": 60,
   "bones": 25,
-  "triangles": 258036,
+  "triangles": 769372,
   "separateClub": true,
-  "stage": "geometry and rig study; not installed in game"
+  "revision": 2,
+  "stage": "reference proportion and facial sculpt revision; not installed in game"
 }

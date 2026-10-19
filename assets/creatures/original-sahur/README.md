@@ -7,7 +7,7 @@ copy of the restricted imported Roblox mesh.
 - A tall carved wooden body, expressive eyes, thin articulated limbs and toes.
 - Separate tapered wooden club, attached to the anatomical right hand.
 - 25-bone skeleton, finger/thumb bones and blended elbow/wrist/knee weights.
-- 258,036 triangles for the high-resolution shape study.
+- 769,372 triangles for the high-resolution shape study.
 
 Source generator and verification: `tools/sahur_original/README.md`.
 The saved Blender file contains the full procedural wood shader. Rigged FBX
@@ -17,3 +17,9 @@ are exported, but procedural wood textures still need UV baking for Roblox.
 This review asset is not mapped by Rojo. The installed boss and gameplay are
 unchanged. Game-resolution topology, texture baking, animation clips and a
 Roblox rig/controller adapter are the following stage after the shape review.
+
+Revision 2 follows the reference more closely: a smaller forehead, longer
+nose bridge, broad continuous orbital hoods and cheeks, inset lips, longer
+visible legs, anatomical hands and flat weight-bearing feet with an arch.
+`Face.png` shows the actual sculpt close-up. This is not an exact 3D scan of
+the photo; unseen surfaces are authored.
