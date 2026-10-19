@@ -34,9 +34,11 @@ local posts = {PierSupport=true, AwningPole=true, FishingSign=true, ReefSign=tru
 local function common(object, biome)
     if not object:IsA("BasePart") then return end
     local name=object.Name
-    if wood[name] then paint(object,P.Wood,Enum.Material.SmoothPlastic)
-    elseif posts[name] then paint(object,P.WoodDark,Enum.Material.SmoothPlastic)
-    elseif name=="PalmTrunk" or name=="TreeTrunk" then paint(object,P.Wood,Enum.Material.SmoothPlastic)
+    if wood[name] then
+        local variation=(math.sin(object.Position.X*1.7+object.Position.Z*0.9)+1)*0.035
+        paint(object,P.Wood:Lerp(P.WoodLight,variation),Enum.Material.WoodPlanks)
+    elseif posts[name] then paint(object,P.WoodDark,Enum.Material.Wood)
+    elseif name=="PalmTrunk" or name=="TreeTrunk" then paint(object,P.Wood,Enum.Material.Wood)
     elseif name=="PalmLeaf" or name=="LeafCanopy" then paint(object,biome.Leaves,Enum.Material.SmoothPlastic)
     elseif name=="IslandBeacon" then paint(object,biome.Accent,Enum.Material.Neon)
     elseif name=="Bollard" then paint(object,P.Ink,Enum.Material.SmoothPlastic) end
@@ -71,11 +73,11 @@ function V.ApplyMap(map)
     for _,object in ipairs(map:GetChildren()) do
         common(object,Theme.Biomes.home)
         local name=object.Name
-        if name=="IslandRock" then paint(object,P.Rock,Enum.Material.SmoothPlastic)
+        if name=="IslandRock" then paint(object,P.Rock,Enum.Material.Rock)
         elseif name=="IslandSand" or name=="ReefSand" or name=="BeachStep" then paint(object,P.Sand,Enum.Material.Sand)
         elseif name=="IslandGrass" then paint(object,P.Grass,Enum.Material.SmoothPlastic)
         elseif name=="Path" then paint(object,P.Sand,Enum.Material.Sand)
-        elseif name=="ReefRock" then paint(object,Theme.Biomes.reef.Rock,Enum.Material.SmoothPlastic)
+        elseif name=="ReefRock" then paint(object,Theme.Biomes.reef.Rock,Enum.Material.Rock)
         elseif name=="Coral" then paint(object,object.Position.X%5<2.5 and P.Coral or P.Purple,Enum.Material.SmoothPlastic)
         elseif name=="ShopCounter" then paint(object,P.WoodLight,Enum.Material.SmoothPlastic)
         elseif name=="Awning" then paint(object,object.Position.X<0 and P.Gold or P.Shallows,Enum.Material.SmoothPlastic)
@@ -106,11 +108,11 @@ function V.ApplyArchipelago(folder)
             for _,object in ipairs(island:GetChildren()) do
                 common(object,biome)
                 local name=object.Name
-                if name=="IslandStone" then paint(object,biome.Rock,Enum.Material.SmoothPlastic)
+                if name=="IslandStone" then paint(object,biome.Rock,Enum.Material.Rock)
                 elseif name=="Shore" then paint(object,P.Sand,Enum.Material.Sand)
                 elseif name=="Plateau" then paint(object,biome.Ground,d.Theme=="sand" and Enum.Material.Sand or Enum.Material.SmoothPlastic)
                 elseif name=="IslandPath" then paint(object,d.Theme=="storm" and Color3.fromRGB(166,181,208) or P.Sand,Enum.Material.Sand)
-                elseif name=="TempleTier" or name=="Obelisk" then paint(object,P.WoodLight,Enum.Material.SmoothPlastic)
+                elseif name=="TempleTier" or name=="Obelisk" then paint(object,P.Sand:Lerp(biome.Rock,0.28),Enum.Material.Sandstone)
                 elseif name=="SunCap" then paint(object,P.Gold)
                 elseif name=="Oasis" then paint(object,P.Shallows)
                 elseif name=="MushroomCap" then paint(object,biome.Accent,Enum.Material.SmoothPlastic)

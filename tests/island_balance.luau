@@ -81,6 +81,8 @@ end
 load("BrainrotExpansion","src/shared/BrainrotExpansion.luau")
 local config=load("Config","src/shared/Config.luau")
 load("VisualTheme","src/shared/VisualTheme.luau")
+load("SceneryVegetation","src/server/SceneryVegetation.luau")
+load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
 load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
@@ -244,9 +246,11 @@ for object,frame in pairs(original)do
     check(object.Parent~=nil,"Migration removed an existing part")
     near(object.Position,frame.Position+expected[object],"Incorrect saved-part relocation: "..object.Name)
     near(object.CFrame.LookVector,frame.LookVector,"Relocation rotated user geometry")
+    near(object.CFrame.UpVector,frame.UpVector,"Relocation rolled or tilted user geometry")
     near(object.Size,originalPhysics[object].Size,"Art pass resized existing geometry")
     for _,key in ipairs({"CanCollide","CanQuery","CanTouch"})do
-        if object.Name=="PalmLeaf"and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
+        local retired=object.Name=="PalmLeaf"or object.Name=="LeafCanopy"or object.Name=="Branch"
+        if retired and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
             check(object:GetAttribute("QCOriginal"..key)==originalPhysics[object][key],"Retired frond lost its original query/touch flag")
             check(object[key]==false,"Invisible retired frond intercepts queries or touch events")
         else
@@ -285,8 +289,23 @@ for _,object in ipairs(workspace:GetDescendants())do
             "Fresh map decoration changes physics or weapon queries")
     end
 end
-check(freshDecorations>300 and freshDecorations<420,"Full map decoration budget is unexpectedly empty or excessive")
+check(freshDecorations>1500 and freshDecorations<3000,"Full map decoration budget is unexpectedly empty or excessive")
+local function decorationCount(model)
+    local count=0
+    for _,object in ipairs(model:GetDescendants())do if object:IsA("BasePart")then count+=1 end end
+    return count
+end
+for _,island in ipairs(config.Islands)do
+    local region
+    if island.Theme=="home"or island.Theme=="reef"then
+        region=workspace.QuietCoveMap.QCScenery[island.Id]
+    else region=workspace.QuietCoveArchipelago[island.Id].QCScenery end
+    local regionParts=decorationCount(region)
+    check(regionParts>30 and regionParts<1000,"One island has empty or excessive static detail: "..island.Id)
+    local dockParts=decorationCount(workspace.QuietCoveArchipelago["Dock_"..island.Id].QCScenery)
+    check(dockParts>15 and dockParts<80,"One harbor has empty or excessive static detail: "..island.Id)
+end
 archipelago.Attach(world.Build())
 check(#workspace:GetDescendants()==freshCount,"Repeat Build duplicates fresh map scenery")
-print(string.format("PASS %d checks; Reef Patapim %.2f%% / Ambalabu %.2f%%; Moss %.2f%% / %.2f%%",checks,
-    reef.patapim*100,reef.ambalabu*100,moss.patapim*100,moss.ambalabu*100))
+print(string.format("PASS %d checks; %d full-map decorations; Reef Patapim %.2f%% / Ambalabu %.2f%%; Moss %.2f%% / %.2f%%",checks,
+    freshDecorations,reef.patapim*100,reef.ambalabu*100,moss.patapim*100,moss.ambalabu*100))

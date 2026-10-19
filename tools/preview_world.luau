@@ -79,13 +79,16 @@ end
 load("BrainrotExpansion","src/shared/BrainrotExpansion.luau")
 local config=load("Config","src/shared/Config.luau")
 load("VisualTheme","src/shared/VisualTheme.luau")
+load("SceneryVegetation","src/server/SceneryVegetation.luau")
+load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
 load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
 local archipelago=load("Archipelago","src/server/Archipelago.luau")
 
 archipelago.Attach(world.Build())
-local out={Parts={},Islands={},Water={},Palette={}}
+local out={Parts={},Islands={},Water={},Palette={},
+    RendererNote="Actual production geometry; Blender lighting is an approximation, not a Studio screenshot."}
 for _,object in ipairs(workspace:GetDescendants()) do
     if object:IsA("BasePart") and object.Transparency<0.95 then
         local components={object.CFrame:GetComponents()}
@@ -117,6 +120,25 @@ for _,island in ipairs(config.Islands)do
     table.insert(out.Islands,{Id=island.Id,X=island.X,Z=island.Z,Radius=island.Radius})
 end
 for key,value in pairs(loaded.VisualTheme.Palette)do out.Palette[key]={value.R,value.G,value.B}end
+for _,object in ipairs(out.Parts)do
+    for _,value in ipairs(object.Frame)do
+        assert(value==value and math.abs(value)<math.huge,"Non-finite production CFrame: "..object.Name)
+    end
+end
+local function metadata(value)
+    if typeof(value)=="Color3"then return{value.R,value.G,value.B}end
+    if typeof(value)=="EnumItem"then return value.Name end
+    if type(value)=="table"then
+        local result={}
+        for key,item in pairs(value)do result[key]=metadata(item)end
+        return result
+    end
+    return value
+end
+out.Lighting=metadata(loaded.VisualTheme.Lighting)
+out.LightingStyle=loaded.VisualTheme.LightingStyle
+out.Effects=metadata(loaded.VisualTheme.Effects)
+out.Water=metadata(loaded.VisualTheme.Water)
 local output=process.args[1] or "/workspace/outputs/quiet-cove-world.json"
 fs.writeFile(output,serde.encode("json",out,true))
 print(string.format("Exported %d actual production parts to %s",#out.Parts,output))

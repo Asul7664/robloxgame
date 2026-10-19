@@ -9,7 +9,7 @@ local P = {
     Cream = rgb(255, 247, 223), Rock = rgb(126, 151, 161), Ink = rgb(27, 50, 78),
 }
 return {
-    Version = 1,
+    Version = 2,
     Palette = P,
     Biomes = {
         home = {Ground=P.Grass, Leaves=P.Leaves, Accent=P.Shallows, Rock=P.Rock},
@@ -20,21 +20,22 @@ return {
         storm = {Ground=rgb(115, 137, 177), Leaves=rgb(107, 126, 202), Accent=P.Purple, Rock=rgb(83, 104, 148)},
     },
     Lighting = {
-        ClockTime=13, Brightness=2.6, ExposureCompensation=0, GlobalShadows=true,
-        ShadowSoftness=0.4, Ambient=rgb(112, 125, 151), OutdoorAmbient=rgb(151, 167, 187),
-        ColorShift_Top=rgb(255, 240, 216), ColorShift_Bottom=rgb(0, 0, 0),
-        EnvironmentDiffuseScale=0.65, EnvironmentSpecularScale=0.45,
+        ClockTime=13, Brightness=2.2, ExposureCompensation=-0.05, GlobalShadows=true,
+        ShadowSoftness=0.4, Ambient=rgb(90, 104, 128), OutdoorAmbient=rgb(124, 143, 166),
+        -- ColorShift is additive sunlight. Near-white clips wood/leaf color to orange/lime.
+        ColorShift_Top=rgb(12, 8, 3), ColorShift_Bottom=rgb(0, 0, 0),
+        EnvironmentDiffuseScale=0.45, EnvironmentSpecularScale=0.35,
         FogColor=rgb(190, 224, 249), FogStart=1800, FogEnd=6500,
     },
     -- New unified lighting API; separate from properties for older Studio versions.
     LightingStyle = "Soft", PrioritizeLightingQuality = true,
     Effects = {
         QCColor = {Class="ColorCorrectionEffect", Properties={
-            Enabled=true, Brightness=0, Contrast=0.06, Saturation=0.12, TintColor=rgb(255,255,255)}},
-        QCBloom = {Class="BloomEffect", Properties={Enabled=true, Intensity=0.12, Size=20, Threshold=0.95}},
+            Enabled=true, Brightness=0, Contrast=0.05, Saturation=0.06, TintColor=rgb(255,255,255)}},
+        QCBloom = {Class="BloomEffect", Properties={Enabled=true, Intensity=0.07, Size=18, Threshold=0.98}},
         -- Sparse haze keeps the separated islands visible from boats.
         QCAtmosphere = {Class="Atmosphere", Properties={Density=0.16, Offset=0.1, Haze=0.45,
-            Glare=0.08, Color=rgb(190,222,255), Decay=rgb(128,162,205)}},
+            Glare=0.03, Color=rgb(190,222,255), Decay=rgb(128,162,205)}},
     },
     Water = {WaterColor=P.Water, WaterTransparency=0.3, WaterReflectance=0.22,
         WaterWaveSize=0.15, WaterWaveSpeed=7},
