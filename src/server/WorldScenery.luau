@@ -131,7 +131,38 @@ local function coralGarden(folder,center,theme)
         end
     end
 end
+local function ferryDeck(map,theme)
+    local hull,deck=map:FindFirstChild("BoatHull"),map:FindFirstChild("BoatDeck")
+    if not hull or not deck or not hull:IsA("BasePart") or not deck:IsA("BasePart")
+        or not hull.Anchored or not deck.Anchored then return end
+    -- Repair a shifted saved deck relative to its hull, including rotated hulls.
+    -- The original correct height is retained; no world-axis or absolute-position snapping.
+    deck.CFrame=hull.CFrame*CFrame.new(0,hull.Size.Y/2+deck.Size.Y/2-0.05,0)
+    local root=map:FindFirstChild("QCScenery") or group(map,"QCScenery")
+    local old=root:FindFirstChild("Ferry")
+    local version="ferry-deck-1:"..tostring(theme.Version)
+    if old and old:GetAttribute("SceneryVersion")==version
+        and old:GetAttribute("HullFrame")==hull.CFrame and old:GetAttribute("DeckSize")==deck.Size then return end
+    if old and old:GetAttribute("SceneryVersion") then old:Destroy()
+    elseif old then return end
+    local folder=group(root,"Ferry")
+    folder:SetAttribute("SceneryVersion",version);folder:SetAttribute("HullFrame",hull.CFrame);folder:SetAttribute("DeckSize",deck.Size)
+    local count=math.max(4,math.floor(deck.Size.Z/1.4+0.5))
+    local spacing=deck.Size.Z/count
+    for i=1,count do
+        visual(folder,"DeckPlank",Vector3.new(deck.Size.X,0.08,spacing-0.05),
+            deck.CFrame*CFrame.new(0,deck.Size.Y/2+0.04,-deck.Size.Z/2+(i-0.5)*spacing),
+            theme.Palette.Wood:Lerp(theme.Palette.WoodLight,i%2==0 and 0.12 or 0.03))
+    end
+    for _,x in ipairs({-1,1}) do for _,z in ipairs({-1,1}) do
+        local nail=visual(folder,"DeckFastener",Vector3.new(0.1,0.025,0.1),
+            deck.CFrame*CFrame.new(x*(deck.Size.X/2-0.3),deck.Size.Y/2+0.09,z*(deck.Size.Z/2-0.4)),
+            theme.Palette.Ink,"Ball")
+        nail.CastShadow=false
+    end end
+end
 local function styleMap(map,config,theme)
+    ferryDeck(map,theme)
     local root=map:FindFirstChild("QCScenery") or group(map,"QCScenery")
     local sand=map:FindFirstChild("IslandSand")
     if sand then

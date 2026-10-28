@@ -310,6 +310,8 @@ ground('palm-ground', (26, 12.5, -14), (40, 18, 4), 720, 734, lens=25)
 ground('npc-market', (12, 11.9, -17), (20, 11, -25), 1000, 1000, lens=36)
 ground('npc-mara', (-12, 11.9, -17), (-20, 11, -25), 1000, 1000, lens=36)
 ground('npc-captain', (-2, 12.3, 62), (-7, 11.1, 72), 1000, 1000, lens=36)
+ground('npc-mara-back', (-24.2, 12.2, -26.5), (-20, 11.8, -25), 1000, 1000, lens=50)
+ground('ferry-close', (34, 16, -65), (24, 2, -78), 1200, 850, lens=35)
 islands = {i['Id']: i for i in data['Islands']}
 dunes = islands['Dunes']
 ground('dunes-ground', (dunes['X'] + 7, 12.5, dunes['Z'] - 58),

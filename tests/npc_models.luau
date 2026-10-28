@@ -26,6 +26,28 @@ for _,role in ipairs(roles) do
         or (role=="Captain" and R.Vector3.new(7,0,-11)) or R.Vector3.new(-7,0,4)
     check(rig.HumanoidRootPart.CFrame.LookVector:Dot(approach.Unit)>.97,"NPC faces away from the normal player approach")
     check(rig.Head.Shape==R.Enum.PartType.Ball,"Native rounded head missing")
+    if role=="Merchant" or role=="Buyer" then
+        local rear,crown=rig.HairBack,rig.FisherHairCrown
+        local function inside(object,headPoint)
+            local point=object.CFrame:PointToObjectSpace(rig.Head.CFrame:PointToWorldSpace(headPoint))
+            return (point.X/(object.Size.X/2))^2+(point.Y/(object.Size.Y/2))^2+(point.Z/(object.Size.Z/2))^2<1
+        end
+        local center=rig.Head.CFrame:PointToObjectSpace(rear.CFrame.Position)
+        for _,x in ipairs({-.6,-.3,0,.3,.6}) do for _,y in ipairs({-.15,.1,.35}) do
+            local headZ=rig.Head.Size.Z/2*math.sqrt(1-(x/(rig.Head.Size.X/2))^2-(y/(rig.Head.Size.Y/2))^2)
+            local remaining=1-((x-center.X)/(rear.Size.X/2))^2-((y-center.Y)/(rear.Size.Y/2))^2
+            check(remaining>0,"Hair rear silhouette breaks into disconnected side patches")
+            local rearZ=center.Z+rear.Size.Z/2*math.sqrt(remaining)
+            check(rearZ>headZ+.03,"Skin cuts through the back of the hairstyle")
+        end end
+        check(inside(rear,R.Vector3.new(0,.4,.63)) and inside(crown,R.Vector3.new(0,.4,.63)),"Hair crown is detached from the back")
+        if role=="Merchant" then
+            check(inside(rear,R.Vector3.new(0,-.12,.8)) and inside(rig.HairBun,R.Vector3.new(0,-.12,.8)),"Mara's bun floats behind the hairstyle")
+        end
+        local brimY=rig.Head.CFrame:PointToObjectSpace(rig.StrawHatBrim.CFrame.Position).Y-rig.StrawHatBrim.Size.X/2
+        local crownTop=rig.Head.CFrame:PointToObjectSpace(crown.CFrame.Position).Y+crown.Size.Y/2
+        check(crownTop>=brimY,"Straw hat floats above the hair")
+    end
     check(not rig.Head:FindFirstChildOfClass("SpecialMesh") and not rig.Head:FindFirstChildOfClass("Decal"),"Head still depends on a mesh/face texture")
     check(rig.Humanoid.AutomaticScalingEnabled==false,"Automatic body scaling can overwrite authored R6 joint offsets")
     local eyes,smiles,brows=0,0,0
@@ -107,7 +129,13 @@ local brokenFace=R.Instance.new("Part");brokenFace.Name="FacelessHead";brokenFac
 Models.Upgrade(migration,"Rodsmith")
 check(migration.VisualRig~=v1 and v1.Parent==nil,"Saved faceless rig was not upgraded")
 check(migration.Body==migrationBody and migrationBody.NPCDialoguePrompt==migrationPrompt,"Rig upgrade replaced conversation anchor")
-check(migration.VisualRig:GetAttribute("QCNPCVersion")==2,"New rig lacks upgrade identity")
+check(migration.VisualRig:GetAttribute("QCNPCVersion")==3,"New rig lacks upgrade identity")
+-- Hair-v2 installations must be rebuilt too, keeping the live conversation anchor.
+migration.VisualRig:SetAttribute("QCNPCVersion",2)
+local previousRig=migration.VisualRig
+Models.Upgrade(migration,"Rodsmith")
+check(previousRig.Parent==nil and migration.VisualRig~=previousRig,"Saved v2 rig was retained")
+check(migrationBody.NPCDialoguePrompt==migrationPrompt,"Hair update replaced the dialogue prompt")
 
 local bytes=R.serializeModel({world},true)
 local restored=R.deserializeModel(bytes)[1]

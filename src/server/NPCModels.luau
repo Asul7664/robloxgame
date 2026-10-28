@@ -1,7 +1,7 @@
 -- Classic Roblox characters, authored locally without downloaded avatar assets.
 -- Body remains the stable interaction anchor used by shops, boats and dialogues.
 local NPCModels = {}
-local VERSION = 2
+local VERSION = 3
 local rgb = Color3.fromRGB
 local UP = Vector3.new(0, 1, 0)
 local ROLES = {
@@ -123,11 +123,18 @@ local function clothes(rig,torso,head,left,right,role,info)
         accessory(rig,torso,"FisherApron",Vector3.new(1.55,1.45,0.08),CFrame.new(0,-0.07,-0.545),rgb(76,134,125))
         accessory(rig,torso,"ApronPocket",Vector3.new(0.86,0.38,0.06),CFrame.new(0,-0.28,-0.615),rgb(112,170,147))
         local hat=accessory(rig,head,"StrawHatBrim",Vector3.new(0.15,2.9,2.0),
-            CFrame.new(0,0.85,0)*CFrame.Angles(0,0,math.pi/2),rgb(222,184,113),Enum.PartType.Cylinder)
+            CFrame.new(0,0.80,0)*CFrame.Angles(0,0,math.pi/2),rgb(222,184,113),Enum.PartType.Cylinder)
         hat.CastShadow=true
-        accessory(rig,head,"StrawHatCrown",Vector3.new(1.85,0.72,1.4),CFrame.new(0,1.13,0),rgb(235,201,132),Enum.PartType.Ball)
-        accessory(rig,head,"HatRibbon",Vector3.new(1.88,0.18,1.42),CFrame.new(0,0.94,0),rgb(76,134,125),Enum.PartType.Ball)
-        accessory(rig,head,"HairBack",Vector3.new(1.55,0.9,0.4),CFrame.new(0,0.03,0.48),rgb(92,62,45),Enum.PartType.Ball)
+        accessory(rig,head,"StrawHatCrown",Vector3.new(1.85,0.72,1.4),CFrame.new(0,1.08,0),rgb(235,201,132),Enum.PartType.Ball)
+        accessory(rig,head,"HatRibbon",Vector3.new(1.88,0.18,1.42),CFrame.new(0,0.89,0),rgb(76,134,125),Enum.PartType.Ball)
+        -- Overlapping crown and rear volume cover the ellipsoid's whole back.
+        -- A shallow plate inside the head only exposed two detached side spots.
+        local hair=rgb(92,62,45)
+        accessory(rig,head,"FisherHairCrown",Vector3.new(1.76,0.72,1.45),CFrame.new(0,0.48,0.12),hair,Enum.PartType.Ball)
+        accessory(rig,head,"HairBack",Vector3.new(1.67,1.22,0.92),CFrame.new(0,0.17,0.46),hair,Enum.PartType.Ball)
+        if role=="Merchant" then
+            accessory(rig,head,"HairBun",Vector3.new(0.68,0.65,0.55),CFrame.new(0,-0.12,1.01),hair,Enum.PartType.Ball)
+        end
     end
 end
 
