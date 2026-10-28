@@ -59,7 +59,14 @@ function V.ApplyEnvironment()
         local effect=Lighting:FindFirstChild(name)
         if effect and effect.ClassName~=settings.Class then effect:Destroy(); effect=nil end
         if not effect then effect=Instance.new(settings.Class); effect.Name=name; effect.Parent=Lighting end
-        for key,value in pairs(settings.Properties) do effect[key]=value end
+        if effect:IsA("ColorGradingEffect") and effect:GetAttribute("QCOriginalTonemapper")==nil then
+            effect:SetAttribute("QCOriginalTonemapper",effect.TonemapperPreset.Name)
+            effect:SetAttribute("QCOriginalEnabled",effect.Enabled)
+        end
+        for key,value in pairs(settings.Properties) do
+            if key=="TonemapperPreset" then value=Enum.TonemapperPreset[value] end
+            effect[key]=value
+        end
     end
     -- Only one Atmosphere should control the sky. Preserve the old one for editing.
     for _,object in ipairs(Lighting:GetChildren()) do
@@ -67,6 +74,11 @@ function V.ApplyEnvironment()
             local backup=Lighting:FindFirstChild("QCPreviousAtmosphere")
             if not backup then backup=Instance.new("Folder"); backup.Name="QCPreviousAtmosphere"; backup.Parent=Lighting end
             object.Parent=backup
+        elseif object:IsA("ColorGradingEffect") and object.Name~="ColorGrading" then
+            local backup=Lighting:FindFirstChild("QCPreviousColorGrading")
+            if not backup then backup=Instance.new("Folder");backup.Name="QCPreviousColorGrading";backup.Parent=Lighting end
+            if object:GetAttribute("QCOriginalEnabled")==nil then object:SetAttribute("QCOriginalEnabled",object.Enabled) end
+            object.Enabled=false;object.Parent=backup
         end
     end
     for key,value in pairs(Theme.Water) do Workspace.Terrain[key]=value end
@@ -78,8 +90,8 @@ function V.ApplyMap(map)
         local name=object.Name
         if name=="IslandRock" then paint(object,P.Rock,Enum.Material.Rock)
         elseif name=="IslandSand" or name=="ReefSand" or name=="BeachStep" then paint(object,P.Sand,Enum.Material.Sand)
-        elseif name=="IslandGrass" then paint(object,P.Grass,Enum.Material.SmoothPlastic)
-        elseif name=="Path" then paint(object,P.Sand,Enum.Material.Sand)
+        elseif name=="IslandGrass" then paint(object,P.Grass,Enum.Material.Grass)
+        elseif name=="Path" then paint(object,P.Path,Enum.Material.Ground)
         elseif name=="ReefRock" then paint(object,Theme.Biomes.reef.Rock,Enum.Material.Rock)
         elseif name=="Coral" then paint(object,object.Position.X%5<2.5 and P.Coral or P.Purple,Enum.Material.SmoothPlastic)
         elseif name=="ShopCounter" then paint(object,P.WoodLight,Enum.Material.SmoothPlastic)
@@ -101,7 +113,7 @@ end
 
 function V.ApplyArchipelago(folder)
     for _,object in ipairs(folder:GetChildren()) do
-        if object.Name=="HarborPath" then paint(object,P.Sand,Enum.Material.Sand)
+        if object.Name=="HarborPath" then paint(object,P.Path,Enum.Material.Ground)
         elseif object.Name=="HomeHarborSign" then paint(object,P.WoodDark,Enum.Material.SmoothPlastic); labels(object) end
     end
     for _,d in ipairs(Config.Islands) do
@@ -113,8 +125,8 @@ function V.ApplyArchipelago(folder)
                 local name=object.Name
                 if name=="IslandStone" then paint(object,biome.Rock,Enum.Material.Rock)
                 elseif name=="Shore" then paint(object,P.Sand,Enum.Material.Sand)
-                elseif name=="Plateau" then paint(object,biome.Ground,d.Theme=="sand" and Enum.Material.Sand or Enum.Material.SmoothPlastic)
-                elseif name=="IslandPath" then paint(object,d.Theme=="storm" and Color3.fromRGB(166,181,208) or P.Sand,Enum.Material.Sand)
+                elseif name=="Plateau" then paint(object,biome.Ground,d.Theme=="sand" and Enum.Material.Sand or (d.Theme=="storm" and Enum.Material.Slate or Enum.Material.Grass))
+                elseif name=="IslandPath" then paint(object,d.Theme=="storm" and Color3.fromRGB(132,145,163) or P.Path,Enum.Material.Ground)
                 elseif name=="TempleTier" or name=="Obelisk" then paint(object,P.Sand:Lerp(biome.Rock,0.28),Enum.Material.Sandstone)
                 elseif name=="SunCap" then paint(object,P.Gold)
                 elseif name=="Oasis" then paint(object,P.Shallows)

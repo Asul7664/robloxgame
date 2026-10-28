@@ -3,11 +3,11 @@
     <Properties>
       <string name="Name">Lighting</string>
       <Color3 name="Ambient">
-        <R>0.39215687</R>
-        <G>0.4392157</G>
-        <B>0.5176471</B>
+        <R>0.32941177</R>
+        <G>0.3764706</G>
+        <B>0.45490196</B>
       </Color3>
-      <float name="Brightness">2</float>
+      <float name="Brightness">1.8</float>
       <float name="ClockTime">13</float>
       <Color3 name="ColorShift_Bottom">
         <R>0</R>
@@ -19,9 +19,9 @@
         <G>0.03137255</G>
         <B>0.011764706</B>
       </Color3>
-      <float name="EnvironmentDiffuseScale">0.45</float>
-      <float name="EnvironmentSpecularScale">0.2</float>
-      <float name="ExposureCompensation">0</float>
+      <float name="EnvironmentDiffuseScale">0.3</float>
+      <float name="EnvironmentSpecularScale">0.1</float>
+      <float name="ExposureCompensation">-0.12</float>
       <Color3 name="FogColor">
         <R>0.74509805</R>
         <G>0.8784314</G>
@@ -32,14 +32,44 @@
       <bool name="GlobalShadows">true</bool>
       <token name="LightingStyle">1</token>
       <Color3 name="OutdoorAmbient">
-        <R>0.54509807</R>
-        <G>0.60784316</G>
-        <B>0.6745098</B>
+        <R>0.4509804</R>
+        <G>0.5176471</G>
+        <B>0.5921569</B>
       </Color3>
       <bool name="PrioritizeLightingQuality">true</bool>
-      <float name="ShadowSoftness">0.4</float>
+      <float name="ShadowSoftness">0.5</float>
     </Properties>
-    <Item class="Atmosphere" referent="1">
+    <Item class="ColorGradingEffect" referent="1">
+      <Properties>
+        <string name="Name">ColorGrading</string>
+        <bool name="Enabled">true</bool>
+        <token name="TonemapperPreset">0</token>
+      </Properties>
+    </Item>
+    <Item class="BloomEffect" referent="2">
+      <Properties>
+        <string name="Name">QCBloom</string>
+        <bool name="Enabled">true</bool>
+        <float name="Intensity">0.035</float>
+        <float name="Size">18</float>
+        <float name="Threshold">0.99</float>
+      </Properties>
+    </Item>
+    <Item class="ColorCorrectionEffect" referent="3">
+      <Properties>
+        <string name="Name">QCColor</string>
+        <float name="Brightness">0</float>
+        <float name="Contrast">0.025</float>
+        <bool name="Enabled">true</bool>
+        <float name="Saturation">0</float>
+        <Color3 name="TintColor">
+          <R>1</R>
+          <G>1</G>
+          <B>1</B>
+        </Color3>
+      </Properties>
+    </Item>
+    <Item class="Atmosphere" referent="4">
       <Properties>
         <string name="Name">QCAtmosphere</string>
         <Color3 name="Color">
@@ -56,29 +86,6 @@
         <float name="Glare">0</float>
         <float name="Haze">0.3</float>
         <float name="Offset">0.1</float>
-      </Properties>
-    </Item>
-    <Item class="BloomEffect" referent="2">
-      <Properties>
-        <string name="Name">QCBloom</string>
-        <bool name="Enabled">true</bool>
-        <float name="Intensity">0.035</float>
-        <float name="Size">18</float>
-        <float name="Threshold">0.99</float>
-      </Properties>
-    </Item>
-    <Item class="ColorCorrectionEffect" referent="3">
-      <Properties>
-        <string name="Name">QCColor</string>
-        <float name="Brightness">0</float>
-        <float name="Contrast">0.03</float>
-        <bool name="Enabled">true</bool>
-        <float name="Saturation">0.02</float>
-        <Color3 name="TintColor">
-          <R>1</R>
-          <G>1</G>
-          <B>1</B>
-        </Color3>
       </Properties>
     </Item>
   </Item>

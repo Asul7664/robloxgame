@@ -1,7 +1,7 @@
 -- Classic Roblox characters, authored locally without downloaded avatar assets.
 -- Body remains the stable interaction anchor used by shops, boats and dialogues.
 local NPCModels = {}
-local VERSION = 1
+local VERSION = 2
 local rgb = Color3.fromRGB
 local UP = Vector3.new(0, 1, 0)
 local ROLES = {
@@ -12,6 +12,11 @@ local ROLES = {
 }
 local INK, CREAM = rgb(37,51,73),rgb(255,246,222)
 local OLD = {Head=true,Hat=true,HatBand=true,Arm=true,Leg=true,Eye=true}
+local ROOT_BASIS=CFrame.Angles(-math.pi/2,0,math.pi)
+local HEAD_SIZE=Vector3.new(1.75,1.55,1.5)
+-- Body anchors retain their saved frames. Visuals greet the path/boardwalk,
+-- rather than facing north with their backs to the normal player approach.
+local FACING={Merchant=-110,Rodsmith=110,Captain=-32.5,Buyer=120}
 
 local function part(parent,name,size,frame,color)
     local p=Instance.new("Part")
@@ -63,6 +68,27 @@ local function interaction(model,body,info)
     end
     label(body,info)
 end
+local function face(rig,head)
+    -- Actual welded geometry, not a texture or a SpecialMesh-dependent surface.
+    -- Each mark follows the front of the ellipsoid and remains visible at low quality.
+    local function front(x,y)
+        return -HEAD_SIZE.Z*0.5*math.sqrt(math.max(0.05,1-(x/(HEAD_SIZE.X*0.5))^2-(y/(HEAD_SIZE.Y*0.5))^2))-0.025
+    end
+    for _,side in ipairs({-1,1}) do
+        local x=side*0.33
+        accessory(rig,head,"FaceEye",Vector3.new(0.16,0.22,0.075),CFrame.new(x,0.13,front(x,0.13)),INK,Enum.PartType.Ball)
+        accessory(rig,head,"FaceBrow",Vector3.new(0.25,0.055,0.07),
+            CFrame.new(x,0.36,front(x,0.36))*CFrame.Angles(0,0,side*-0.07),rgb(84,60,45),Enum.PartType.Ball)
+    end
+    local points={{-.31,-.22},{-.16,-.30},{0,-.325},{.16,-.30},{.31,-.22}}
+    for i=1,#points-1 do
+        local a,b=points[i],points[i+1]
+        local x,y=(a[1]+b[1])*0.5,(a[2]+b[2])*0.5
+        local dx,dy=b[1]-a[1],b[2]-a[2]
+        accessory(rig,head,"FaceSmile",Vector3.new(math.sqrt(dx*dx+dy*dy)+0.045,0.065,0.075),
+            CFrame.new(x,y,front(x,y))*CFrame.Angles(0,0,math.atan2(dy,dx)),INK,Enum.PartType.Ball)
+    end
+end
 local function clothes(rig,torso,head,left,right,role,info)
     local shirt=info.Shirt
     for _,arm in ipairs({left,right}) do
@@ -77,29 +103,31 @@ local function clothes(rig,torso,head,left,right,role,info)
                 CFrame.new(side*0.44,0.15,-0.56)*CFrame.Angles(0,0,side*0.15),CREAM)
             accessory(rig,torso,"CaptainEpaulette",Vector3.new(0.55,0.14,1.1),CFrame.new(side*0.76,1.04,0),rgb(247,199,89))
         end
-        accessory(rig,head,"CaptainCapBand",Vector3.new(2.06,0.26,1.17),CFrame.new(0,0.52,0),INK)
-        accessory(rig,head,"CaptainCap",Vector3.new(2.14,0.33,1.32),CFrame.new(0,0.77,0),CREAM)
-        accessory(rig,head,"CapVisor",Vector3.new(1.9,0.12,0.75),CFrame.new(0,0.48,-0.7),INK)
-        accessory(rig,head,"CapBadge",Vector3.new(0.33,0.27,0.10),CFrame.new(0,0.72,-0.7),rgb(247,199,89))
+        accessory(rig,head,"CaptainCapBand",Vector3.new(1.92,0.2,1.48),CFrame.new(0,0.79,0.02),INK,Enum.PartType.Ball)
+        accessory(rig,head,"CaptainCap",Vector3.new(2.02,0.48,1.55),CFrame.new(0,1.02,0.02),CREAM,Enum.PartType.Ball)
+        accessory(rig,head,"CapVisor",Vector3.new(1.8,0.13,0.92),CFrame.new(0,0.78,-0.65),INK,Enum.PartType.Ball)
+        accessory(rig,head,"CapBadge",Vector3.new(0.27,0.24,0.10),CFrame.new(0,1,-0.73),rgb(247,199,89))
     elseif role=="Rodsmith" then
-        accessory(rig,torso,"WorkshopApron",Vector3.new(1.65,1.6,0.13),CFrame.new(0,-0.05,-0.57),rgb(120,86,62))
-        accessory(rig,torso,"ApronPocket",Vector3.new(1.02,0.43,0.12),CFrame.new(0,-0.25,-0.68),rgb(163,120,79))
+        accessory(rig,torso,"WorkshopApron",Vector3.new(1.55,1.46,0.08),CFrame.new(0,-0.02,-0.545),rgb(133,101,77))
+        accessory(rig,torso,"ApronPocket",Vector3.new(0.92,0.38,0.06),CFrame.new(0,-0.25,-0.615),rgb(171,136,103))
         for _,side in ipairs({-1,1}) do
-            accessory(rig,head,"GoggleLens",Vector3.new(0.63,0.39,0.13),CFrame.new(side*0.39,0.45,-0.58),rgb(100,193,211))
+            accessory(rig,head,"GoggleFrame",Vector3.new(0.58,0.33,0.12),CFrame.new(side*0.33,0.69,-0.48),INK,Enum.PartType.Ball)
+            accessory(rig,head,"GoggleLens",Vector3.new(0.42,0.21,0.08),CFrame.new(side*0.33,0.69,-0.56),rgb(116,185,191),Enum.PartType.Ball)
             accessory(rig,torso,"ApronStrap",Vector3.new(0.17,0.75,0.13),CFrame.new(side*0.64,0.77,-0.55),rgb(120,86,62))
         end
-        accessory(rig,head,"HairCap",Vector3.new(1.88,0.29,1.03),CFrame.new(0,0.53,0.04),rgb(84,58,43))
+        accessory(rig,head,"HairCap",Vector3.new(1.79,0.72,1.42),CFrame.new(0,0.50,0.11),rgb(84,58,43),Enum.PartType.Ball)
+        accessory(rig,head,"HairTuft",Vector3.new(0.85,0.31,0.65),CFrame.new(-0.3,0.84,-0.05),rgb(93,64,45),Enum.PartType.Ball)
         accessory(rig,torso,"ToolHandle",Vector3.new(0.15,0.7,0.15),CFrame.new(0.56,-0.48,-0.76)*CFrame.Angles(0,0,-0.13),rgb(207,162,93))
         accessory(rig,torso,"ToolHead",Vector3.new(0.42,0.20,0.22),CFrame.new(0.61,-0.12,-0.76),INK)
     else
-        accessory(rig,torso,"FisherApron",Vector3.new(1.6,1.55,0.13),CFrame.new(0,-0.10,-0.57),rgb(76,134,125))
-        accessory(rig,torso,"ApronPocket",Vector3.new(0.86,0.42,0.1),CFrame.new(0,-0.28,-0.67),rgb(112,170,147))
+        accessory(rig,torso,"FisherApron",Vector3.new(1.55,1.45,0.08),CFrame.new(0,-0.07,-0.545),rgb(76,134,125))
+        accessory(rig,torso,"ApronPocket",Vector3.new(0.86,0.38,0.06),CFrame.new(0,-0.28,-0.615),rgb(112,170,147))
         local hat=accessory(rig,head,"StrawHatBrim",Vector3.new(0.15,2.9,2.0),
-            CFrame.new(0,0.57,0)*CFrame.Angles(0,0,math.pi/2),rgb(222,184,113),Enum.PartType.Cylinder)
+            CFrame.new(0,0.85,0)*CFrame.Angles(0,0,math.pi/2),rgb(222,184,113),Enum.PartType.Cylinder)
         hat.CastShadow=true
-        accessory(rig,head,"StrawHatCrown",Vector3.new(1.8,0.55,1.07),CFrame.new(0,0.86,0),rgb(235,201,132))
-        accessory(rig,head,"HatRibbon",Vector3.new(1.83,0.16,1.10),CFrame.new(0,0.68,0),rgb(76,134,125))
-        accessory(rig,head,"HairBack",Vector3.new(1.78,0.7,0.26),CFrame.new(0,0.12,0.49),rgb(92,62,45))
+        accessory(rig,head,"StrawHatCrown",Vector3.new(1.85,0.72,1.4),CFrame.new(0,1.13,0),rgb(235,201,132),Enum.PartType.Ball)
+        accessory(rig,head,"HatRibbon",Vector3.new(1.88,0.18,1.42),CFrame.new(0,0.94,0),rgb(76,134,125),Enum.PartType.Ball)
+        accessory(rig,head,"HairBack",Vector3.new(1.55,0.9,0.4),CFrame.new(0,0.03,0.48),rgb(92,62,45),Enum.PartType.Ball)
     end
 end
 
@@ -130,28 +158,29 @@ function NPCModels.Upgrade(model,role,theme)
     local rig=Instance.new("Model"); rig.Name="VisualRig"; rig:SetAttribute("QCNPCVersion",VERSION)
     rig:SetAttribute("QCNPC",true); rig:SetAttribute("NPCRole",role)
     local heightOffset=(role=="Captain" or role=="Buyer") and 1.2 or 0.8
-    local root=part(rig,"HumanoidRootPart",Vector3.new(2,2,1),frame*CFrame.new(0,heightOffset,0),INK)
+    local root=part(rig,"HumanoidRootPart",Vector3.new(2,2,1),
+        frame*CFrame.new(0,heightOffset,0)*CFrame.Angles(0,math.rad(FACING[role]),0),INK)
     root.Transparency=1; root.Anchored=true; root.Massless=false
     local torso=part(rig,"Torso",Vector3.new(2,2,1),root.CFrame,info.Shirt)
-    joint(root,"RootJoint",root,torso,CFrame.new(),CFrame.new())
-    local head=part(rig,"Head",Vector3.new(2,1,1),torso.CFrame,info.Skin)
-    local mesh=Instance.new("SpecialMesh"); mesh.Name="HeadMesh"; mesh.MeshType=Enum.MeshType.Head; mesh.Scale=Vector3.new(1.25,1.25,1.25); mesh.Parent=head
-    joint(torso,"Neck",torso,head,CFrame.new(0,1,0),CFrame.new(0,-0.5,0))
-    local face=Instance.new("Decal"); face.Name="face"; face.Face=Enum.NormalId.Front
-    face.Texture="rbxasset://textures/face.png"; face.Parent=head
+    joint(root,"RootJoint",root,torso,ROOT_BASIS,ROOT_BASIS)
+    local head=part(rig,"Head",HEAD_SIZE,torso.CFrame,info.Skin);head.Shape=Enum.PartType.Ball
+    joint(torso,"Neck",torso,head,CFrame.new(0,1,0)*ROOT_BASIS,CFrame.new(0,-HEAD_SIZE.Y/2,0)*ROOT_BASIS)
+    face(rig,head)
     local left=part(rig,"Left Arm",Vector3.new(1,2,1),torso.CFrame,info.Skin)
     local right=part(rig,"Right Arm",Vector3.new(1,2,1),torso.CFrame,info.Skin)
-    joint(torso,"Left Shoulder",torso,left,CFrame.new(-1,0.5,0)*CFrame.Angles(math.rad(-5),0,math.rad(-7)),CFrame.new(0.5,0.5,0))
-    joint(torso,"Right Shoulder",torso,right,CFrame.new(1,0.5,0)*CFrame.Angles(math.rad(-9),0,math.rad(7)),CFrame.new(-0.5,0.5,0))
+    joint(torso,"Left Shoulder",torso,left,CFrame.new(-1,0.5,0)*CFrame.Angles(math.rad(-5),0,math.rad(-4))*CFrame.Angles(0,-math.pi/2,0),CFrame.new(0.5,0.5,0)*CFrame.Angles(0,-math.pi/2,0))
+    joint(torso,"Right Shoulder",torso,right,CFrame.new(1,0.5,0)*CFrame.Angles(math.rad(-7),0,math.rad(4))*CFrame.Angles(0,math.pi/2,0),CFrame.new(-0.5,0.5,0)*CFrame.Angles(0,math.pi/2,0))
     for _,side in ipairs({-1,1}) do
         local leg=part(rig,side<0 and "Left Leg" or "Right Leg",Vector3.new(1,2,1),torso.CFrame,INK)
         joint(torso,side<0 and "Left Hip" or "Right Hip",torso,leg,
-            CFrame.new(side*0.5,-1,0)*CFrame.Angles(0,0,side*math.rad(1)),CFrame.new(0,1,0))
+            CFrame.new(side,-1,0)*CFrame.Angles(0,0,side*math.rad(1))*CFrame.Angles(0,side*math.pi/2,0),
+            CFrame.new(side*0.5,1,0)*CFrame.Angles(0,side*math.pi/2,0))
         accessory(rig,leg,"Boot",Vector3.new(1.02,0.36,1.12),CFrame.new(0,-0.85,-0.05),rgb(67,57,53))
     end
     clothes(rig,torso,head,left,right,role,info)
     local humanoid=Instance.new("Humanoid"); humanoid.Name="Humanoid"
     humanoid.RigType=Enum.HumanoidRigType.R6
+    humanoid.AutomaticScalingEnabled=false
     humanoid.MaxHealth=100; humanoid.Health=100; humanoid.WalkSpeed=0; humanoid.AutoRotate=false
     humanoid.BreakJointsOnDeath=false; humanoid.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None
     humanoid.Parent=rig

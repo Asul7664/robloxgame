@@ -13,6 +13,7 @@ local function new(class)
     local p={ClassName=class,Name=class,Children={},Attributes={},CFrame=CF.new(),Size=V.new(1,1,1),
         Color=C.fromRGB(101,82,61),Material=roblox.Enum.Material.Wood,Transparency=0,
         CanCollide=true,CanQuery=true,CanTouch=true}
+    if class=="ColorGradingEffect"then p.Enabled=true;p.TonemapperPreset=roblox.Enum.TonemapperPreset.Default end
     return setmetatable({}, {
         __index=function(_,key)
             if key=="Position"then return p.CFrame.Position end
@@ -103,6 +104,7 @@ local visuals=load("WorldVisuals","src/server/WorldVisuals.luau")
 local map=child(workspace,"Model","QuietCoveMap")
 child(map,"Part","IslandSand",V.new(0,5,0),V.new(119,2,89))
 child(map,"Part","IslandGrass",V.new(0,6.5,5),V.new(99,1,68))
+local path=child(map,"Part","Path",V.new(0,7.1,-5),V.new(12,.2,56))
 child(map,"Part","IslandRock",V.new(0,-3,0),V.new(124,16,94))
 local pier=child(map,"Part","PierPlank",V.new(0,7,-36),V.new(14,1,3.6))
 child(map,"Part","PalmTrunk",V.new(41,17,4),V.new(1.8,20,1.8))
@@ -125,6 +127,7 @@ signText.Text="РЫБАЛКА";signText.TextColor3=C.new(1,1,1)
 local prompt=child(pier,"ProximityPrompt","Travel");prompt.ActionText="На риф"
 
 local archipelago=child(workspace,"Model","QuietCoveArchipelago")
+local harborPath=child(archipelago,"Part","HarborPath",V.new(0,7.25,38),V.new(11,.15,56))
 for _,definition in ipairs(config.Islands)do
     if definition.Theme~="home"and definition.Theme~="reef"then
         local island=child(archipelago,"Model",definition.Id)
@@ -189,6 +192,12 @@ local customCorrection=child(lighting,"ColorCorrectionEffect","UserCorrection")
 customCorrection.Saturation=.03
 local oldAtmosphere=child(lighting,"Atmosphere","SavedAtmosphere")
 oldAtmosphere.Density=.5
+-- The uploaded place contains an enabled legacy Retro tonemapper. It must not
+-- silently keep clipping scene colors after the newer lighting preset is applied.
+local legacyGrading=child(lighting,"ColorGradingEffect","ColorGrading")
+legacyGrading.Enabled=true;legacyGrading.TonemapperPreset=roblox.Enum.TonemapperPreset.Retro
+local extraGrading=child(lighting,"ColorGradingEffect","UserExtraGrading")
+extraGrading.Enabled=true;extraGrading.TonemapperPreset=roblox.Enum.TonemapperPreset.Retro
 local wrongBloom=child(lighting,"Folder","QCBloom")
 local sky=child(lighting,"Sky","UserSky")
 
@@ -219,6 +228,11 @@ visuals.ApplyAll()
 for _,object in ipairs(previousOwned)do check(object.Parent==nil,"Saved v1-owned decoration was retained")end
 check(userScenery.Parent==oldMapScenery and userRock.Parent==userScenery,"Migration removed unrelated saved scenery")
 check(map.IslandGrass.Color==theme.Palette.Grass,"Home ground does not use the accepted palette")
+check(map.IslandGrass.Material==roblox.Enum.Material.Grass,"Home grass is still a flat plastic sheet")
+check(path.Material==roblox.Enum.Material.Ground and path.Color==theme.Palette.Path,
+    "Main path retains the bright rippled sand material instead of muted ground")
+check(harborPath.Material==roblox.Enum.Material.Ground and harborPath.Color==theme.Palette.Path,
+    "Harbor path no longer shares the muted ground material")
 check(map.ReefRock.Color==theme.Biomes.reef.Rock,"Reef lost its biome color")
 local function colorDistance(a,b)
     return math.sqrt((a.R-b.R)^2+(a.G-b.G)^2+(a.B-b.B)^2)
@@ -234,6 +248,12 @@ for _,definition in ipairs(config.Islands)do
     if definition.Theme~="home"and definition.Theme~="reef"then
         local island=archipelago[definition.Id]
         check(island.Plateau.Color==theme.Biomes[definition.Theme].Ground,"Biome ground color mismatch")
+        if definition.Theme~="sand"and definition.Theme~="storm"then
+            check(island.Plateau.Material==roblox.Enum.Material.Grass,"Green island retains plastic terrain")
+        end
+        check(island.IslandPath.Material==roblox.Enum.Material.Ground
+            and island.IslandPath.Color~=theme.Palette.Sand,"Island route retains yellow sand instead of ground")
+        if definition.Theme~="storm"then check(island.IslandPath.Color==theme.Palette.Path,"Island route leaves the muted path palette")end
         check(island.IslandBeacon.Color==theme.Biomes[definition.Theme].Accent,"Biome marker lost its accent")
         check(island:FindFirstChild("QCScenery")~=nil,"Saved island did not receive details")
     end
@@ -323,21 +343,36 @@ check(lighting.LightingStyle==roblox.Enum.LightingStyle.Soft,"Stylized soft ligh
 check(lighting.PrioritizeLightingQuality==true,"Lighting quality preference is missing")
 for key,value in pairs(theme.Water)do check(workspace.Terrain[key]==value,"Water preset differs: "..key)end
 check(oldAtmosphere.Parent==lighting.QCPreviousAtmosphere and oldAtmosphere.Density==.5,"Previous atmosphere was lost instead of retained")
+check(lighting.ColorGrading==legacyGrading and legacyGrading.Enabled==true
+    and legacyGrading.TonemapperPreset==roblox.Enum.TonemapperPreset.Default,
+    "Uploaded Retro tonemapper was not adopted and changed to the controlled Default grade")
+check(legacyGrading:GetAttribute("QCOriginalTonemapper")=="Retro"
+    and legacyGrading:GetAttribute("QCOriginalEnabled")==true,"Original legacy grade settings were not retained")
+check(extraGrading.Parent==lighting.QCPreviousColorGrading and extraGrading.Enabled==false
+    and extraGrading.TonemapperPreset==roblox.Enum.TonemapperPreset.Retro
+    and extraGrading:GetAttribute("QCOriginalEnabled")==true,"Competing grade was lost or remains active")
 check(customCorrection.Parent==lighting and customCorrection.Saturation==.03,"User postprocessing was changed")
 check(sky.Parent==lighting,"User sky was replaced")
 check(wrongBloom.Parent==nil and lighting.QCBloom.ClassName=="BloomEffect","Wrong class did not migrate to the owned effect")
 local effects={}
+local function effectValue(key,value)
+    return key=="TonemapperPreset"and roblox.Enum.TonemapperPreset[value]or value
+end
 for name,settings in pairs(theme.Effects)do
     local effect=lighting:FindFirstChild(name)
     effects[name]=effect
     check(effect and effect.ClassName==settings.Class,"Missing owned environment effect")
-    for key,value in pairs(settings.Properties)do check(effect[key]==value,"Environment effect differs: "..name.."."..key)end
+    for key,value in pairs(settings.Properties)do check(effect[key]==effectValue(key,value),"Environment effect differs: "..name.."."..key)end
 end
 local count=#workspace:GetDescendants()
 local lightingCount=#lighting:GetDescendants()
 visuals.ApplyAll()
 check(#workspace:GetDescendants()==count,"Second art pass duplicates decorations")
 check(#lighting:GetDescendants()==lightingCount,"Second art pass duplicates environment effects")
+check(legacyGrading:GetAttribute("QCOriginalTonemapper")=="Retro"
+    and legacyGrading:GetAttribute("QCOriginalEnabled")==true,"Repeat application overwrites the original grade settings")
+check(extraGrading:GetAttribute("QCOriginalEnabled")==true and extraGrading.Enabled==false,
+    "Repeated application re-enables or loses the competing grade backup")
 check(leaf:GetAttribute("QCOriginalTransparency")==.25,"Repeated art pass overwrites original frond transparency")
 check(leaf:GetAttribute("QCOriginalCanQuery")==true and leaf:GetAttribute("QCOriginalCanTouch")==true,
     "Repeated art pass overwrites the original retired-frond flags")
@@ -345,6 +380,11 @@ for name,object in pairs(effects)do check(lighting[name]==object,"Second art pas
 local atmosphereCount=0
 for _,object in ipairs(lighting:GetChildren())do if object:IsA("Atmosphere")then atmosphereCount+=1 end end
 check(atmosphereCount==1,"Multiple active atmospheres compete for the sky")
+local activeGrades=0
+for _,object in ipairs(lighting:GetDescendants())do
+    if object:IsA("ColorGradingEffect")and object.Enabled then activeGrades+=1 end
+end
+check(activeGrades==1,"Multiple active tonemappers compete for the scene")
 
 -- Inspect the actual rendered cylinder axes, not only the metadata. Both halves
 -- of every curved leaf must meet, start at the trunk, and form an arch. These
@@ -456,7 +496,7 @@ for name,settings in pairs(theme.Effects)do
     serializedEffectCount+=1
     local effect=serializedLighting:FindFirstChild(name)
     check(effect and effect.ClassName==settings.Class,"Missing serialized environment effect: "..name)
-    for key,value in pairs(settings.Properties)do matching(effect[key],value,"Stale serialized effect property: "..name.."."..key)end
+    for key,value in pairs(settings.Properties)do matching(effect[key],effectValue(key,value),"Stale serialized effect property: "..name.."."..key)end
 end
 check(#serializedLighting:GetChildren()==serializedEffectCount,"Serialized lighting has duplicate or stale effects")
 print(string.format("PASS %d visual theme checks; %d static non-query decorations",checks,added))

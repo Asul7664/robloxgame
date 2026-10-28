@@ -14,7 +14,10 @@ lighting.PrioritizeLightingQuality=theme.PrioritizeLightingQuality
 for name,settings in pairs(theme.Effects) do
     local effect=roblox.Instance.new(settings.Class)
     effect.Name=name
-    for key,value in pairs(settings.Properties) do effect[key]=value end
+    for key,value in pairs(settings.Properties) do
+        if key=="TonemapperPreset" then value=roblox.Enum.TonemapperPreset[value] end
+        effect[key]=value
+    end
     effect.Parent=lighting
 end
 fs.writeDir("assets/environment")

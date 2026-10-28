@@ -96,7 +96,7 @@ local function steppingPath(parent,center,first,last,theme)
         i+=1
         visual(folder,"PathStone",Vector3.new(3.4+i%2*0.6,0.09,2.1),
             CFrame.new(center.X+math.sin(i*2.4)*1.8,center.Y+0.05,center.Z+z)*CFrame.Angles(0,i%2*0.18-0.09,0),
-            theme.Palette.Sand:Lerp(theme.Palette.Cream,0.3),nil,Enum.Material.Sandstone)
+            theme.Palette.Path:Lerp(theme.Palette.Sand,0.45),nil,Enum.Material.Sandstone)
         for _,side in ipairs({-1,1}) do
             visual(folder,"PathEdgeStone",Vector3.new(1.1,0.32,1.6),
                 CFrame.new(center.X+side*5.35,center.Y-0.03,center.Z+z+side*1.1)*CFrame.Angles(0,i*0.73,0.08),

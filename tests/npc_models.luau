@@ -21,8 +21,28 @@ for _,role in ipairs(roles) do
     check(rig:FindFirstChildOfClass("Humanoid")~=nil,"NPC is not a Humanoid character")
     check(rig.Humanoid:FindFirstChildOfClass("Animator")~=nil,"Animator missing")
     check(rig.PrimaryPart==rig.HumanoidRootPart and rig.HumanoidRootPart.Anchored,"Root is not anchored")
-    check(rig.Head.HeadMesh.MeshType==R.Enum.MeshType.Head,"Classic rounded head missing")
-    check(rig.Head.face.Texture=="rbxasset://textures/face.png","Face requires an external uploaded asset")
+    local approach=(role=="Merchant" and R.Vector3.new(20,0,6))
+        or (role=="Rodsmith" and R.Vector3.new(-20,0,6))
+        or (role=="Captain" and R.Vector3.new(7,0,-11)) or R.Vector3.new(-7,0,4)
+    check(rig.HumanoidRootPart.CFrame.LookVector:Dot(approach.Unit)>.97,"NPC faces away from the normal player approach")
+    check(rig.Head.Shape==R.Enum.PartType.Ball,"Native rounded head missing")
+    check(not rig.Head:FindFirstChildOfClass("SpecialMesh") and not rig.Head:FindFirstChildOfClass("Decal"),"Head still depends on a mesh/face texture")
+    check(rig.Humanoid.AutomaticScalingEnabled==false,"Automatic body scaling can overwrite authored R6 joint offsets")
+    local eyes,smiles,brows=0,0,0
+    for _,object in ipairs(rig:GetChildren()) do
+        if object.Name=="FaceEye" or object.Name=="FaceSmile" or object.Name=="FaceBrow" then
+            local localPoint=rig.Head.CFrame:PointToObjectSpace(object.CFrame.Position)
+            check(localPoint.Z<-.45 and localPoint.Z>-.85,"Facial feature is hidden inside or detached from the front of the head")
+            check(object.OutfitWeld.Part0==rig.Head,"Face does not move with the animated head")
+            if object.Name=="FaceEye" then eyes+=1
+            elseif object.Name=="FaceSmile" then smiles+=1 else brows+=1 end
+        end
+    end
+    check(eyes==2 and smiles==4 and brows==2,"Actual modeled expression is incomplete")
+    for _,arm in ipairs({rig["Left Arm"],rig["Right Arm"]}) do
+        check(arm.CFrame.UpVector.Y>.98,"An arm is raised into a T-pose")
+        check(arm.CFrame.Position.Y<rig.Torso.CFrame.Position.Y+.1,"Arm hangs above the torso instead of beside it")
+    end
     local bones={"Torso","Head","Left Arm","Right Arm","Left Leg","Right Leg"}
     for _,bone in ipairs(bones) do check(rig:FindFirstChild(bone)~=nil,"R6 bone missing: "..bone) end
     local motors,welds,parts=0,0,0
@@ -45,7 +65,7 @@ for _,role in ipairs(roles) do
         end
     end
     check(motors==6,"R6 must have six articulating joints")
-    check(parts>=20 and parts<45 and welds>=12,"Outfit is empty or excessive")
+    check(parts>=28 and parts<45 and welds>=20,"Outfit is empty or excessive: "..role.." parts="..parts..", welds="..welds)
     local floor=(role=="Captain" or role=="Buyer") and 7.5 or 7
     local foot=rig["Left Leg"].CFrame:PointToWorldSpace(R.Vector3.new(0,-1,0))
     check(math.abs(foot.Y-floor)<0.03,"Character does not stand on the existing ground/deck")
@@ -78,9 +98,22 @@ local customHead=R.Instance.new("MeshPart");customHead.Name="Head";customHead.Pa
 Models.Upgrade(custom)
 check(custom:FindFirstChild("VisualRig")==nil and customHead.Transparency==0,"Hand-authored mesh NPC replaced")
 
+-- Saved v1 rig is replaced, while Body and conversation prompt identity remain.
+local migration=R.Instance.new("Model"); migration.Name="Rodsmith";migration.Parent=world
+local migrationBody=R.Instance.new("Part");migrationBody.Name="Body";migrationBody.CFrame=R.CFrame.new(20,9.2,-25);migrationBody.Parent=migration
+local migrationPrompt=R.Instance.new("ProximityPrompt");migrationPrompt.Name="NPCDialoguePrompt";migrationPrompt.Parent=migrationBody
+local v1=R.Instance.new("Model");v1.Name="VisualRig";v1:SetAttribute("QCNPCVersion",1);v1.Parent=migration
+local brokenFace=R.Instance.new("Part");brokenFace.Name="FacelessHead";brokenFace.Parent=v1
+Models.Upgrade(migration,"Rodsmith")
+check(migration.VisualRig~=v1 and v1.Parent==nil,"Saved faceless rig was not upgraded")
+check(migration.Body==migrationBody and migrationBody.NPCDialoguePrompt==migrationPrompt,"Rig upgrade replaced conversation anchor")
+check(migration.VisualRig:GetAttribute("QCNPCVersion")==2,"New rig lacks upgrade identity")
+
 local bytes=R.serializeModel({world},true)
 local restored=R.deserializeModel(bytes)[1]
 local restoredRig=restored.Captain.VisualRig
 check(restoredRig.Torso["Right Shoulder"].Part1==restoredRig["Right Arm"],"Serialized Motor6D references escaped their rig")
-check(restoredRig.Head:FindFirstChild("face")~=nil,"Serialized face instance lost")
+local restoredEyes=0
+for _,object in ipairs(restoredRig:GetChildren()) do if object.Name=="FaceEye" then restoredEyes+=1;check(object.OutfitWeld.Part0==restoredRig.Head,"Serialized face weld lost") end end
+check(restoredEyes==2,"Serialized face geometry lost")
 print(string.format("PASS %d Roblox NPC rig checks; all four roles and legacy upgrade",checks))

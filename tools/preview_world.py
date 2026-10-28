@@ -49,7 +49,7 @@ def compose_npcs(directory, target):
     label = ImageFont.truetype(font, 21)
     small = ImageFont.truetype(font, 16)
     draw.text((20, 14), 'QUIET COVE / ПЕРСОНАЖИ БУХТЫ', font=title, fill='#FFF7DF')
-    draw.text((20, 53), 'Игровые R6-модели · Свет, головы и встроенная улыбка приближены в Blender · Не скриншот Studio', font=small, fill='#BBD5E8')
+    draw.text((20, 53), 'Геометрия R6 и лица из игры · Свет и фактура приближены в Blender · Не скриншот Studio', font=small, fill='#BBD5E8')
     for index, (shot, name, role) in enumerate((('npc-market', 'ЛЕВ', 'Удочки и мастерская'), ('npc-mara', 'МАРА', 'Улов и поручения'), ('npc-captain', 'КАПИТАН МИРОН', 'Лодки и экспедиции'))):
         x = index * 468
         image = Image.open(directory / ('quiet-cove-' + shot + '.png')).convert('RGB')
@@ -307,9 +307,9 @@ def ground(label, position, target, width=1280, height=720, lens=26):
 
 ground('harbor-ground', (0, 12.5, -32), (0, 16.5, 19), lens=18.6)
 ground('palm-ground', (26, 12.5, -14), (40, 18, 4), 720, 734, lens=25)
-ground('npc-market', (17, 11.7, -35), (20, 10.5, -25), 1000, 1000, lens=36)
-ground('npc-mara', (-23, 11.7, -35), (-20, 10.5, -25), 1000, 1000, lens=36)
-ground('npc-captain', (-10, 12.2, 62), (-7, 11.1, 72), 1000, 1000, lens=36)
+ground('npc-market', (12, 11.9, -17), (20, 11, -25), 1000, 1000, lens=36)
+ground('npc-mara', (-12, 11.9, -17), (-20, 11, -25), 1000, 1000, lens=36)
+ground('npc-captain', (-2, 12.3, 62), (-7, 11.1, 72), 1000, 1000, lens=36)
 islands = {i['Id']: i for i in data['Islands']}
 dunes = islands['Dunes']
 ground('dunes-ground', (dunes['X'] + 7, 12.5, dunes['Z'] - 58),

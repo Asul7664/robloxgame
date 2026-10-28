@@ -14,6 +14,7 @@ local Node={}
 local function new(class)
     local properties={ClassName=class,Name=class,Children={},Attributes={},CFrame=CF.new(),Size=V.new(1,1,1),Pivot=CF.new(),
         Color=roblox.Color3.fromRGB(163,162,165),Transparency=0,CanCollide=true,CanQuery=true,CanTouch=true}
+    if class=="ColorGradingEffect"then properties.Enabled=true;properties.TonemapperPreset=roblox.Enum.TonemapperPreset.Default end
     return setmetatable({_p=properties},{
         __index=function(self,key)
             if key=="Position"then return properties.CFrame.Position end
