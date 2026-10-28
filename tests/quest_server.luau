@@ -23,6 +23,7 @@ end
 local function makeServer(id, tester)
     local env = Environment.new(); env:Start()
     local player = env:Player(id, tester); env.Players.PlayerAdded:Fire(player)
+    env:AcceptQuests(player)
     return env, player, env.Profiles.Get(player)
 end
 local function reachReel(env, player)
@@ -54,7 +55,9 @@ do
     env:Advance(3)
     task = taskFor(data, "Daily", "catch_total"); task.Progress = task.Target
     env:Fire(player, "QuestClaim", "Daily", id)
-    check(data.Coins == initial + task.Reward, "Claim works outside fishing and pays server reward")
+    check(data.Coins == initial, "Legacy remote cannot bypass NPC turn-in")
+    env:Talk(player,env.World.Merchant,"quests");env:Choose(player,"claim")
+    check(data.Coins == initial + task.Reward, "Nearby NPC turn-in pays server reward")
     check(taskFor(data, "Daily", "catch_total").Claimed, "Claim marker written with currency")
     env:Fire(player, "QuestClaim", "Daily", id)
     env:Fire(player, "QuestClaim", "Weekly", "not_a_task")
@@ -129,13 +132,17 @@ do
     env.RunService.Heartbeat:Fire(1 / 60)
     check(data.Quests.Daily.Key ~= oldKey, "Online player's assignments reset at next UTC day")
     check(progress(data, "Daily", "catch_total") == 0, "New day starts with fresh catch progress")
+    check(not taskFor(data,"Daily","catch_total").Accepted,"New day requires a new NPC visit")
+    env:Talk(player,env.World.Merchant,"quests");env:Choose(player,"accept")
     local nextTask = taskFor(data, "Daily", "catch_total"); nextTask.Progress = nextTask.Target
     local coins = data.Coins
     env:Fire(player, "QuestClaim", "Daily", oldId)
     check(data.Coins == coins, "Delayed claim from previous day cannot claim a new task")
     local newId = publicId(env, player, "Daily", "catch_total")
     env:Fire(player, "QuestClaim", "Daily", newId)
-    check(data.Coins == coins + nextTask.Reward, "Current period ID can claim after online reset")
+    check(data.Coins == coins, "Even current period IDs cannot claim outside NPC dialogue")
+    env:Choose(player,"claim")
+    check(data.Coins == coins + nextTask.Reward, "NPC turn-in works after online reset")
 end
 
 do
@@ -205,6 +212,7 @@ do
     check(env.Profiles.Load(player), "Published profile load obtains datastore lease")
     local data = env.Profiles.Get(player)
     env.Quests.Ensure(data, env.Config, env:Now(), player.UserId)
+    env.Quests.AcceptFrom(data,env.Config,"merchant",env:Now(),player.UserId)
     local record = {Species="capybara", Kg=.5, Mutation="normal"}
     check(env.Ledger.Reserve(data, env.Config, record, "saved-landing"), "Real ledger accepts earned reservation")
     env.Quests.RecordCatch(data, env.Config, record, "Cove", env:Now(), player.UserId)
@@ -225,6 +233,7 @@ do
     local real = env.Profiles.Get(player)
     real.Coins = 47
     env.Quests.Ensure(real, env.Config, env:Now(), player.UserId)
+    env.Quests.AcceptFrom(real,env.Config,"merchant",env:Now(),player.UserId)
     local task = taskFor(real, "Daily", "catch_total"); task.Progress = task.Target
     local paidId = env.Quests.Snapshot(real, env.Config, env:Now(), player.UserId).Daily.Tasks[1].Id
     check(env.Quests.Claim(real, env.Config, "Daily", paidId, env:Now(), player.UserId), "Original profile quest reward earned")

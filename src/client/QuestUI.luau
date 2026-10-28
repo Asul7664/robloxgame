@@ -1,4 +1,4 @@
--- Quest progress and rewards are supplied by the server; this UI only claims IDs.
+-- Read-only journal. Assignments and money are handled through NPC conversations.
 local QuestUI = {}
 QuestUI.__index = QuestUI
 
@@ -62,15 +62,6 @@ function QuestUI:Toggle()
     self.Host.Visible = true
     self:_render()
 end
-function QuestUI:_claim(periodKind, quest)
-    local period = self.Data and self.Data[periodKind]
-    local key = periodKind .. ":" .. tostring(quest.Id)
-    if not period or quest.Claimed or self.Pending[key] or
-        (quest.Progress or 0) < (quest.Target or 1) or self:_serverNow() >= period.ResetAt then return end
-    self.Pending[key] = os.clock()
-    self:_render()
-    self.Claim(periodKind, quest.Id)
-end
 function QuestUI:_serverNow()
     return self.ServerAt + (os.clock() - self.ReceivedAt)
 end
@@ -81,10 +72,13 @@ function QuestUI:_badge()
             local period = self.Data[periodKind]
             if period and self:_serverNow() < period.ResetAt then
                 for _, quest in ipairs(period.Tasks or {}) do
-                    if not quest.Claimed and (quest.Progress or 0) >= (quest.Target or 1) then ready += 1 end
+                    if quest.Accepted~=false and not quest.Claimed and (quest.Progress or 0) >= (quest.Target or 1) then ready += 1 end
                 end
             end
         end
+    end
+    for _,coins in pairs(self.Data and self.Data.PendingRewards or {}) do
+        if type(coins)=="number" and coins>0 then ready+=1 end
     end
     self.Button.Text = ready > 0 and ("ЗАДАНИЯ · " .. ready) or "ЗАДАНИЯ"
     self.Button.BackgroundColor3 = ready > 0 and C.Gold or C.Panel
@@ -106,12 +100,25 @@ function QuestUI:_render()
         return
     end
     self.Countdown.Text = resetText(self.Period, period.ResetAt - self:_serverNow())
+    local names={merchant="Мара",rodsmith="Лев",captain="Капитан Мирон"}
+    local outstanding={}
+    for _,giver in ipairs({"merchant","rodsmith","captain"}) do
+        local coins=self.Data.PendingRewards and self.Data.PendingRewards[giver]
+        if type(coins)=="number" and coins>0 then
+            table.insert(outstanding,names[giver]..": +"..math.floor(coins).." монет")
+        end
+    end
+    if #outstanding>0 then
+        local note=label(self.List,"Награды за прошлые поручения ждут у NPC:\n"..table.concat(outstanding," · "),
+            UDim2.new(1,-8,0,70),UDim2.new(),13,C.Gold)
+        note.Name="OutstandingRewards";note.LayoutOrder=0
+    end
     if #(period.Tasks or {}) == 0 then
         label(self.List, "Задания появятся после загрузки профиля.", UDim2.new(1, -8, 0, 66), UDim2.new(), 14, C.Muted)
     end
     for index, quest in ipairs(period.Tasks or {}) do
         local row = make("Frame", {Name = "Quest_" .. tostring(quest.Id), LayoutOrder = index,
-            Size = UDim2.new(1, -8, 0, 136), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, self.List)
+            Size = UDim2.new(1, -8, 0, 166), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, self.List)
         corner(row)
         local title = label(row, quest.Title or "Рыболовное задание", UDim2.new(1, -24, 0, 48),
             UDim2.fromOffset(12, 5), 15)
@@ -123,25 +130,29 @@ function QuestUI:_render()
         local reward = label(row, string.format("+%d монет", quest.Reward or 0), UDim2.new(0.58, -24, 0, 24),
             UDim2.new(0.42, 0, 0, 59), 14, C.Gold)
         reward.TextXAlignment = Enum.TextXAlignment.Right
-        local track = make("Frame", {Size = UDim2.new(1, -136, 0, 10), Position = UDim2.fromOffset(12, 104),
+        local track = make("Frame", {Size = UDim2.new(1, -24, 0, 10), Position = UDim2.fromOffset(12, 96),
             BackgroundColor3 = C.Bg, BorderSizePixel = 0, ClipsDescendants = true}, row)
         corner(track, 5)
         local fill = make("Frame", {Size = UDim2.fromScale(progress / target, 1),
             BackgroundColor3 = quest.Claimed and C.Muted or C.Aqua, BorderSizePixel = 0}, track)
         corner(fill, 5)
-        local pending = self.Pending[self.Period .. ":" .. tostring(quest.Id)] ~= nil
         local expired = self:_serverNow() >= period.ResetAt
-        local enabled = progress >= target and not quest.Claimed and not pending and not expired
-        local caption = quest.Claimed and "ПОЛУЧЕНО" or (pending and "ЖДЁМ…" or
-            (expired and "ОБНОВЛЕНИЕ" or (enabled and "ЗАБРАТЬ" or "В ПРОЦЕССЕ")))
-        local claim = button(row, caption, UDim2.fromOffset(100, 38), UDim2.new(1, -112, 0, 91),
-            enabled and C.Gold or C.Bg)
-        claim.Name = "Claim"
-        claim.Active = enabled
-        claim.AutoButtonColor = enabled
-        if not enabled then claim.TextColor3 = C.Muted end
-        local periodKind = self.Period
-        claim.Activated:Connect(function() if enabled then self:_claim(periodKind, quest) end end)
+        local giver=quest.Giver or "merchant"
+        local owner=quest.GiverName or names[giver] or "Житель острова"
+        local at=({merchant="МАРЫ",rodsmith="ЛЬВА",captain="КАПИТАНА"})[giver] or string.upper(owner)
+        local ready=quest.Accepted~=false and not quest.Claimed and progress>=target
+        local caption=quest.Claimed and "НАГРАДА ПОЛУЧЕНА" or (expired and "НОВЫЙ НАБОР У NPC" or
+            (quest.Accepted==false and "ПОЛУЧИТЬ У "..at or (ready and "СДАТЬ У "..at or "В ПРОЦЕССЕ")))
+        local ownerLabel=label(row,"Поручение: "..owner,UDim2.new(1,-24,0,22),UDim2.fromOffset(12,110),12,C.Muted)
+        ownerLabel.Name="Giver"
+        local status=label(row,caption,UDim2.new(1,self.Callbacks.FindGiver and -140 or -24,0,26),
+            UDim2.fromOffset(12,134),12,ready and C.Gold or C.Aqua)
+        status.Name="QuestStatus";status.Font=Enum.Font.GothamBold
+        if self.Callbacks.FindGiver and not quest.Claimed then
+            local find=button(row,"НАЙТИ NPC",UDim2.fromOffset(108,28),UDim2.new(1,-120,0,131),C.Bg)
+            find.Name="FindGiver";find.TextColor3=C.Aqua
+            find.Activated:Connect(function()self.Callbacks.FindGiver(giver)end)
+        end
     end
     self.List.CanvasPosition = scrollPosition
 end
@@ -150,7 +161,6 @@ function QuestUI:Update(payload)
     self.Data = payload
     self.ServerAt = payload.ServerNow or workspace:GetServerTimeNow()
     self.ReceivedAt = os.clock()
-    self.Pending = {}
     self:_badge()
     if self:IsOpen() then self:_render() end
 end
@@ -159,9 +169,6 @@ function QuestUI:Step()
     if now < self.NextTick then return end
     self.NextTick = now + 1
     local dirty = false
-    for key, started in pairs(self.Pending) do
-        if now - started > 8 then self.Pending[key] = nil; dirty = true end
-    end
     self:_badge()
     if not self:IsOpen() then return end
     local period = self.Data and self.Data[self.Period]
@@ -177,9 +184,9 @@ function QuestUI:Destroy()
     self.Button:Destroy()
     self.Host:Destroy()
 end
-function QuestUI.new(gui, config, claimCallback, callbacks)
-    local self = setmetatable({Config = config, Claim = claimCallback, Callbacks = callbacks or {},
-        Period = "Daily", Pending = {}, NextTick = 0, ServerAt = 0, ReceivedAt = os.clock()}, QuestUI)
+function QuestUI.new(gui, config, _legacyClaimCallback, callbacks)
+    local self = setmetatable({Config = config, Callbacks = callbacks or {},
+        Period = "Daily", NextTick = 0, ServerAt = 0, ReceivedAt = os.clock()}, QuestUI)
     local header = gui:FindFirstChild("Header")
     self.Button = button(header or gui, "ЗАДАНИЯ", UDim2.fromOffset(106, 26),
         header and UDim2.new(1, -232, 0, 52) or UDim2.new(1, -126, 0, 64), C.Panel)
@@ -188,7 +195,7 @@ function QuestUI.new(gui, config, claimCallback, callbacks)
     self.Button.ZIndex = 13
     self.Host = make("Frame", {Name = "QuestWindow", AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromScale(0.94, 0.84),
-        BackgroundColor3 = C.Bg, BorderSizePixel = 0, Visible = false, ZIndex = 26}, gui)
+        BackgroundColor3 = C.Bg, BorderSizePixel = 0, Active = true, Visible = false, ZIndex = 26}, gui)
     corner(self.Host, 14)
     make("UISizeConstraint", {MaxSize = Vector2.new(560, 620)}, self.Host)
     local title = label(self.Host, "ЗАДАНИЯ", UDim2.new(1, -76, 0, 34), UDim2.fromOffset(16, 8), 21)
@@ -214,7 +221,7 @@ function QuestUI.new(gui, config, claimCallback, callbacks)
         CanvasSize = UDim2.fromOffset(0, 0), AutomaticCanvasSize = Enum.AutomaticSize.Y,
         ScrollBarThickness = 4, ScrollBarImageColor3 = C.Aqua, ScrollingDirection = Enum.ScrollingDirection.Y}, self.Host)
     make("UIListLayout", {Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder}, self.List)
-    label(self.Host, "Поймай улов, затем забери награду. Продажа рыбы не сбрасывает прогресс.",
+    label(self.Host, "Получи поручения у NPC и вернись к нему за наградой. Здесь — журнал прогресса.",
         UDim2.new(1, -32, 0, 30), UDim2.new(0, 16, 1, -34), 11, C.Muted)
     self.Button.Activated:Connect(function() self:Toggle() end)
     return self

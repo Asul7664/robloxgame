@@ -32,6 +32,7 @@ end
 local methods = {}
 local function node(class, name)
     local properties = {ClassName = class, Name = name or class, Children = {}, Attributes = {}, CFrame = CF.new()}
+    if class == "ProximityPrompt" then properties.Triggered=signal(); properties.Enabled=true end
     return setmetatable({_properties = properties}, {
         __index = function(self, key)
             if key == "Position" then return properties.CFrame.Position end
@@ -133,7 +134,7 @@ function Environment.new()
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
     for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog", "VisualTheme"}) do child(shared, "ModuleScript", name) end
-    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels"}) do child(server, "ModuleScript", name) end
+    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels", "NPCDialogueService"}) do child(server, "ModuleScript", name) end
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
     action.OnServerEvent = signal()
@@ -168,13 +169,19 @@ function Environment.new()
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
     local fakeTask = {spawn = function(callback, ...) return callback(...) end, wait = function() return nil end}
-    local fakeEnum = {PartType = {Ball = "Ball"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding"}}
+    local fakeEnum = {PartType = {Ball = "Ball"}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding"}}
     local world = {Model = node("Model"), Spots = {Cove = {Name = "Тихая бухта", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
         Spawn = V.new(0, 4, 0), ReefSpawn = V.new(450, 4, -650)}
     world.Merchant, world.Shop, world.Ferry, world.ReturnFerry = node("Part"), node("Part"), node("Part"), node("Part")
+    world.Merchant.Name="Body";world.Merchant.Parent=child(world.Model,"Model","Merchant");world.Merchant.Position=V.new(0,4,0)
+    world.Shop.Name="Body";world.Shop.Parent=child(world.Model,"Model","Rodsmith");world.Shop.Position=V.new(10,4,0)
+    world.Ferry.Parent=world.Model;world.ReturnFerry.Parent=world.Model
     prompt(world.Merchant, "MerchantPrompt"); prompt(world.Shop, "RodsmithPrompt")
     prompt(world.Ferry, "Travel"); prompt(world.ReturnFerry, "Travel")
     world.Buyers = {world.Merchant}
+    local captain=child(child(world.Model,"Model","Captain"),"Part","Body");captain.Position=V.new(-10,4,0)
+    prompt(captain,"CaptainPrompt")
+    world.Docks={Cove={Id="Cove",Name="Тихая бухта",Captain=captain,Berth=V.new(20,1,20)}}
     local access = {Resolve = function() end}
     function access.Sandbox(player, saved)
         if not player.Tester then return nil end
@@ -224,7 +231,7 @@ function Environment.new()
         CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",
         SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau",
         WeaponCatalog = "src/shared/WeaponCatalog.luau", WeaponShop = "src/server/WeaponShop.luau",
-        VisualTheme = "src/shared/VisualTheme.luau"}
+        VisualTheme = "src/shared/VisualTheme.luau", NPCDialogueService="src/server/NPCDialogueService.luau"}
     local function environment(scriptNode)
         return {game = game, workspace = workspace, script = scriptNode, os = fakeOs, task = fakeTask,
             Enum = fakeEnum, Vector3 = V, CFrame = CF, Color3 = roblox.Color3,
@@ -278,6 +285,27 @@ function Environment:Advance(seconds)
     end
 end
 function Environment:Fire(player, kind, id, value) self.Action.OnServerEvent:Fire(player, kind, id, value) end
+function Environment:Talk(player,body,choice)
+    local prompt=body:FindFirstChild("NPCDialoguePrompt")
+    assert(prompt and prompt.Enabled,"NPC conversation prompt was not registered")
+    prompt.Triggered:Fire(player)
+    local dialogue=self:Last(player,"Dialogue")
+    assert(dialogue,"No authoritative NPC dialogue opened")
+    if choice then self:Fire(player,"NPCChoice",dialogue.Id,{Session=dialogue.Session,Choice=choice}) end
+    return self:Last(player,"Dialogue")
+end
+function Environment:Choose(player,choice)
+    local dialogue=assert(self:Last(player,"Dialogue"),"No NPC conversation")
+    self:Fire(player,"NPCChoice",dialogue.Id,{Session=dialogue.Session,Choice=choice})
+    return self:Last(player,"Dialogue")
+end
+function Environment:AcceptQuests(player)
+    -- Used by fishing regression scenarios: real prompt and nonce flow at each NPC.
+    for _,body in ipairs({self.World.Merchant,self.World.Shop,self.World.Docks.Cove.Captain}) do
+        self:Talk(player,body,"quests");self:Choose(player,"accept");self:Choose(player,"close")
+        self:Advance(.6)
+    end
+end
 function Environment:Last(player, kind)
     for index = #self.messages, 1, -1 do
         local message = self.messages[index]

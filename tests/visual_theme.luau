@@ -71,7 +71,7 @@ local environment={
     }})[name]end},
     script={Parent={WaitForChild=function(_,name)return name end}},
     require=function(name)return assert(loaded[name],"Unloaded module "..tostring(name))end,
-    Instance={new=new},Vector3=V,CFrame=CF,Color3=C,Enum=roblox.Enum,
+    Instance={new=new},Vector3=V,CFrame=CF,Color3=C,UDim2=roblox.UDim2,Enum=roblox.Enum,
 }
 local function load(name,path)
     local source=fs.readFile(path);luau.compile(source)
@@ -81,9 +81,23 @@ end
 load("BrainrotExpansion","src/shared/BrainrotExpansion.luau")
 local config=load("Config","src/shared/Config.luau")
 local theme=load("VisualTheme","src/shared/VisualTheme.luau")
+-- Softer scene colors must retain readable interface labels and choice buttons.
+local function luminance(color)
+    local function linear(v)return v<=.04045 and v/12.92 or ((v+.055)/1.055)^2.4 end
+    return linear(color.R)*.2126+linear(color.G)*.7152+linear(color.B)*.0722
+end
+local function contrast(a,b)
+    local first,second=luminance(a),luminance(b)
+    return (math.max(first,second)+.05)/(math.min(first,second)+.05)
+end
+check(contrast(theme.UI.Ink,theme.UI.Panel)>=4.5,"Soft dialogue panels lose readable body text")
+check(contrast(theme.UI.Muted,theme.UI.Panel)>=4.5,"Muted quest hints lose readable contrast")
+check(contrast(theme.UI.Bg,theme.UI.Aqua)>=4.5,"Aqua dialogue choices lose readable text")
+check(contrast(theme.UI.Bg,theme.UI.Gold)>=4.5,"Gold reward choices lose readable text")
 load("SceneryVegetation","src/server/SceneryVegetation.luau")
 load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
+load("NPCModels","src/server/NPCModels.luau")
 local visuals=load("WorldVisuals","src/server/WorldVisuals.luau")
 
 local map=child(workspace,"Model","QuietCoveMap")
@@ -101,6 +115,10 @@ child(map,"Part","PalmTrunk",V.new(reef.X+15,15,reef.Z+10),V.new(1.8,17,1.8))
 local merchant=child(map,"Model","Merchant")
 local merchantBody=child(merchant,"Part","Body")
 child(merchant,"Part","Arm")
+local handmade=child(map,"Model","Rodsmith")
+child(handmade,"Humanoid","Humanoid")
+local handmadeBody=child(handmade,"Part","Body",V.new(20,9.2,-25))
+local handmadeHead=child(handmade,"Part","Head",V.new(20,11.4,-25))
 local sign=child(map,"Part","FishingSign")
 local signText=child(child(sign,"BillboardGui","Label"),"TextLabel","TextLabel")
 signText.Text="РЫБАЛКА";signText.TextColor3=C.new(1,1,1)
@@ -127,6 +145,9 @@ for _,definition in ipairs(config.Islands)do
     local dock=child(archipelago,"Model","Dock_"..definition.Id)
     child(dock,"Part","Boardwalk",V.new(definition.DockX,7,definition.DockZ-9))
     child(dock,"Part","Canopy")
+    local captain=child(dock,"Model","Captain")
+    child(captain,"Part","Body",V.new(definition.DockX-7,9.3,definition.DockZ+2))
+    child(captain,"Part","Head",V.new(definition.DockX-7,11.5,definition.DockZ+2))
 end
 
 -- A saved place can contain the previous owned generation and unrelated user art.
@@ -150,6 +171,8 @@ end
 
 -- Identical names outside our direct authored geometry must not attract the art pass.
 local untouched={}
+table.insert(untouched,handmadeBody)
+table.insert(untouched,handmadeHead)
 table.insert(untouched,userRock)
 for _,parent in ipairs({workspace,map,archipelago.Dunes})do
     local custom=child(parent,"Model","PlayerDecoration")
@@ -170,6 +193,21 @@ local wrongBloom=child(lighting,"Folder","QCBloom")
 local sky=child(lighting,"Sky","UserSky")
 
 local originals={}
+local function legacyNPC(object)
+    local model=object.Parent
+    if not model or not model:FindFirstChild("Body")or model:FindFirstChildOfClass("Humanoid")then return false end
+    local scoped=(model.Parent==map and (model.Name=="Merchant"or model.Name=="Rodsmith"))
+        or (model.Parent and model.Parent.Parent==archipelago and model.Parent.Name:match("^Dock_")
+            and (model.Name=="Captain"or model.Name=="Buyer"))
+    return scoped and ({Body=true,Head=true,Hat=true,HatBand=true,Arm=true,Leg=true,Eye=true})[object.Name]==true
+end
+local function npcRig(object)
+    local current=object.Parent
+    while current and current~=workspace do
+        if current.Name=="VisualRig"and current:GetAttribute("QCNPC")==true then return current end
+        current=current.Parent
+    end
+end
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not table.find(previousOwned,object)then
         object.CFrame=object.CFrame*CF.Angles(.05,.17,.02)
@@ -209,7 +247,10 @@ for object,saved in pairs(originals)do
     near(object.Size,saved.Size,"Art pass resized an original part")
     for _,key in ipairs({"CanCollide","CanTouch","CanQuery"})do
         local retired=object.Name=="PalmLeaf"or object.Name=="LeafCanopy"or object.Name=="Branch"
-        if retired and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
+        if legacyNPC(object) then
+            check(object:GetAttribute("QCOriginal"..key)==saved[key],"NPC upgrade lost its prior physics flags")
+            check(object[key]==false,"NPC character anchor blocks movement or rays")
+        elseif retired and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
             check(object:GetAttribute("QCOriginal"..key)==saved[key],"Retired frond lost its original query/touch flag")
             check(object[key]==false,"Invisible retired frond intercepts queries or touch events")
         else
@@ -228,12 +269,17 @@ local vegetationParts=0
 local cargoProps=0
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not originals[object]then
-        added+=1
-        check(object.Anchored==true and not object.CanCollide and not object.CanTouch and not object.CanQuery,
+        local rig=npcRig(object)
+        if not rig then added+=1 end
+        check((rig~=nil or object.Anchored==true)and not object.CanCollide and not object.CanTouch and not object.CanQuery,
             "New decoration blocks movement, weapon shots or AI queries")
         local current=object.Parent
         while current and current.Name~="QCScenery"do current=current.Parent end
-        check(current~=nil,"New decoration escaped its owned folder")
+        check(current~=nil or rig~=nil,"New decoration escaped its owned scenery/NPC folder")
+        if rig then
+            check(object.Name=="HumanoidRootPart"and object.Anchored==true or object.Massless==true,
+                "NPC rig has a physical limb outside its anchored assembly")
+        end
         check(object.Size.X>.005 and object.Size.Y>.005 and object.Size.Z>.005,
             "Decoration has an empty or degenerate rendered surface")
         check(object.Position.X==object.Position.X and object.Position.Y==object.Position.Y and object.Position.Z==object.Position.Z,

@@ -180,7 +180,7 @@ inventory.Visible = true; run:Step(1 / 60)
 check(not control:IsAiming() and input.MouseBehavior == "Default", "Existing inventory window gets usable cursor")
 check(input.MouseIconEnabled == true, "Inventory shows the normal cursor")
 inventory.Visible = false; run:Step(1 / 60)
-for _, name in ipairs({"QuestWindow", "VoyageWindow", "CatchReveal"}) do
+for _, name in ipairs({"QuestWindow", "VoyageWindow", "CatchReveal", "NPCConversation"}) do
     local window = node("Frame", name, quiet); window.Visible = true; run:Step(1 / 60)
     check(not control:IsAiming(), name .. " releases cursor")
     check(input.MouseIconEnabled == true, name .. " restores mouse icon visibility")

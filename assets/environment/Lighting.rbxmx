@@ -3,11 +3,11 @@
     <Properties>
       <string name="Name">Lighting</string>
       <Color3 name="Ambient">
-        <R>0.3529412</R>
-        <G>0.40784314</G>
-        <B>0.5019608</B>
+        <R>0.39215687</R>
+        <G>0.4392157</G>
+        <B>0.5176471</B>
       </Color3>
-      <float name="Brightness">2.2</float>
+      <float name="Brightness">2</float>
       <float name="ClockTime">13</float>
       <Color3 name="ColorShift_Bottom">
         <R>0</R>
@@ -20,8 +20,8 @@
         <B>0.011764706</B>
       </Color3>
       <float name="EnvironmentDiffuseScale">0.45</float>
-      <float name="EnvironmentSpecularScale">0.35</float>
-      <float name="ExposureCompensation">-0.05</float>
+      <float name="EnvironmentSpecularScale">0.2</float>
+      <float name="ExposureCompensation">0</float>
       <Color3 name="FogColor">
         <R>0.74509805</R>
         <G>0.8784314</G>
@@ -32,9 +32,9 @@
       <bool name="GlobalShadows">true</bool>
       <token name="LightingStyle">1</token>
       <Color3 name="OutdoorAmbient">
-        <R>0.4862745</R>
-        <G>0.56078434</G>
-        <B>0.6509804</B>
+        <R>0.54509807</R>
+        <G>0.60784316</G>
+        <B>0.6745098</B>
       </Color3>
       <bool name="PrioritizeLightingQuality">true</bool>
       <float name="ShadowSoftness">0.4</float>
@@ -52,9 +52,9 @@
           <G>0.63529414</G>
           <B>0.8039216</B>
         </Color3>
-        <float name="Density">0.16</float>
-        <float name="Glare">0.03</float>
-        <float name="Haze">0.45</float>
+        <float name="Density">0.13</float>
+        <float name="Glare">0</float>
+        <float name="Haze">0.3</float>
         <float name="Offset">0.1</float>
       </Properties>
     </Item>
@@ -62,18 +62,18 @@
       <Properties>
         <string name="Name">QCBloom</string>
         <bool name="Enabled">true</bool>
-        <float name="Intensity">0.07</float>
+        <float name="Intensity">0.035</float>
         <float name="Size">18</float>
-        <float name="Threshold">0.98</float>
+        <float name="Threshold">0.99</float>
       </Properties>
     </Item>
     <Item class="ColorCorrectionEffect" referent="3">
       <Properties>
         <string name="Name">QCColor</string>
         <float name="Brightness">0</float>
-        <float name="Contrast">0.05</float>
+        <float name="Contrast">0.03</float>
         <bool name="Enabled">true</bool>
-        <float name="Saturation">0.06</float>
+        <float name="Saturation">0.02</float>
         <Color3 name="TintColor">
           <R>1</R>
           <G>1</G>

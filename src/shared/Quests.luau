@@ -5,6 +5,17 @@ local DAY, WEEK = 86400, 604800
 local MAX_TIME, MAX_COINS = 7258118400, 1000000000
 local ORDER = {"catch_total", "species_1", "species_2", "island_catch", "fishing_time"}
 local KINDS = {catch_total="catch", species_1="species", species_2="species", island_catch="island", fishing_time="activity"}
+local GIVERS = {catch_total="merchant", species_1="merchant", species_2="rodsmith", fishing_time="rodsmith", island_catch="captain"}
+local GIVER_NAMES = {merchant="Мара", rodsmith="Лев", captain="Капитан Мирон"}
+
+function Quests.GiverFor(task)
+    local id = type(task) == "table" and task.Id or task
+    if type(id) ~= "string" then return nil end
+    return GIVERS[id:match("([^:]+)$")]
+end
+function Quests.GiverName(giver)
+    return GIVER_NAMES[giver]
+end
 
 local function finite(value)
     return type(value) == "number" and value == value and value > -math.huge and value < math.huge
@@ -48,7 +59,7 @@ local LIMITS = {
     Weekly={catch_total={200,260,600,1300}, species_1={40,60,550,1192}, species_2={40,60,550,1192},
         island_catch={90,120,500,1083}, fishing_time={7200,604800,800,1733}},
 }
-local function cleanTask(raw, kind)
+local function cleanTask(raw, kind, legacy)
     if type(raw) ~= "table" or not KINDS[raw.Id] or raw.Kind ~= KINDS[raw.Id] then return nil end
     local limits = LIMITS[kind][raw.Id]
     if not finite(raw.Target) or raw.Target < limits[1] or raw.Target > limits[2] then return nil end
@@ -57,12 +68,14 @@ local function cleanTask(raw, kind)
     if raw.Kind == "island" and not identifier(raw.Zone) then return nil end
     local target = math.floor(raw.Target)
     local claimed = raw.Claimed == true
-    local progress = claimed and target or number(raw.Progress, 0, target, 0, false)
+    local accepted = legacy or raw.Accepted == true or claimed
+    local progress = claimed and target or (accepted and number(raw.Progress, 0, target, 0, false) or 0)
     return {Id=raw.Id, Kind=raw.Kind, Species=raw.Kind == "species" and raw.Species or nil,
         Zone=raw.Kind == "island" and raw.Zone or nil, Target=target,
-        Reward=math.floor(raw.Reward), Progress=progress, Claimed=claimed}
+        Reward=math.floor(raw.Reward), Progress=progress, Claimed=claimed, Accepted=accepted,
+        AcceptedAt=accepted and number(raw.AcceptedAt, 0, MAX_TIME, nil, false) or nil}
 end
-local function cleanPeriod(raw, kind)
+local function cleanPeriod(raw, kind, legacy)
     local prefix = kind == "Daily" and "d:" or "w:"
     if type(raw) ~= "table" or type(raw.Key) ~= "string" or #raw.Key > 20
         or not raw.Key:match("^" .. prefix .. "%d+$") or not finite(raw.ResetAt) then return nil end
@@ -77,22 +90,26 @@ local function cleanPeriod(raw, kind)
         for index = 1, 20 do
             local source = raw.Tasks[index]
             if type(source) == "table" and KINDS[source.Id] and source.Claimed == true then out.Paid[source.Id] = true end
-            local task = cleanTask(source, kind)
+            local task = cleanTask(source, kind, legacy)
             if task and not seen[task.Id] then
-                if out.Paid[task.Id] then task.Claimed, task.Progress = true, task.Target end
+                if out.Paid[task.Id] then task.Claimed, task.Progress, task.Accepted = true, task.Target, true end
                 seen[task.Id] = true
                 table.insert(out.Tasks, task)
             end
         end
     end
     for _, task in ipairs(out.Tasks) do
-        if out.Paid[task.Id] then task.Claimed, task.Progress = true, task.Target end
+        if out.Paid[task.Id] then task.Claimed, task.Progress, task.Accepted = true, task.Target, true end
     end
     return out
 end
 function Quests.Clean(raw)
     raw = type(raw) == "table" and raw or {}
-    return {Version=1, Daily=cleanPeriod(raw.Daily, "Daily"), Weekly=cleanPeriod(raw.Weekly, "Weekly"),
+    local legacy = raw.Version ~= 2
+    local pending = type(raw.PendingRewards) == "table" and raw.PendingRewards or {}
+    return {Version=2, Daily=cleanPeriod(raw.Daily, "Daily", legacy), Weekly=cleanPeriod(raw.Weekly, "Weekly", legacy),
+        PendingRewards={merchant=number(pending.merchant,0,MAX_COINS,0,true),
+            rodsmith=number(pending.rodsmith,0,MAX_COINS,0,true), captain=number(pending.captain,0,MAX_COINS,0,true)},
         ActivityAt=number(raw.ActivityAt, 0, MAX_TIME, nil, false)}
 end
 
@@ -187,7 +204,7 @@ local function makePeriod(data, config, kind, now, userId, fixedTier)
     local available = {}
     for index, task in ipairs(tasks) do
         task.Reward = math.floor(rewards[index] * multiplier + 0.5)
-        task.Progress, task.Claimed = 0, false
+        task.Progress, task.Claimed, task.Accepted = 0, false, false
         if (task.Kind ~= "species" or task.Species) and (task.Kind ~= "island" or task.Zone) then
             table.insert(available, task)
         end
@@ -202,6 +219,17 @@ end
 local function validDefinition(task, config)
     return task.Kind ~= "species" or (config.ById and config.ById[task.Species])
 end
+local function retainEarnedRewards(state, period)
+    -- Fold expired completed work into three bounded balances. Paid markers are
+    -- set before replacement, so a retry cannot queue the same reward twice.
+    for _, task in ipairs(period.Tasks) do
+        if task.Accepted and not task.Claimed and not period.Paid[task.Id] and task.Progress >= task.Target then
+            local giver = GIVERS[task.Id]
+            state.PendingRewards[giver] = math.min(MAX_COINS, state.PendingRewards[giver] + task.Reward)
+            task.Claimed, period.Paid[task.Id] = true, true
+        end
+    end
+end
 function Quests.Ensure(data, config, now, userId)
     now = timestamp(now)
     local state, changed = Quests.Clean(data.Quests), false
@@ -210,11 +238,17 @@ function Quests.Ensure(data, config, now, userId)
     for _, kind in ipairs({"Daily", "Weekly"}) do
         local key, reset = periodInfo(kind, now)
         local current = state[kind]
-        if not current or current.Key ~= key or current.ResetAt ~= reset then
+        if not current or current.Key ~= key then
+            if current and tonumber(current.Key:sub(3)) < tonumber(key:sub(3)) then
+                retainEarnedRewards(state, current)
+            end
             state[kind], changed = makePeriod(data, config, kind, now, userId), true
         else
+            -- A malformed reset timestamp must not reroll an already assigned day.
+            if current.ResetAt ~= reset then current.ResetAt=reset; changed=true end
             local found, complete = {}, true
             for _, task in ipairs(current.Tasks) do
+                if task.AcceptedAt and task.AcceptedAt > now then task.AcceptedAt=now end
                 found[task.Id] = task
                 if not validDefinition(task, config) or (task.Kind == "island"
                     and not (config.IslandById and config.IslandById[task.Zone])) then complete = false end
@@ -231,12 +265,13 @@ function Quests.Ensure(data, config, now, userId)
                         -- Valid saved assignments stay locked even during repair.
                         for field, value in pairs(old) do task[field] = value end
                     elseif old then
+                        task.Accepted, task.AcceptedAt = old.Accepted, old.AcceptedAt
                         if samePredicate(old, task) then task.Progress = math.min(task.Target, old.Progress) end
                         -- Removing a species must never offer a second reward for
                         -- a task that was already paid in this period.
                         if old.Claimed then task.Progress, task.Claimed = task.Target, true end
                     end
-                    if repaired.Paid[task.Id] then task.Progress, task.Claimed = task.Target, true end
+                    if repaired.Paid[task.Id] then task.Progress, task.Claimed, task.Accepted = task.Target, true, true end
                 end
                 state[kind], changed = repaired, true
             end
@@ -253,7 +288,7 @@ function Quests.RecordCatch(data, config, record, zone, now, userId)
     local changed = false
     for _, kind in ipairs({"Daily", "Weekly"}) do
         for _, task in ipairs(state[kind].Tasks) do
-            if not task.Claimed and task.Progress < task.Target and (task.Kind == "catch"
+            if task.Accepted and not task.Claimed and task.Progress < task.Target and (task.Kind == "catch"
                 or (task.Kind == "species" and task.Species == record.Species)
                 or (task.Kind == "island" and task.Zone == zone)) then
                 task.Progress = math.min(task.Target, task.Progress + 1)
@@ -275,8 +310,9 @@ function Quests.AddActivity(data, config, seconds, now, userId)
         local _, _, start = periodInfo(kind, now)
         local credited = math.min(elapsed, math.max(0, now - start))
         for _, task in ipairs(state[kind].Tasks) do
-            if task.Kind == "activity" and not task.Claimed and task.Progress < task.Target and credited > 0 then
-                task.Progress = math.min(task.Target, task.Progress + credited)
+            local acceptedTime = math.min(credited, math.max(0,now-(task.AcceptedAt or start)))
+            if task.Accepted and task.Kind == "activity" and not task.Claimed and task.Progress < task.Target and acceptedTime > 0 then
+                task.Progress = math.min(task.Target, task.Progress + acceptedTime)
                 changed = true
             end
         end
@@ -289,6 +325,7 @@ function Quests.Claim(data, config, kind, taskId, now, userId)
     for _, task in ipairs(state[kind].Tasks) do
         if state[kind].Key .. ":" .. task.Id == taskId then
             if task.Claimed then return false, "already_claimed", 0 end
+            if not task.Accepted then return false, "not_accepted", 0 end
             if task.Progress < task.Target then return false, "not_completed", 0 end
             local coins = number(data.Coins, 0, MAX_COINS, 0, true)
             -- No yielding occurs between the claim marker and currency update.
@@ -299,6 +336,50 @@ function Quests.Claim(data, config, kind, taskId, now, userId)
     end
     return false, "unknown_task", 0
 end
+function Quests.AcceptFrom(data, config, giver, now, userId)
+    if not GIVER_NAMES[giver] then return 0 end
+    now = timestamp(now)
+    local state = Quests.Ensure(data, config, now, userId)
+    local count = 0
+    for _, kind in ipairs({"Daily", "Weekly"}) do
+        for _, task in ipairs(state[kind].Tasks) do
+            if GIVERS[task.Id] == giver and not task.Accepted and not task.Claimed then
+                task.Accepted, task.AcceptedAt = true, now
+                count += 1
+            end
+        end
+    end
+    return count
+end
+function Quests.ClaimFrom(data, config, giver, now, userId)
+    if not GIVER_NAMES[giver] then return false, "invalid_giver", 0, 0 end
+    local state = Quests.Ensure(data, config, now, userId)
+    local total, count = state.PendingRewards[giver], 0
+    local ready = {}
+    for _, kind in ipairs({"Daily", "Weekly"}) do
+        local period = state[kind]
+        for _, task in ipairs(period.Tasks) do
+            if GIVERS[task.Id] == giver and task.Accepted and not task.Claimed
+                and not period.Paid[task.Id] and task.Progress >= task.Target then
+                total += task.Reward
+                table.insert(ready, {Task=task, Period=period})
+            end
+        end
+    end
+    if total <= 0 then return false, "nothing_ready", 0, 0 end
+    local coins = number(data.Coins,0,MAX_COINS,0,true)
+    local paid = math.min(MAX_COINS-coins,total)
+    if paid <= 0 then return false, "balance_full", 0, 0 end
+    if state.PendingRewards[giver] > 0 then count += 1 end
+    for _, entry in ipairs(ready) do
+        entry.Task.Claimed, entry.Period.Paid[entry.Task.Id] = true, true
+        count += 1
+    end
+    -- Overflow remains owed instead of losing an earned reward at the coin cap.
+    state.PendingRewards[giver] = math.min(MAX_COINS,total-paid)
+    data.Coins = coins+paid
+    return true, "claimed", paid, count
+end
 local function titleFor(task, config)
     if task.Kind == "catch" then return "Поймай " .. task.Target .. " существ" end
     if task.Kind == "species" then return "Поймай: " .. config.ById[task.Species].Name end
@@ -308,14 +389,17 @@ end
 function Quests.Snapshot(data, config, now, userId)
     now = timestamp(now)
     local state = Quests.Ensure(data, config, now, userId)
-    local snapshot = {ServerNow=now, ResetTimezone="UTC"}
+    local snapshot = {ServerNow=now, ResetTimezone="UTC", PendingRewards=table.clone(state.PendingRewards)}
     for _, kind in ipairs({"Daily", "Weekly"}) do
         local period = state[kind]
         local public = {Key=period.Key, ResetAt=period.ResetAt, Tasks={}}
         for _, task in ipairs(period.Tasks) do
             table.insert(public.Tasks, {Id=period.Key .. ":" .. task.Id, Kind=task.Kind, Species=task.Species, Zone=task.Zone,
                 Title=titleFor(task, config), Progress=math.floor(task.Progress), Target=task.Target,
-                Reward=task.Reward, Claimed=task.Claimed, Unit=task.Kind == "activity" and "seconds" or "catches"})
+                Reward=task.Reward, Claimed=task.Claimed, Accepted=task.Accepted,
+                Giver=GIVERS[task.Id], GiverName=GIVER_NAMES[GIVERS[task.Id]],
+                Status=task.Claimed and "claimed" or (not task.Accepted and "available" or (task.Progress>=task.Target and "ready" or "active")),
+                Unit=task.Kind == "activity" and "seconds" or "catches"})
         end
         snapshot[kind] = public
     end

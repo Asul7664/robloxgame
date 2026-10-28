@@ -21,10 +21,11 @@ local TesterAccess = require(script.Parent:WaitForChild("TesterAccess"))
 local Profiles = require(script.Parent:WaitForChild("Profiles"))
 local World = require(script.Parent:WaitForChild("World"))
 local Archipelago = require(script.Parent:WaitForChild("Archipelago"))
+local NPCDialogueService = require(script.Parent:WaitForChild("NPCDialogueService"))
 local BoatService = require(script.Parent:WaitForChild("BoatService"))
 local Models = require(shared:WaitForChild("EquipmentModels"))
 local world = Archipelago.Attach(World.Build())
-local grantRod, boats, dodges, weaponShop, sahur
+local grantRod, boats, dodges, weaponShop, sahur, dialogues
 local function remote(name)
     local r = shared:FindFirstChild(name)
     if not r then r = Instance.new("RemoteEvent"); r.Name = name; r.Parent = shared end
@@ -35,7 +36,7 @@ task.spawn(TesterAccess.Resolve)
 local rng = Random.new()
 local sessions, limits, cooldowns, loading, connections = {}, {}, {}, {}, {}
 local questActivity, questSentAt = {}, {}
-local limitsPerSecond = {Begin = 2, Release = 4, Shake = 4, Hook = 4, Input = 35, Cancel = 4, Ready = 1, Buy = 2, BoatBuy = 2, BoatSpawn = 0.5, BoatInput = 18, BoatDock = 2, QuestClaim = 3}
+local limitsPerSecond = {Begin = 2, Release = 4, Shake = 4, Hook = 4, Input = 35, Cancel = 4, Ready = 1, Buy = 2, BoatBuy = 2, BoatSpawn = 0.5, BoatInput = 18, BoatDock = 2, QuestClaim = 3, NPCChoice = 5}
 local function allow(player, key, rate)
     local now = os.clock()
     local bucket = limits[player]
@@ -336,16 +337,6 @@ local function buy(player, rodIndex)
     if player.Character then grantRod(player,player.Character) end
     sync(player); send(player, "Shop", {}); notice(player, "Новая удочка: " .. rod.Name .. ". Уже используется!")
 end
-world.Merchant.MerchantPrompt.Triggered:Connect(sell)
-for _,buyer in ipairs(world.Buyers) do
-    if buyer ~= world.Merchant then buyer.BuyerPrompt.Triggered:Connect(sell) end
-end
-world.Shop.RodsmithPrompt.Triggered:Connect(function(player)
-    if allow(player, "Shop", 1) and nearby(player, world.Shop.Position, 18) and Profiles.Get(player) then
-        if sessions[player] then notice(player, "Сначала закончи рыбалку."); return end
-        send(player, "Shop", {})
-    end
-end)
 local function travel(player, toReef)
     if dodges:IsActive(player) then return end
     local origin = toReef and world.Ferry or world.ReturnFerry
@@ -364,10 +355,25 @@ end
 world.Ferry.Travel.Triggered:Connect(function(p) travel(p, true) end)
 world.ReturnFerry.Travel.Triggered:Connect(function(p) travel(p, false) end)
 boats = BoatService.new(Config,world,Profiles,send,sync,function(p)return sessions[p] ~= nil or dodges:IsActive(p) end)
+dialogues=NPCDialogueService.new({Config=Config,Quests=Quests,Profiles=Profiles,Send=send,Sync=sync,Allow=allow,
+    Now=function()return workspace:GetServerTimeNow()end,Token=function()return HttpService:GenerateGUID(false)end,
+    Busy=function(player)return sessions[player]~=nil or dodges:IsActive(player)
+        or (sahur and sahur:IsActive(player)) or false end})
+dialogues:Register("merchant","merchant",world.Merchant,"Продать улов",sell)
+dialogues:Register("rodsmith","rodsmith",world.Shop,"Посмотреть удочки",function(player)send(player,"Shop",{})end)
+for index,buyer in ipairs(world.Buyers) do
+    if buyer~=world.Merchant then dialogues:Register("buyer_"..index,"merchant",buyer,"Продать улов",sell) end
+end
+for id,dock in pairs(world.Docks or {}) do
+    dialogues:Register("captain_"..id,"captain",dock.Captain,"Лодки: купить или вызвать",function(player)
+        send(player,"BoatShop",{Dock=id})
+    end)
+end
 Action.OnServerEvent:Connect(function(player, kind, id, value)
     if type(kind) ~= "string" or not limitsPerSecond[kind] or not allow(player, kind, limitsPerSecond[kind]) then return end
     if kind == "Dodge" then dodges:Request(player, id, value, workspace:GetServerTimeNow()); return end
     if kind == "WeaponBuy" then weaponShop:Buy(player, value); return end
+    if kind == "NPCChoice" then dialogues:Request(player,id,value); return end
     if kind == "Ready" then
         sync(player)
         -- Late joiners get current lines too, but never other players' rewards.
@@ -378,19 +384,9 @@ Action.OnServerEvent:Connect(function(player, kind, id, value)
         return
     end
     if kind == "QuestClaim" then
-        if (id ~= "Daily" and id ~= "Weekly") or type(value) ~= "string" or #value > 80 then return end
-        local data = Profiles.Get(player)
-        if not data then return end
-        local ok, reason, reward = Quests.Claim(data, Config, id, value, workspace:GetServerTimeNow(), player.UserId)
-        if ok then
-            sync(player)
-            notice(player, "Награда за задание: +" .. reward .. " монет.")
-        else
-            syncQuests(player, data)
-            local messages = {already_claimed="Награда уже получена.", not_completed="Задание ещё не выполнено.",
-                unknown_task="Задания обновились. Проверь новый список.", invalid_period="Задания обновились. Проверь новый список."}
-            notice(player, messages[reason] or "Не удалось получить награду. Проверь список заданий.")
-        end
+        -- Old clients cannot bypass the NPC's proximity/session checks.
+        syncQuests(player)
+        notice(player,"Забери награду в разговоре с NPC, который выдал поручение.")
         return
     end
     if kind == "Begin" then beginCast(player); return end
@@ -424,6 +420,7 @@ end)
 local accumulator, environment = 0, 0
 RunService.Heartbeat:Connect(function(dt)
     dodges:Step(workspace:GetServerTimeNow())
+    dialogues:Step()
     if sahur then sahur:Step(workspace:GetServerTimeNow()) end
     environment = environment + dt
     Lighting.ClockTime = (VisualTheme.Lighting.ClockTime + environment / 30) % 24 -- 12-minute full day.
@@ -502,6 +499,7 @@ local function playerAdded(player)
     local stats = Instance.new("Folder"); stats.Name = "leaderstats"; stats.Parent = player
     for _, name in ipairs({"Coins", "Level", "Caught"}) do local v = Instance.new("IntValue"); v.Name = name; v.Parent = stats end
     connections[player] = player.CharacterAdded:Connect(function(character)
+        if dialogues then dialogues:Close(player) end
         if sahur then sahur:Remove(player) end
         dodges:Remove(player)
         finish(player)
@@ -525,6 +523,7 @@ local function playerAdded(player)
 end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
+    if dialogues then dialogues:Close(player,true) end
     if sahur then sahur:Remove(player) end
     dodges:Remove(player)
     finish(player)

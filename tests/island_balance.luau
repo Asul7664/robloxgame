@@ -17,7 +17,9 @@ local function new(class)
     return setmetatable({_p=properties},{
         __index=function(self,key)
             if key=="Position"then return properties.CFrame.Position end
-            return Node[key]or properties[key]or self:FindFirstChild(key)
+            if Node[key]then return Node[key]end
+            if properties[key]~=nil then return properties[key]end
+            return self:FindFirstChild(key)
         end,
         __newindex=function(self,key,value)
             if key=="Parent"then
@@ -84,6 +86,7 @@ load("VisualTheme","src/shared/VisualTheme.luau")
 load("SceneryVegetation","src/server/SceneryVegetation.luau")
 load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
+load("NPCModels","src/server/NPCModels.luau")
 load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
 local archipelago=load("Archipelago","src/server/Archipelago.luau")
@@ -236,9 +239,26 @@ local function isScenery(object)
     end
     return false
 end
+local function isNPCRig(object)
+    local current=object.Parent
+    while current and current~=workspace do
+        if current.Name=="VisualRig" and current:GetAttribute("QCNPC")==true then return true end
+        current=current.Parent
+    end
+    return false
+end
+local function legacyNPC(object)
+    local model=object.Parent
+    if not model or not model:FindFirstChild("Body")or model:FindFirstChildOfClass("Humanoid")then return false end
+    local scoped=(model.Parent==map and (model.Name=="Merchant"or model.Name=="Rodsmith"))
+        or (model.Parent and model.Parent.Parent==folder and model.Parent.Name:match("^Dock_")
+            and (model.Name=="Captain"or model.Name=="Buyer"))
+    local known={Body=true,Head=true,Hat=true,HatBand=true,Arm=true,Leg=true,Eye=true}
+    return scoped and known[object.Name]==true
+end
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not original[object]then
-        check(isScenery(object),"Migration added gameplay geometry outside the scenery folders")
+        check(isScenery(object)or isNPCRig(object),"Migration added geometry outside owned scenery/NPC rigs")
         check(not object.CanCollide and not object.CanQuery and not object.CanTouch,"Decoration intercepts physics or shots")
     end
 end
@@ -250,7 +270,10 @@ for object,frame in pairs(original)do
     near(object.Size,originalPhysics[object].Size,"Art pass resized existing geometry")
     for _,key in ipairs({"CanCollide","CanQuery","CanTouch"})do
         local retired=object.Name=="PalmLeaf"or object.Name=="LeafCanopy"or object.Name=="Branch"
-        if retired and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
+        if legacyNPC(object) then
+            check(object:GetAttribute("QCOriginal"..key)==originalPhysics[object][key],"NPC upgrade lost original interaction physics")
+            check(object[key]==false,"NPC visual anchor interferes with player physics: "..object.Parent.Name.."/"..object.Name.."."..key.."="..tostring(object[key]))
+        elseif retired and key~="CanCollide"and object:GetAttribute("QCOriginal"..key)~=nil then
             check(object:GetAttribute("QCOriginal"..key)==originalPhysics[object][key],"Retired frond lost its original query/touch flag")
             check(object[key]==false,"Invisible retired frond intercepts queries or touch events")
         else
@@ -278,6 +301,16 @@ for object,frame in pairs(migrated)do near(object.Position,frame.Position,"Repea
 workspace.QuietCoveMap:Destroy();workspace.QuietCoveArchipelago:Destroy()
 local fresh=archipelago.Attach(world.Build())
 check(#fresh.Buyers==5,"New map lacks buyers")
+local rigCount=0
+for _,object in ipairs(workspace:GetDescendants())do
+    if object:IsA("Model")and object.Name=="VisualRig"and object:GetAttribute("QCNPC")==true then
+        rigCount+=1
+        check(object:FindFirstChildOfClass("Humanoid")~=nil,"New trader lacks a Roblox character rig")
+        check(object:FindFirstChild("Head")~=nil and object:FindFirstChild("Torso")~=nil,"Trader body is incomplete")
+        check(object.Parent.Body.Transparency==1,"Legacy block body overlaps the new trader")
+    end
+end
+check(rigCount==12,"Expected two home traders, six captains and four island buyers")
 check(#workspace.QuietCoveArchipelago:GetChildren()==12,"Unexpected fresh island/dock count")
 check(workspace.Terrain.LastFill.Size.X==(config.Ocean.HalfExtent+100)*2,"Terrain does not cover the enlarged ocean")
 local freshCount=#workspace:GetDescendants()

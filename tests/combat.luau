@@ -81,6 +81,22 @@ do
 end
 
 -- One humanoid may contribute several body parts to an overlap; damage must
+-- Friendly shopkeepers are valid Humanoids but must never become combat victims.
+do
+    local env,player,npc,hum=setup()
+    npc:SetAttribute("QCNPC",true);env.BoxParts={npc.Torso}
+    env.Combat.Swing.OnServerEvent:Fire(player,1)
+    check(#hum.DamageCalls==0,"Friendly quest NPC ignores saber damage")
+    check(not npc:GetAttribute("IFrame"),"Friendly NPC protection does not consume combat immunity")
+end
+do
+    local env,player,npc,hum=setup("Musket")
+    npc:SetAttribute("QCNPC",true);env.RayResult={Instance=npc.Torso,Position=V.new(0,0,-10)}
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.new(0,0,-1))
+    check(#hum.DamageCalls==0,"Friendly quest NPC ignores musket damage")
+end
+
+-- One humanoid may contribute several body parts to an overlap; damage must
 -- happen once, and the attacker's own body can never take its own damage.
 for combo = 1, 3 do
     local env, player, victim, hum = setup()

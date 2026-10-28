@@ -22,7 +22,7 @@ function WeaponCamera.IsUIBlocked(player)
     local gui = player:FindFirstChildOfClass("PlayerGui")
     local quiet = gui and gui:FindFirstChild("QuietCoveUI")
     if quiet and quiet.Enabled ~= false then
-        for _, name in ipairs({"InventoryAndShop", "QuestWindow", "VoyageWindow", "CatchReveal"}) do
+        for _, name in ipairs({"InventoryAndShop", "QuestWindow", "VoyageWindow", "CatchReveal", "NPCConversation"}) do
             local window = quiet:FindFirstChild(name)
             if window and window.Visible then return true end
         end

@@ -3,6 +3,7 @@
 local Workspace=game:GetService("Workspace")
 local Config=require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("Config"))
 local Visuals=require(script.Parent:WaitForChild("WorldVisuals"))
+local NPCModels=require(script.Parent:WaitForChild("NPCModels"))
 local A={}
 local function part(parent,name,x,y,z,sx,sy,sz,color,material,class)
     local p=Instance.new(class or "Part");p.Name=name;p.Size=Vector3.new(sx,sy,sz);p.CFrame=CFrame.new(x,y,z)
@@ -45,18 +46,7 @@ local function cylinder(parent,name,x,y,z,height,diameter,color,material)
     p.Shape=Enum.PartType.Cylinder;p.CFrame=p.CFrame*CFrame.Angles(0,0,math.pi/2);return p
 end
 local function npc(parent,name,x,z,shirt,title,action)
-    local model=Instance.new("Model");model.Name=name;model.Parent=parent
-    local body=part(model,"Body",x,9.3,z,2.5,2.8,1.4,shirt)
-    part(model,"Head",x,11.5,z,1.7,1.7,1.7,{224,181,139})
-    part(model,"Hat",x,12.4,z,2.6,0.3,2.2,{236,233,209})
-    part(model,"HatBand",x,12.5,z,1.8,0.35,1.5,shirt)
-    for _,side in ipairs({-1,1})do
-        part(model,"Arm",x+side*1.6,9.3,z,0.6,2.5,1,shirt)
-        part(model,"Leg",x+side*0.65,7.2,z,0.9,1.6,1.2,{47,57,68})
-        part(model,"Eye",x+side*0.36,11.65,z-0.88,0.17,0.17,0.1,{24,30,35})
-    end
-    label(body,title,5.1);prompt(body,name.."Prompt",action,title)
-    return body
+    return NPCModels.Create(parent,name,x,z,shirt,title,action)
 end
 local function dock(folder,d)
     local x,z=d.DockX,d.DockZ
@@ -139,6 +129,17 @@ local function island(folder,d)
         end
     end
 end
+local function upgradeNPCs(folder)
+    for _,d in ipairs(Config.Islands) do
+        local dock=folder:FindFirstChild("Dock_"..d.Id)
+        if dock then
+            local captain=dock:FindFirstChild("Captain")
+            local buyer=dock:FindFirstChild("Buyer")
+            if captain then NPCModels.Upgrade(captain,"Captain") end
+            if buyer then NPCModels.Upgrade(buyer,"Buyer") end
+        end
+    end
+end
 local function caption(parent,text)
     local gui=parent and parent:FindFirstChild("Label")
     local label=gui and gui:FindFirstChildOfClass("TextLabel")
@@ -171,6 +172,7 @@ function A.Build()
             else dock(existing,d)end
         end
         Visuals.ApplyArchipelago(existing)
+        upgradeNPCs(existing)
         return existing
     end
     local folder=Instance.new("Model");folder.Name="QuietCoveArchipelago";folder.Parent=Workspace
@@ -183,6 +185,7 @@ function A.Build()
     local sign=part(folder,"HomeHarborSign",11,9,-8,0.6,4,0.6,{127,101,64},Enum.Material.Wood)
     label(sign,"ЛОДОЧНАЯ ВЕРФЬ → ЮГ\nM — карта островов",4.5,300)
     Visuals.ApplyArchipelago(folder)
+    upgradeNPCs(folder)
     return folder
 end
 function A.Attach(world)

@@ -37,7 +37,16 @@ local function task(data, kind, id)
     error("Missing task " .. id)
 end
 local function publicId(data, kind, id) return data.Quests[kind].Key .. ":" .. id end
+-- Existing progress/economy scenarios start after the player accepts work at all NPCs.
+local function ensureActive(data, config, now, userId)
+    local _, changed = Quests.Ensure(data, config, now, userId)
+    for _, giver in ipairs({"merchant", "rodsmith", "captain"}) do
+        Quests.AcceptFrom(data, config, giver, now, userId)
+    end
+    return data.Quests, changed
+end
 local function catch(data, species, zone, now, userId)
+    ensureActive(data, Config, now, userId)
     return Quests.RecordCatch(data, Config, {Species=species, Kg=Config.ById[species].MinKg}, zone, now, userId)
 end
 local NOW, MONDAY = 1791176400, 1791158400 -- Monday 2026-10-05, UTC.
@@ -45,7 +54,7 @@ local NOW, MONDAY = 1791176400, 1791158400 -- Monday 2026-10-05, UTC.
 -- Subsecond server clocks retain activity at update and disconnect flushes.
 do
     local data = starter()
-    Quests.Ensure(data, Config, NOW, 93)
+    ensureActive(data, Config, NOW, 93)
     for tick = 1, 4 do Quests.AddActivity(data, Config, 0.25, NOW + tick * 0.25, 93) end
     near(task(data, "Daily", "fishing_time").Progress, 1, "four quarter-second ticks retain a full second")
     Quests.AddActivity(data, Config, 0.5, NOW + 1.5, 93)
@@ -54,7 +63,9 @@ do
     near(task(data, "Daily", "fishing_time").Progress, 1.5, "duplicate fractional flush cannot double count")
     near(data.Quests.ActivityAt, NOW + 1.5, "fractional ActivityAt survives Ensure")
     local boundary = starter()
+    ensureActive(boundary, Config, MONDAY - 0.25, 93)
     Quests.AddActivity(boundary, Config, 0.25, MONDAY - 0.25, 93)
+    ensureActive(boundary, Config, MONDAY, 93)
     Quests.AddActivity(boundary, Config, 0.5, MONDAY + 0.25, 93)
     near(task(boundary, "Daily", "fishing_time").Progress, 0.25, "fractional midnight crossing credits only new-day share")
     near(task(boundary, "Weekly", "fishing_time").Progress, 0.25, "fractional Monday crossing credits only new-week share")
@@ -64,28 +75,28 @@ end
 -- and survive a serialized profile round trip without resetting progress.
 do
     local data = starter()
-    local first, created = Quests.Ensure(data, Config, NOW, 42)
+    local first, created = ensureActive(data, Config, NOW, 42)
     check(created, "new profile generates assignments")
     equal(#first.Daily.Tasks, 5, "five daily quests")
     equal(#first.Weekly.Tasks, 5, "five weekly quests")
     equal(task(data, "Daily", "fishing_time").Target, 1200, "daily minimum active time")
     equal(task(data, "Weekly", "fishing_time").Target, 7200, "weekly active time")
     local other = starter()
-    Quests.Ensure(other, Config, NOW, 42)
+    ensureActive(other, Config, NOW, 42)
     equal(json(other.Quests), json(first), "same user and period generate the same assignments")
     local caught = task(data, "Daily", "species_1").Species
     catch(data, caught, "Cove", NOW, 42)
     Quests.AddActivity(data, Config, 0.5, NOW + 1, 42)
     local saved = serde.decode("json", json(data))
     saved.Quests = Quests.Clean(saved.Quests)
-    Quests.Ensure(saved, Config, NOW + 2, 42)
+    ensureActive(saved, Config, NOW + 2, 42)
     equal(task(saved, "Daily", "catch_total").Progress, 1, "save/rejoin catches persist")
     equal(task(saved, "Daily", "species_1").Progress, 1, "save/rejoin species persist")
     equal(task(saved, "Daily", "fishing_time").Progress, 0.5, "fractional activity persists")
     equal(saved.Quests.ActivityAt, NOW + 1, "activity duplicate guard persists")
     local before = json(saved.Quests.Daily.Tasks)
     saved.Rod, saved.XP, saved.OwnedBoats = 4, 10000, {skiff=true}
-    Quests.Ensure(saved, Config, NOW + 20, 42)
+    ensureActive(saved, Config, NOW + 20, 42)
     equal(json(saved.Quests.Daily.Tasks), before, "level and equipment changes never reroll existing assignments")
     local snapshot = Quests.Snapshot(saved, Config, NOW + 20, 42)
     snapshot.Daily.Tasks[1].Progress = 9999
@@ -114,6 +125,7 @@ do
     equal(task(data, "Weekly", "catch_total").Progress, 0, "weekly rollover clears progress")
     equal(monday.ResetTimezone, "UTC", "reset timezone published")
     equal(monday.ServerNow, MONDAY, "server time is explicit")
+    ensureActive(data, Config, MONDAY, 15)
     data.Quests.ActivityAt = MONDAY - 20
     Quests.AddActivity(data, Config, 25, MONDAY + 5, 15)
     equal(task(data, "Daily", "fishing_time").Progress, 5, "midnight interval credits only new-day time")
@@ -145,7 +157,7 @@ end
 -- Invalid records and non-catch objectives do not progress.
 do
     local data = starter()
-    Quests.Ensure(data, Config, NOW, 27)
+    ensureActive(data, Config, NOW, 27)
     local species = task(data, "Daily", "species_1").Species
     local second = task(data, "Daily", "species_2").Species
     check(species ~= second, "species quests are distinct")
@@ -169,7 +181,7 @@ end
 -- Claims are synchronous, exactly once and period-scoped, including rejoin.
 do
     local data = starter()
-    Quests.Ensure(data, Config, NOW, 31)
+    ensureActive(data, Config, NOW, 31)
     local id = publicId(data, "Daily", "catch_total")
     local ok, reason = Quests.Claim(data, Config, "Daily", id, NOW, 31)
     check(not ok and reason == "not_completed", "unfinished claim denied")
@@ -184,7 +196,7 @@ do
     ok, reason = Quests.Claim(saved, Config, "Daily", id, NOW + 1, 31)
     check(not ok and reason == "already_claimed", "rejoin cannot claim twice")
     equal(saved.Coins, reward, "rejected claim adds no coins")
-    Quests.Ensure(saved, Config, NOW + 86400, 31)
+    ensureActive(saved, Config, NOW + 86400, 31)
     task(saved, "Daily", "catch_total").Progress = task(saved, "Daily", "catch_total").Target
     ok, reason = Quests.Claim(saved, Config, "Daily", id, NOW + 86400, 31)
     check(not ok and reason == "unknown_task", "stale old-day click cannot claim new-day reward")
@@ -195,7 +207,7 @@ end
 -- active fishing. AFK gaps and duplicate calls cannot manufacture activity.
 do
     local data = starter()
-    Quests.Ensure(data, Config, NOW, 70)
+    ensureActive(data, Config, NOW, 70)
     for _, entry in ipairs(data.Quests.Daily.Tasks) do
         if entry.Kind ~= "activity" then entry.Progress = entry.Target end
     end
@@ -262,12 +274,12 @@ do
     for _, raw in ipairs({{}, {Daily="bad", Weekly=9}, {ActivityAt=nan}, {ActivityAt=math.huge}}) do
         local data = starter()
         data.Quests = Quests.Clean(raw)
-        Quests.Ensure(data, Config, NOW, 92)
+        ensureActive(data, Config, NOW, 92)
         equal(#data.Quests.Daily.Tasks, 5, "corrupted periods repaired")
         check(data.Quests.ActivityAt == nil or data.Quests.ActivityAt <= NOW, "corrupted clock sanitized")
     end
     local data = starter()
-    Quests.Ensure(data, Config, NOW, 92)
+    ensureActive(data, Config, NOW, 92)
     local paid = task(data, "Daily", "catch_total")
     paid.Claimed, paid.Progress = true, nan
     local bad = task(data, "Daily", "species_1")
@@ -277,7 +289,7 @@ do
     local damagedPaid = task(data, "Daily", "species_2")
     damagedPaid.Claimed, damagedPaid.Reward = true, nan
     data.Quests.ActivityAt = NOW + 999999
-    Quests.Ensure(data, Config, NOW, 92)
+    ensureActive(data, Config, NOW, 92)
     check(task(data, "Daily", "catch_total").Claimed, "paid marker survives corrupted progress")
     check(task(data, "Daily", "species_1").Claimed, "removed paid species does not reopen reward")
     check(task(data, "Daily", "species_2").Claimed, "paid marker survives invalid task definition")
@@ -290,10 +302,147 @@ do
     local broken = copy(Config)
     broken.Fish, broken.ById = {}, {}
     local empty = starter()
-    Quests.Ensure(empty, broken, NOW, 92)
+    ensureActive(empty, broken, NOW, 92)
     equal(#empty.Quests.Daily.Tasks, 2, "empty pools keep only feasible general tasks")
-    local _, changed = Quests.Ensure(empty, broken, NOW, 92)
+    local _, changed = ensureActive(empty, broken, NOW, 92)
     check(not changed, "empty pool does not repeatedly reset assignments")
 end
 
-print("PASS quests: " .. checks .. " assertions; UTC resets, persistence, eligibility, reward claims, activity minimum and corrupt saves")
+-- Fresh work must be accepted from its owner; catch/activity before the visit
+-- never manufacture progress. The journal publishes where to get each task.
+do
+    local data=starter()
+    local snapshot=Quests.Snapshot(data,Config,NOW,501)
+    equal(data.Quests.Version,2,"new quest schema is explicit")
+    for _, kind in ipairs({"Daily","Weekly"})do
+        for _, entry in ipairs(snapshot[kind].Tasks)do
+            check(not entry.Accepted and entry.Status=="available","fresh assignments await an NPC visit")
+            equal(Quests.GiverFor(entry.Id),entry.Giver,"scoped IDs resolve a stable owner")
+            equal(Quests.GiverName(entry.Giver),entry.GiverName,"journal publishes the owner's name")
+        end
+    end
+    check(not Quests.RecordCatch(data,Config,{Species="capybara",Kg=1},"Cove",NOW,501),"unaccepted catch is ignored")
+    check(not Quests.AddActivity(data,Config,30,NOW+30,501),"unaccepted activity is ignored")
+    equal(task(data,"Daily","catch_total").Progress,0,"catch target stays zero before accepting")
+    equal(Quests.AcceptFrom(data,Config,"unknown",NOW+30,501),0,"unknown giver cannot grant work")
+    equal(Quests.AcceptFrom(data,Config,"merchant",NOW+30,501),4,"Mara grants her two tasks in each period")
+    equal(Quests.AcceptFrom(data,Config,"merchant",NOW+30,501),0,"accept is idempotent within a day/week")
+    check(Quests.RecordCatch(data,Config,{Species="capybara",Kg=1},"Cove",NOW+31,501),"accepted catch progresses")
+    equal(task(data,"Daily","catch_total").Progress,1,"Mara catch target advances")
+    equal(task(data,"Daily","island_catch").Progress,0,"unaccepted captain work remains zero")
+    equal(Quests.AcceptFrom(data,Config,"rodsmith",NOW+60,501),4,"Lev grants his task pairs")
+    Quests.AddActivity(data,Config,30,NOW+61,501)
+    equal(task(data,"Daily","fishing_time").Progress,1,"activity accumulated before acceptance cannot be banked")
+    local id=publicId(data,"Daily","island_catch")
+    local ok,reason=Quests.Claim(data,Config,"Daily",id,NOW+61,501)
+    check(not ok and reason=="not_accepted","direct core claim also enforces acceptance")
+    equal(Quests.GiverFor({Id="fishing_time"}),"rodsmith","task tables resolve owners")
+    check(Quests.GiverFor({})==nil and Quests.GiverFor(9)==nil,"malformed IDs have no owner")
+    local locked=json(data.Quests.Daily.Tasks)
+    data.Quests.Daily.ResetAt=NOW+5
+    Quests.Ensure(data,Config,NOW+62,501)
+    equal(json(data.Quests.Daily.Tasks),locked,"damaged same-day reset timestamp cannot reroll assigned work")
+end
+
+-- Version1 save migration preserves assigned work, completed payouts and paid
+-- markers while new periods still require a fresh conversation.
+do
+    local data=starter()
+    ensureActive(data,Config,NOW,502)
+    data.Quests.Version=1
+    for _, kind in ipairs({"Daily","Weekly"})do
+        for _, entry in ipairs(data.Quests[kind].Tasks)do entry.Accepted=nil;entry.AcceptedAt=nil end
+    end
+    local first=task(data,"Daily","catch_total")
+    first.Progress=12
+    local done=task(data,"Daily","species_1")
+    done.Progress=done.Target
+    local paid=task(data,"Weekly","catch_total")
+    paid.Progress,paid.Claimed=paid.Target,true
+    data.Quests.Weekly.Paid.catch_total=true
+    local rejoined=serde.decode("json",json(data))
+    rejoined.Quests=Quests.Clean(rejoined.Quests)
+    Quests.Ensure(rejoined,Config,NOW+1,502)
+    equal(task(rejoined,"Daily","catch_total").Progress,12,"legacy catch progress is retained")
+    check(task(rejoined,"Daily","catch_total").Accepted,"legacy assigned work remains accepted")
+    local ok,_,reward,count=Quests.ClaimFrom(rejoined,Config,"merchant",NOW+1,502)
+    check(ok and count==1,"legacy completed task can be turned in")
+    equal(reward,done.Reward,"legacy reward value is retained")
+    check(task(rejoined,"Weekly","catch_total").Claimed,"legacy paid marker survives")
+    Quests.Ensure(rejoined,Config,NOW+86400,502)
+    check(not task(rejoined,"Daily","catch_total").Accepted,"new day after migration needs NPC acceptance")
+    check(task(rejoined,"Weekly","catch_total").Accepted,"existing week keeps accepted work")
+end
+
+-- NPC bulk turn-in pays only its owner's completed accepted tasks, exactly once
+-- across repeated clicks, reconnects and clock rollovers.
+do
+    local data=starter()
+    ensureActive(data,Config,NOW,503)
+    for _, kind in ipairs({"Daily","Weekly"})do
+        for _, entry in ipairs(data.Quests[kind].Tasks)do entry.Progress=entry.Target end
+    end
+    local expected=task(data,"Daily","catch_total").Reward+task(data,"Daily","species_1").Reward
+        +task(data,"Weekly","catch_total").Reward+task(data,"Weekly","species_1").Reward
+    local ok,reason,reward,count=Quests.ClaimFrom(data,Config,"merchant",NOW,503)
+    check(ok and reason=="claimed","Mara bulk turn-in succeeds")
+    equal(reward,expected,"Mara pays exactly her daily and weekly rewards")
+    equal(count,4,"turn-in counts only completed owner's tasks")
+    check(not task(data,"Daily","fishing_time").Claimed,"other owner's work cannot be claimed")
+    local rejoined=serde.decode("json",json(data))
+    ok,reason=Quests.ClaimFrom(rejoined,Config,"merchant",NOW+1,503)
+    check(not ok and reason=="nothing_ready","rejoin cannot replay bulk reward")
+    equal(rejoined.Coins,expected,"replayed turn-in leaves balance unchanged")
+    local before=json(rejoined.Quests.Daily.Tasks)
+    equal(Quests.AcceptFrom(rejoined,Config,"merchant",NOW+2,503),0,"finishing work never grants a second same-day set")
+    equal(json(rejoined.Quests.Daily.Tasks),before,"same-period NPC revisit does not reroll tasks")
+    local earned=task(rejoined,"Daily","fishing_time").Reward+task(rejoined,"Daily","species_2").Reward
+    Quests.Ensure(rejoined,Config,NOW+86400,503)
+    equal(rejoined.Quests.PendingRewards.rodsmith,earned,"expired daily reward remains owed to the right NPC")
+    local pending=rejoined.Quests.PendingRewards.rodsmith
+    for i=1,10 do Quests.Ensure(rejoined,Config,NOW+86400+i,503)end
+    equal(rejoined.Quests.PendingRewards.rodsmith,pending,"repeated rollover cannot duplicate owed credits")
+    local snap=Quests.Snapshot(rejoined,Config,NOW+86400+11,503)
+    snap.PendingRewards.rodsmith=0
+    equal(rejoined.Quests.PendingRewards.rodsmith,pending,"snapshot pending balances are detached")
+    local weekEarned=task(rejoined,"Weekly","fishing_time").Reward+task(rejoined,"Weekly","species_2").Reward
+    ok,_,reward=Quests.ClaimFrom(rejoined,Config,"rodsmith",NOW+86400+12,503)
+    check(ok,"Lev pays both overdue daily and current weekly work")
+    equal(reward,earned+weekEarned,"overdue and current rewards are summed once")
+    equal(rejoined.Quests.PendingRewards.rodsmith,0,"paid overdue balance is cleared")
+    check(not Quests.ClaimFrom(rejoined,Config,"rodsmith",NOW+86400+13,503),"overdue reward cannot be paid again")
+end
+
+-- Monday expiry preserves both independent periods without carrying incomplete
+-- progress into a new set. Save cleanup bounds owed rewards and retains overflow.
+do
+    local data=starter()
+    ensureActive(data,Config,MONDAY-1,504)
+    local daily=task(data,"Daily","island_catch")
+    local weekly=task(data,"Weekly","island_catch")
+    daily.Progress,weekly.Progress=daily.Target,weekly.Target
+    local earned=daily.Reward+weekly.Reward
+    task(data,"Daily","species_2").Progress=1
+    Quests.Ensure(data,Config,MONDAY,504)
+    equal(data.Quests.PendingRewards.captain,earned,"Monday retains daily plus weekly completed captain rewards")
+    equal(data.Quests.PendingRewards.rodsmith,0,"incomplete expired work earns nothing")
+    equal(task(data,"Daily","species_2").Progress,0,"new set does not inherit incomplete progress")
+    local saved=serde.decode("json",json(data))
+    data.Coins=999999999
+    local ok,_,paid=Quests.ClaimFrom(data,Config,"captain",MONDAY+1,504)
+    check(ok and paid==1,"currency limit permits only one available coin")
+    equal(data.Quests.PendingRewards.captain,earned-1,"overflow remains owed rather than lost")
+    check(not Quests.ClaimFrom(data,Config,"captain",MONDAY+2,504),"full balance cannot clear pending rewards")
+    data.Coins-=100
+    ok,_,paid=Quests.ClaimFrom(data,Config,"captain",MONDAY+3,504)
+    check(ok and paid==100,"remaining pending reward can be claimed after spending")
+    local loaded=Quests.Clean(saved.Quests)
+    equal(loaded.PendingRewards.captain,earned,"earned pending balance survives profile cleanup")
+    local corrupt=Quests.Clean({Version=2,PendingRewards={merchant=math.huge,rodsmith=-100,captain=2e9,unknown=1e9}})
+    equal(corrupt.PendingRewards.merchant,0,"nonfinite pending is rejected")
+    equal(corrupt.PendingRewards.rodsmith,0,"negative pending is clamped")
+    equal(corrupt.PendingRewards.captain,1e9,"pending balance has a bounded maximum")
+    check(corrupt.PendingRewards.unknown==nil,"unknown pending keys are discarded")
+end
+
+print("PASS quests: " .. checks .. " assertions; NPC acceptance, owner turn-in, pending rewards, UTC resets, persistence and eligibility")

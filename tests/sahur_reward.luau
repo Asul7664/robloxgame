@@ -21,6 +21,7 @@ env.Config.IslandById.Dunes.Weights={sahur=100}
 env:Start()
 check(not env.ServerStorage:FindFirstChild('StudioSahur'),'Published server exposes no test shortcut')
 local player=env:Player(505);env.Players.PlayerAdded:Fire(player)
+env:AcceptQuests(player)
 local data=env.Profiles.Get(player);data.Rod=#env.Config.Rods;data.XP=env.Config.XPPerLevel*3
 local function hook()
     env:Advance(1);env.reelResult=nil

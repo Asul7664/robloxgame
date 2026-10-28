@@ -13,6 +13,7 @@ local CatchReveal = require(script.Parent:WaitForChild("CatchReveal"))
 local WaterJump = require(script.Parent:WaitForChild("WaterJump"))
 local VoyageUI = require(script.Parent:WaitForChild("VoyageUI"))
 local QuestUI = require(script.Parent:WaitForChild("QuestUI"))
+local NPCDialogue = require(script.Parent:WaitForChild("NPCDialogue"))
 local DodgeSettings = require(shared:WaitForChild("SideDodge"))
 local SideDodgeController = require(script.Parent:WaitForChild("SideDodgeController"))
 local ModelPreview = require(script.Parent:WaitForChild("ModelPreview"))
@@ -28,7 +29,8 @@ local function landingPlaying()
     -- not be mounted. An active local visual must also finish before the card.
     return workspace:GetServerTimeNow() < landingEndsAt or landingEffects:OwnerPlaying()
 end
-local voyage, quests, dodge
+local voyage, quests, dodge, dialogue
+local function talking()return dialogue~=nil and dialogue:IsOpen()end
 local Action, Update = shared:WaitForChild("Action"), shared:WaitForChild("Update")
 local C = require(shared:WaitForChild("VisualTheme")).UI
 local function create(class, props, parent)
@@ -380,18 +382,19 @@ local function openModal(mode)
     catchReveal:Hide(true)
     if voyage then voyage:Close() end
     if quests then quests:Close() end
+    if dialogue then dialogue:Close() end
     shownMode = mode; modal.Visible = true; panel.Visible = false; renderModal()
 end
 local function closeModal() modal.Visible = false; panel.Visible = true end
 voyage = VoyageUI.new(gui,Config,Action,{
     CanOpen=function()return stageName=="Idle" and not catchReveal:IsVisible() and not (dodge and dodge:IsBusy())end,
-    OnOpen=function()if quests then quests:Close()end;modal.Visible=false;panel.Visible=false end,
+    OnOpen=function()if quests then quests:Close()end;if dialogue then dialogue:Close()end;modal.Visible=false;panel.Visible=false end,
     OnClose=function()panel.Visible=not modal.Visible and not catchReveal:IsVisible() and not (quests and quests:IsOpen())end,
-    Quiet=function()return catchReveal:IsVisible() or (quests and quests:IsOpen())end,
+    Quiet=function()return catchReveal:IsVisible() or (quests and quests:IsOpen()) or talking()end,
     Notice=function()return toast.Visible end,
 })
 quests = QuestUI.new(gui, Config, function(periodKind, taskId)
-    Action:FireServer("QuestClaim", periodKind, taskId)
+    notify("Возьми и сдай поручения у NPC. Журнал показывает твой прогресс.")
 end, {
     CanOpen = function()
         if dodge and dodge:IsBusy() then return false end
@@ -401,8 +404,22 @@ end, {
         if voyage:IsDriving() then notify("Сначала сойди с лодки."); return false end
         return true
     end,
-    OnOpen = function() voyage:Close(); modal.Visible = false; panel.Visible = false end,
+    OnOpen = function() voyage:Close(); if dialogue then dialogue:Close()end; modal.Visible = false; panel.Visible = false end,
     OnClose = function() panel.Visible = not modal.Visible and not catchReveal:IsVisible() and not voyage:IsOpen() end,
+    FindGiver = function(giver)
+        local locations={merchant="Мара ждёт у золотистого навеса в бухте; скупщики на островах тоже принимают её поручения.",
+            rodsmith="Мастер Лев ждёт у бирюзового навеса на стартовом острове.",
+            captain="Подойди к капитану на любом лодочном причале. В бухте верфь находится на юге."}
+        notify(locations[giver] or "Подойди к NPC, указанному в поручении.",C.Gold,8)
+    end,
+})
+dialogue=NPCDialogue.new(gui,function(id,session,choice)
+    Action:FireServer("NPCChoice",id,{Session=session,Choice=choice})
+end,{
+    CanOpen=function()return data~=nil and stageName=="Idle" and not landingPlaying()
+        and not catchReveal:IsVisible() and not (dodge and dodge:IsBusy()) and not voyage:IsDriving()end,
+    OnOpen=function()voyage:Close();quests:Close();modal.Visible=false;panel.Visible=false end,
+    OnClose=function()panel.Visible=not modal.Visible and not quests:IsOpen() and not voyage:IsOpen() and not catchReveal:IsVisible()end,
 })
 -- The map, bag and quest buttons share a separate row on narrow phone screens.
 local headerWidth
@@ -439,7 +456,7 @@ local function press(input)
         if catchReveal:CanDismiss() then catchReveal:Hide(false) end
         return -- closing a portrait never begins another cast
     end
-    if modal.Visible or quests:IsOpen() or (voyage and (voyage:IsOpen() or voyage:IsDriving())) or activeInput or UIS:GetFocusedTextBox() then return end
+    if talking() or modal.Visible or quests:IsOpen() or (voyage and (voyage:IsOpen() or voyage:IsDriving())) or activeInput or UIS:GetFocusedTextBox() then return end
     activeInput = input; holding = true
     if stageName == "Idle" then
         if not data then notify("Профиль ещё загружается."); return end
@@ -493,6 +510,7 @@ dodge = SideDodgeController.new(player, DodgeSettings, function(side, id)
     Action:FireServer("Dodge", side, id)
 end, function()
     return data ~= nil and stageName == "Idle" and not modal.Visible and not quests:IsOpen()
+        and not talking()
         and not landingPlaying() and not catchReveal:IsVisible()
         and not voyage:IsOpen() and not voyage:IsDriving() and not UIS:GetFocusedTextBox()
         and not (player.Character and player.Character:GetAttribute("CombatAttacking") == true)
@@ -533,6 +551,7 @@ gui.Destroying:Connect(function()
     if player.Character then player.Character:SetAttribute("CombatUIBlocked",false) end
 end)
 player.CharacterRemoving:Connect(function()
+    if dialogue then dialogue:Close(false) end
     if studioPreview then pcall(studioPreview.Stop,studioPreview) end
     landingEffects:Clear();pendingCaught=nil;landingEndsAt=0
     catchReveal:Hide(true)
@@ -541,6 +560,7 @@ player.CharacterRemoving:Connect(function()
     activeInput = nil; holding = false; stageName = "Idle"; sessionId = nil; closeModal(); updateStage()
 end)
 Update.OnClientEvent:Connect(function(kind, payload)
+    dialogue:Handle(kind,payload)
     dodge:Handle(kind,payload)
     castEffects:Handle(kind,payload)
     landingEffects:Handle(kind,payload)
@@ -585,10 +605,11 @@ RunService.RenderStepped:Connect(function(dt)
     if pendingCaught and not landingPlaying()then
         local p=pendingCaught;pendingCaught=nil;showCatchReveal(p.Record,p)
     end
-    panel.Visible=stageName~="Landing" and not landingPlaying() and not modal.Visible and not quests:IsOpen() and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
+    panel.Visible=stageName~="Landing" and not talking() and not landingPlaying() and not modal.Visible and not quests:IsOpen() and not catchReveal:IsVisible() and not voyage:IsOpen() and not voyage:IsDriving()
     local character = player.Character
     if character then
         local combatBlocked = stageName ~= "Idle" or modal.Visible or quests:IsOpen()
+            or talking()
             or landingPlaying() or catchReveal:IsVisible() or voyage:IsOpen() or voyage:IsDriving()
         if character:GetAttribute("CombatUIBlocked") ~= combatBlocked then
             character:SetAttribute("CombatUIBlocked", combatBlocked)
@@ -598,6 +619,7 @@ RunService.RenderStepped:Connect(function(dt)
     if equippedTool and equippedTool:GetAttribute("WeaponType") then panel.Visible = false end
     quests.Button.Visible = stageName ~= "Landing" and not catchReveal:IsVisible()
     quests:Step()
+    dialogue:Step()
     if toast.Visible and os.clock() > toastUntil then toast.Visible = false end
     local camera = workspace.CurrentCamera
     if camera then panelScale.Scale = camera.ViewportSize.Y < 500 and 0.78 or 1; layoutHeader(camera.ViewportSize.X) end

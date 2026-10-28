@@ -3,7 +3,7 @@
 blender -b --python-exit-code 1 --python tools/preview_world.py -- /workspace/outputs/quiet-cove-world.json /workspace/outputs
 python3 tools/preview_world.py --compose /workspace/outputs
 
-Optional: --shots harbor-ground,palm-ground or --all-islands after the output path.
+Optional: --shots npc-market,npc-mara,npc-captain or --all-islands after the output path.
 
 Images use approximate Blender daylight. They are not Roblox Studio screenshots.
 """
@@ -38,6 +38,33 @@ def compose(directory):
     path = directory / 'quiet-cove-detailed-world-preview.png'
     canvas.save(path)
     print(path)
+
+def compose_npcs(directory, target):
+    from PIL import Image, ImageDraw, ImageFont
+    directory = Path(directory)
+    canvas = Image.new('RGB', (1400, 650), '#142845')
+    draw = ImageDraw.Draw(canvas)
+    font = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+    title = ImageFont.truetype(font, 27)
+    label = ImageFont.truetype(font, 21)
+    small = ImageFont.truetype(font, 16)
+    draw.text((20, 14), 'QUIET COVE / ПЕРСОНАЖИ БУХТЫ', font=title, fill='#FFF7DF')
+    draw.text((20, 53), 'Игровые R6-модели · Свет, головы и встроенная улыбка приближены в Blender · Не скриншот Studio', font=small, fill='#BBD5E8')
+    for index, (shot, name, role) in enumerate((('npc-market', 'ЛЕВ', 'Удочки и мастерская'), ('npc-mara', 'МАРА', 'Улов и поручения'), ('npc-captain', 'КАПИТАН МИРОН', 'Лодки и экспедиции'))):
+        x = index * 468
+        image = Image.open(directory / ('quiet-cove-' + shot + '.png')).convert('RGB')
+        canvas.paste(image.resize((464, 464)), (x, 89))
+        draw.rectangle((x + 12, 102, x + 450, 139), fill='#213E5E')
+        draw.text((x + 24, 108), name, font=label, fill='#FFF7DF')
+        draw.text((x + 20, 568), role, font=label, fill='#FFF7DF')
+    draw.text((20, 616), 'Диалоги, выдача поручений и награды работают в игре; это только предпросмотр внешности NPC.', font=small, fill='#BBD5E8')
+    canvas.save(target)
+    print(target)
+
+if '--compose-npcs' in sys.argv:
+    i = sys.argv.index('--compose-npcs')
+    compose_npcs(sys.argv[i + 1], sys.argv[i + 2])
+    raise SystemExit(0)
 
 if '--compose' in sys.argv:
     compose(sys.argv[sys.argv.index('--compose') + 1])
@@ -118,7 +145,15 @@ def material(color, kind='SmoothPlastic'):
 def primitive(kind):
     if kind in meshes:
         return meshes[kind]
-    if kind == 'Ball':
+    if kind == 'ClassicHead':
+        bpy.ops.mesh.primitive_cube_add(size=1)
+        obj = bpy.context.object
+        bevel = obj.modifiers.new('Classic rounded head approximation', 'BEVEL')
+        bevel.width = 0.22
+        bevel.segments = 4
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.modifier_apply(modifier=bevel.name)
+    elif kind == 'Ball':
         bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=0.5)
     elif kind == 'Cylinder':
         bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=0.5, depth=1)
@@ -137,13 +172,37 @@ def primitive(kind):
     mesh = obj.data
     meshes[kind] = mesh
     bpy.data.objects.remove(obj, do_unlink=True)
-    if kind in ('Ball', 'Cylinder'):
+    if kind in ('Ball', 'Cylinder', 'ClassicHead'):
         for face in mesh.polygons:
             face.use_smooth = True
     return mesh
 
+def classic_face_material():
+    # Approximation of the built-in Roblox smile, generated locally for preview.
+    image = bpy.data.images.new('Builtin smile approximation', width=128, height=128, alpha=True)
+    pixels = []
+    for y in range(128):
+        for x in range(128):
+            u, v = x / 127, y / 127
+            eye = ((u - .31) / .045) ** 2 + ((v - .65) / .065) ** 2 < 1 or ((u - .69) / .045) ** 2 + ((v - .65) / .065) ** 2 < 1
+            curve = .28 + 1.6 * (u - .5) ** 2
+            smile = .27 < u < .73 and abs(v - curve) < .018
+            pixels.extend((.012, .014, .018, 1 if eye or smile else 0))
+    image.pixels[:] = pixels
+    mat = bpy.data.materials.new('Builtin face approximation')
+    mat.use_nodes = True
+    mat.surface_render_method = 'DITHERED'
+    texture = mat.node_tree.nodes.new('ShaderNodeTexImage')
+    texture.image = image
+    shader = mat.node_tree.nodes.get('Principled BSDF')
+    shader.inputs['Roughness'].default_value = .9
+    mat.node_tree.links.new(texture.outputs['Color'], shader.inputs['Base Color'])
+    mat.node_tree.links.new(texture.outputs['Alpha'], shader.inputs['Alpha'])
+    return mat
+
+face_material = None
 for index, part in enumerate(data['Parts']):
-    shape = 'Wedge' if part['Class'] == 'WedgePart' else part['Shape']
+    shape = 'ClassicHead' if part.get('ClassicHead') else ('Wedge' if part['Class'] == 'WedgePart' else part['Shape'])
     mesh = primitive(shape)
     mat = material(part['Color'], part['Material'])
     # Mesh instances can have distinct object-linked materials.
@@ -161,6 +220,18 @@ for index, part in enumerate(data['Parts']):
                  (frame[9],frame[10],frame[11],frame[2]), (0,0,0,1)))
     size = part['Size']
     obj.matrix_world = convert @ cf @ Matrix.Diagonal((*size, 1))
+    if part.get('ClassicFace'):
+        if face_material is None:
+            face_material = classic_face_material()
+        face_mesh = bpy.data.meshes.new('Classic face preview plane')
+        face_mesh.from_pydata([(-.36,-.38,-.505),(.36,-.38,-.505),(.36,.38,-.505),(-.36,.38,-.505)], [], [(0,1,2,3)])
+        face_mesh.uv_layers.new(name='UVMap')
+        for loop, uv in zip(face_mesh.uv_layers.active.data, ((0,0),(1,0),(1,1),(0,1))):
+            loop.uv = uv
+        face_object = bpy.data.objects.new(part['Name'] + '/builtin_face_approximation', face_mesh)
+        scene.collection.objects.link(face_object)
+        face_object.data.materials.append(face_material)
+        face_object.matrix_world = obj.matrix_world
 
 # Global terrain water, represented as a flat plane (the production tint is retained).
 bpy.ops.mesh.primitive_plane_add(size=10000, location=(0, 0, -0.02))
@@ -236,6 +307,9 @@ def ground(label, position, target, width=1280, height=720, lens=26):
 
 ground('harbor-ground', (0, 12.5, -32), (0, 16.5, 19), lens=18.6)
 ground('palm-ground', (26, 12.5, -14), (40, 18, 4), 720, 734, lens=25)
+ground('npc-market', (17, 11.7, -35), (20, 10.5, -25), 1000, 1000, lens=36)
+ground('npc-mara', (-23, 11.7, -35), (-20, 10.5, -25), 1000, 1000, lens=36)
+ground('npc-captain', (-10, 12.2, 62), (-7, 11.1, 72), 1000, 1000, lens=36)
 islands = {i['Id']: i for i in data['Islands']}
 dunes = islands['Dunes']
 ground('dunes-ground', (dunes['X'] + 7, 12.5, dunes['Z'] - 58),

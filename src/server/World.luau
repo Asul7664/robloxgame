@@ -3,6 +3,7 @@ local World = {}
 local Config = require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("Config"))
 local Workspace = game:GetService("Workspace")
 local Visuals = require(script.Parent:WaitForChild("WorldVisuals"))
+local NPCModels = require(script.Parent:WaitForChild("NPCModels"))
 local function part(parent, name, size, position, color, material)
     local p = Instance.new("Part")
     p.Name, p.Size, p.Position = name, size, position
@@ -30,19 +31,7 @@ local function prompt(parent, name, action, object)
     return p
 end
 local function npc(parent, name, x, z, shirt, text, action)
-    local model = Instance.new("Model"); model.Name = name; model.Parent = parent
-    local body = part(model, "Body", Vector3.new(2.5, 2.8, 1.4), Vector3.new(x, 9.2, z), shirt)
-    part(model, "Head", Vector3.new(1.7, 1.7, 1.7), Vector3.new(x, 11.4, z), {224, 181, 139})
-    part(model, "Hat", Vector3.new(2.5, 0.35, 2.2), Vector3.new(x, 12.35, z), {53, 66, 65})
-    for _, side in ipairs({-1, 1}) do
-        part(model, "Arm", Vector3.new(0.65, 2.5, 1), Vector3.new(x + side * 1.65, 9.2, z), shirt)
-        part(model, "Leg", Vector3.new(0.9, 1.5, 1.2), Vector3.new(x + side * 0.65, 7.15, z), {48, 59, 65})
-        local eye = part(model, "Eye", Vector3.new(0.17, 0.17, 0.1), Vector3.new(x + side * 0.36, 11.55, z - 0.86), {28, 39, 48})
-        eye.CanCollide = false
-    end
-    label(body, text, 5.5)
-    prompt(body, name .. "Prompt", action, text)
-    return body
+    return NPCModels.Create(parent, name, x, z, shirt, text, action)
 end
 local function palm(parent, x, z, height)
     local trunk = part(parent, "PalmTrunk", Vector3.new(1.8, height, 1.8), Vector3.new(x, 7 + height / 2, z), {136, 96, 62}, Enum.Material.Wood)
@@ -55,6 +44,8 @@ local function palm(parent, x, z, height)
     end
 end
 local function refs(model)
+    NPCModels.Upgrade(model.Merchant, "Merchant")
+    NPCModels.Upgrade(model.Rodsmith, "Rodsmith")
     local reef = Config.IslandById.Reef
     return {
         Model = model,

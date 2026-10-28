@@ -5,6 +5,7 @@ local shared = game:GetService("ReplicatedStorage"):WaitForChild("QuietCove")
 local Theme = require(shared:WaitForChild("VisualTheme"))
 local Config = require(shared:WaitForChild("Config"))
 local Scenery = require(script.Parent:WaitForChild("WorldScenery"))
+local NPCModels = require(script.Parent:WaitForChild("NPCModels"))
 local P = Theme.Palette
 local V = {}
 
@@ -20,6 +21,8 @@ local function labels(model)
     if text then text.TextColor3=P.Cream; text.TextStrokeColor3=P.Ink; text.TextStrokeTransparency=0.12 end
 end
 local function person(model, shirt)
+    if model:FindFirstChildOfClass("Humanoid") then return end
+    for _,child in ipairs(model:GetChildren()) do if child:IsA("MeshPart") then return end end
     for _, object in ipairs(model:GetChildren()) do
         if object.Name=="Body" or object.Name=="Arm" or object.Name=="HatBand" then paint(object,shirt)
         elseif object.Name=="Hat" then paint(object,P.Cream)
@@ -90,8 +93,8 @@ function V.ApplyMap(map)
             local light=object:FindFirstChildOfClass("PointLight")
             if light then light.Color=P.Gold end
         elseif name=="BoatHull" then paint(object,P.Shallows,Enum.Material.SmoothPlastic)
-        elseif name=="Merchant" then person(object,P.Gold)
-        elseif name=="Rodsmith" then person(object,P.Shallows) end
+        elseif name=="Merchant" then person(object,P.Gold);NPCModels.Upgrade(object,"Merchant",Theme)
+        elseif name=="Rodsmith" then person(object,P.Shallows);NPCModels.Upgrade(object,"Rodsmith",Theme) end
     end
     Scenery.Apply(map,nil,Config,Theme)
 end
@@ -129,8 +132,8 @@ function V.ApplyArchipelago(folder)
             for _,object in ipairs(dock:GetChildren()) do
                 common(object,biome)
                 if object.Name=="Canopy" then paint(object,biome.Accent,Enum.Material.SmoothPlastic)
-                elseif object.Name=="Captain" then person(object,P.Shallows)
-                elseif object.Name=="Buyer" then person(object,P.Gold) end
+                elseif object.Name=="Captain" then person(object,P.Shallows);NPCModels.Upgrade(object,"Captain",Theme)
+                elseif object.Name=="Buyer" then person(object,P.Gold);NPCModels.Upgrade(object,"Buyer",Theme) end
             end
         end
     end
