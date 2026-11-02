@@ -12,11 +12,18 @@ end
 local function add(model)
     if tracked[model] then return end
     local state={Joints={}, Phase=0, Speed=0, Weight=0}
+    if model:GetAttribute('QCSahurOriginal')==true then
+        state.Adapter=require(shared:WaitForChild('SahurOriginalRig'))
+        state.Rig=state.Adapter.Capture(model)
+    end
     tracked[model]=state
     for _,item in model:GetDescendants() do remember(state,item) end
     -- Streaming can deliver the tag before every joint in the existing rig.
     if model.DescendantAdded then
-        state.Added=model.DescendantAdded:Connect(function(item) remember(state,item) end)
+        state.Added=model.DescendantAdded:Connect(function(item)
+            remember(state,item)
+            if state.Adapter and item:IsA('Bone') then state.Rig=nil end
+        end)
     end
 end
 local function remove(model)
@@ -24,6 +31,9 @@ local function remove(model)
     if not state then return end
     tracked[model]=nil
     if state.Added then state.Added:Disconnect() end
+    if state.Rig then
+        for _,bone in pairs(state.Rig.Bones) do if bone.Bone.Parent then bone.Bone.Transform=CFrame.new() end end
+    end
     for joint,base in pairs(state.Joints) do if joint.Parent then joint.C0=base end end
 end
 connections[1]=CollectionService:GetInstanceAddedSignal('QCSahurBoss'):Connect(add)
@@ -68,11 +78,31 @@ connections[3]=RunService.PreSimulation:Connect(function(dt)
             -- 6.2 studs matches the doubled rig's ~3.8-stud support travel
             -- over 62% of a cycle; cadence follows distance, never the clock.
             state.Phase=(state.Phase+speed*step/(settings.StrideLength or 6.2)*TAU)%TAU
-            local pose=Pose.Sample(now,attackAt,model:GetAttribute('SahurMoving'),settings,{
+            local motion={
                 Phase=state.Phase, Weight=state.Weight, Emerging=emerging,
                 Pace=state.Speed/settings.GaitReferenceSpeed,
                 SpawnAt=model:GetAttribute('SahurSpawnAt'), LandingAt=model:GetAttribute('SahurLandingAt'),
-            })
+            }
+            local pose=Pose.Sample(now,attackAt,model:GetAttribute('SahurMoving'),settings,motion)
+            if state.Adapter then
+                -- Streaming may not have delivered the entire skin on tag arrival.
+                if state.Rig then
+                    for _,bone in pairs(state.Rig.Bones) do
+                        if not bone.Bone.Parent then state.Rig=nil;break end
+                    end
+                end
+                state.Rig=state.Rig or state.Adapter.Capture(model)
+                if state.Rig then
+                    pose=state.Adapter.Sample(now,attackAt,settings,motion)
+                    for name,bone in pairs(state.Rig.Bones) do
+                        if bone.Bone.Parent then
+                            local offset=state.Adapter.Offset(state.Rig,name,pose)
+                            -- Contact follows exactly the same curve as server FK.
+                            bone.Bone.Transform=attacking and offset or bone.Bone.Transform:Lerp(offset,blend)
+                        end
+                    end
+                end
+            end
             for joint,base in pairs(state.Joints) do
                 if joint.Parent then
                     local offset=pose[joint.Name] or CFrame.new()

@@ -1,0 +1,12 @@
+{
+  "sourceTriangles": 769372,
+  "triangles": 15983,
+  "bones": 27,
+  "texture": [
+    2048,
+    2048
+  ],
+  "meshCount": 1,
+  "source": "OriginalSahur.blend",
+  "studioImportVerified": false
+}

@@ -243,7 +243,11 @@ function Service:_swing(s,character,victim,elapsed)
     if not s.Hit and elapsed>=activeStart and last<=activeEnd and to>=from then
         local function segments(time)
             local t=elapsed>last and math.clamp((time-last)/(elapsed-last),0,1) or 1
-            return Club.Segments(s.Rig,previousRoot:Lerp(rootFrame,t),Clip.Sample(time,settings))
+            local pose=Clip.Sample(time,settings)
+            if s.Rig.Original then
+                pose=require(RS.QuietCove:WaitForChild('SahurOriginalRig')).Attack(time,settings)
+            end
+            return Club.Segments(s.Rig,previousRoot:Lerp(rootFrame,t),pose)
         end
         local previous=segments(from)
         local count=math.max(1,math.ceil((to-from)/settings.HitSampleTime))

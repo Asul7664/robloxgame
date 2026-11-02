@@ -1,0 +1,9 @@
+{
+  "nativeFBXRoundTrip": true,
+  "meshCount": 1,
+  "bones": 27,
+  "triangles": 15983,
+  "normalizedWeights": true,
+  "bakedColorAtlas": true,
+  "studioImportVerified": false
+}

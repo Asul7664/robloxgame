@@ -10,6 +10,9 @@ local MARKERS = {
         B=Vector3.new(.266139,-.614610,-.259639), Radius=.49267},
 }
 function Club.Capture(model)
+    if model:GetAttribute('QCSahurOriginal')==true then
+        return require(script.Parent:WaitForChild('SahurOriginalRig')).Capture(model)
+    end
     local root=model:FindFirstChild('HumanoidRootPart')
     if not root then return nil end
     local rig={Root=root, Joints={}, Parts={}}
@@ -35,6 +38,9 @@ function Club.Capture(model)
     return rig
 end
 function Club.Segments(rig,rootFrame,pose)
+    if rig.Original then
+        return require(script.Parent:WaitForChild('SahurOriginalRig')).Segments(rig,rootFrame,pose)
+    end
     local cache={[rig.Root]=rootFrame}
     local function frame(part)
         if not cache[part] then

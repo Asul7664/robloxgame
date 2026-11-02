@@ -1,5 +1,10 @@
 # Original Sahur — geometry review
 
+The game export/installer is now available in
+`assets/creatures/original-sahur/game/README.md`. Run `export_game.py` for the
+reduced mesh and baked atlas, then `verify_game.py` for native FBX round-trip
+validation. The following describes the original high-resolution study.
+
 An original mesh study following the user's wooden cylindrical character and
 separate tapered club references. This does not use the restricted imported
 Roblox meshes. It does not overwrite the installed NPC or its controller.

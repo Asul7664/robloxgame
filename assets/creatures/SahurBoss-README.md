@@ -1,5 +1,9 @@
 # Imported Sahur encounter
 
+For replacing this imported template with our original skinned character, use
+[the game FBX and Studio installer instructions](original-sahur/game/README.md).
+The legacy model remains available for rollback; source sync alone does not upload meshes.
+
 The user's imported model is retained, not replaced by the earlier procedural Sahur.
 `SahurBoss.rbxm` / `.rbxmx` contain its 16 original parts, 15 Motor6D joints,
 materials, textures, wrap data and attachments. The two original Scripts have

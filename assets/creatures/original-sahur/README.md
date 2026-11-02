@@ -14,9 +14,10 @@ The saved Blender file contains the full procedural wood shader. Rigged FBX
 and GLB are generated alongside renders when rebuilding; their base colours
 are exported, but procedural wood textures still need UV baking for Roblox.
 
-This review asset is not mapped by Rojo. The installed boss and gameplay are
-unchanged. Game-resolution topology, texture baking, animation clips and a
-Roblox rig/controller adapter are the following stage after the shape review.
+This high-resolution review asset is not mapped by Rojo. The reduced, baked
+game FBX and replacement instructions are in [game/README.md](game/README.md).
+The installed boss is replaced only after importing that FBX in Studio and
+running the installer; pulling source alone does not upload Roblox mesh assets.
 
 Revision 2 follows the reference more closely: a smaller forehead, longer
 nose bridge, broad continuous orbital hoods and cheeks, inset lips, longer
