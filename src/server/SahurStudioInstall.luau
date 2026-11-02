@@ -81,6 +81,7 @@ function Install.OriginalSelected()
         humanoid.RequiresNeck=false;humanoid.BreakJointsOnDeath=false
         humanoid.DisplayDistanceType=Enum.HumanoidDisplayDistanceType.None
         model.PrimaryPart=root;model:SetAttribute('QCSahurOriginal',true);model:SetAttribute('QCSahurUnit',unit)
+        model:SetAttribute('QCSahurSource','OriginalSahur.blend')
         model:SetAttribute('QCSizeMultiplier',2)
         assert(adapter.Capture(model),'Incomplete OriginalSahur skeleton; old boss was kept')
         model:PivotTo(root.PivotOffset)
@@ -100,5 +101,60 @@ function Install.OriginalSelected()
     model.Name='SahurBoss';model.Parent=storage;catch.Parent=assets
     print('Our OriginalSahur installed as boss and catch. Previous templates are in ServerStorage.QCSahurBackups. Save the place.')
     return model
+end
+-- Read-only check of the templates actually installed in THIS Studio place.
+-- A repository FBX or a renamed old model alone cannot pass this check.
+function Install.Verify()
+    assert(RunService:IsStudio(), 'Verify is a Studio diagnostic')
+    local storage=game:GetService('ServerStorage')
+    local replicated=game:GetService('ReplicatedStorage')
+    local shared=replicated:FindFirstChild('QuietCove')
+    local assets=shared and shared:FindFirstChild('CreatureAssets')
+    local module=shared and shared:FindFirstChild('SahurOriginalRig')
+    if not module then
+        local message='Проверка Сахура: не найден SahurOriginalRig. Дождись синхронизации Rojo.'
+        print(message);return false,message
+    end
+    local adapter=require(module)
+    local problems={}
+    local function check(model,path)
+        if not model or not model:IsA('Model') then
+            table.insert(problems,path..': модель отсутствует.');return
+        end
+        if model:GetAttribute('QCSahurOriginal')~=true then
+            table.insert(problems,path..': наша Blender-модель не установлена.');return
+        end
+        local root=model:FindFirstChild('HumanoidRootPart')
+        if not root or not root:IsA('BasePart') or not model:FindFirstChildOfClass('Humanoid') then
+            table.insert(problems,path..': повреждены HumanoidRootPart / Humanoid.');return
+        end
+        local meshes=0
+        for _,item in model:GetDescendants() do if item:IsA('MeshPart') then meshes+=1 end end
+        if meshes~=1 then table.insert(problems,path..': ожидается один skinned mesh нашей модели.');return end
+        local ok,rig=pcall(adapter.Capture,model)
+        if not ok or not rig then
+            table.insert(problems,path..': повреждён скелет нашей модели.');return
+        end
+        local parents={Body='Root',Club='Hand.R',ClubTip='Club',Facing='Root'}
+        for _,side in {'R','L'} do
+            parents['UpperArm.'..side]='Body';parents['Forearm.'..side]='UpperArm.'..side
+            parents['Hand.'..side]='Forearm.'..side;parents['Thigh.'..side]='Body'
+            parents['Shin.'..side]='Thigh.'..side;parents['Foot.'..side]='Shin.'..side
+        end
+        for name,parent in pairs(parents) do
+            local bone=rig.Bones[name] and rig.Bones[name].Bone
+            local expected=rig.Bones[parent] and rig.Bones[parent].Bone
+            if not bone or not expected or bone.Parent~=expected then
+                table.insert(problems,path..': неверная цепочка костей '..name..' → '..parent..'.');return
+            end
+        end
+    end
+    check(storage:FindFirstChild('SahurBoss'),'ServerStorage.SahurBoss')
+    check(assets and assets:FindFirstChild('sahur'),'CreatureAssets.sahur')
+    local ok=#problems==0
+    local message=ok and 'Сахур: оба установленных шаблона используют нашу Blender-модель; скелет и цепочка дубинки проверены.'
+        or ('Проверка Сахура не пройдена:\n'..table.concat(problems,'\n')..'\nИмпортируй OriginalSahur.fbx и выполни SahurStudioInstall.OriginalSelected() вне Play.')
+    print(message)
+    return ok,message
 end
 return Install

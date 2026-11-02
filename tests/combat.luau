@@ -669,4 +669,37 @@ do
     check(replacement.Parent == nextChar, "Cleanup preserves equipped tool ownership")
 end
 
+-- Missing/invalid custom configuration cannot silence a shot. Once an uploaded
+-- Audio ID is supplied locally, play that exact asset at its original speed.
+-- These IDs are test fixtures, not claims of access to uploaded audio.
+for _,case in ipairs({
+    {Value=false, Expected="rbxasset://sounds/impact_explosion_03.mp3"},
+    {Value="", Expected="rbxasset://sounds/impact_explosion_03.mp3"},
+    {Value="MusketShot.wav", Expected="rbxasset://sounds/impact_explosion_03.mp3"},
+    {Value="rbxassetid://123456789", Expected="rbxassetid://123456789", Custom=true},
+    {Value=123456789, Expected="rbxassetid://123456789", Custom=true},
+}) do
+    local env=Environment.new();local player=env:AddPlayer(1,true)
+    env:Weapon("Musket",player.Character)
+    if case.Value~=false then env.Combat:SetAttribute("MusketShotSoundId",case.Value) end
+    env:StartClient();env:Click()
+    local shot
+    for _,object in ipairs(env.Objects) do
+        if object:IsA("Sound") and object.Name=="MusketShot" then shot=object end
+    end
+    check(shot and shot.Played and shot.SoundId==case.Expected,"Shot plays the selected uploaded asset or an audible fallback")
+    check(shot.PlaybackSpeed==1,"Neither the recording nor fallback is pitched down like the old rocket")
+    check(shot.Volume>0 and shot.Parent==player.Character.HumanoidRootPart,"Shot is audible and attached to the firing character")
+    check(shot.Volume==(case.Custom and .85 or .55),"Custom recording preserves its configured level; fallback is quieter")
+    local cleaned=false
+    for _,item in ipairs(env.DebrisItems) do
+        if item.Object==shot and item.Lifetime>=2 then cleaned=true end
+    end
+    check(cleaned,"Shot sound is scheduled for cleanup after its complete tail")
+    check(#env.Requests==1 and env.Requests[1].Remote=="Shot","Audio selection never gates the actual shot request")
+    env:Click()
+    check(#env.Requests==1,"Audio does not bypass magazine/reload gating")
+    env.ClientScript:Destroy()
+end
+
 print(string.format("Combat: %d behavior checks passed (engine doubles; visual Studio test still required).", checks))

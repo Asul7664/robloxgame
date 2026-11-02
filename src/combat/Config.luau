@@ -12,6 +12,10 @@ return {
 	Musket = {
 		-- Upload assets/audio/MusketShot.wav to Roblox, then paste its Audio ID.
 		ShotSoundId = "",
+		-- Temporary built-in report until our uploaded file has an Audio asset ID.
+		-- This is not the supplied recording; never leave the weapon silent.
+		ShotFallbackSoundId = "rbxasset://sounds/impact_explosion_03.mp3",
+		ShotFallbackVolume = 0.55,
 		ShotVolume = 0.85,
 		ShotPlaybackSpeed = 1,
 		ShotSoundLifetime = 3,

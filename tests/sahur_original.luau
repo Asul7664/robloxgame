@@ -97,6 +97,9 @@ local installer=env:Execute('src/server/SahurStudioInstall.luau')
 local old=env:Node('Model','SahurBoss',env.Services.ServerStorage)
 local assets=env:Node('Folder','CreatureAssets',shared)
 local oldCatch=env:Node('Model','sahur',assets)
+local verified,report=installer.Verify()
+check(not verified and report:find('наша Blender%-модель не установлена')~=nil,
+    'Old imported templates cannot pass the original model diagnostic')
 root:Destroy();mesh.Size=V.new(5,12,2)
 model.GetScale=function()return 1 end
 model.ScaleTo=function(_,scale)check(scale==1,'Already normalized import is not scaled twice')end
@@ -115,6 +118,27 @@ check(old.Parent.Name=='QCSahurBackups' and oldCatch.Parent==old.Parent,'Previou
 check(model.Parent==old.Parent,'Source import is archived rather than left as duplicate in Workspace')
 check(installed:FindFirstChildOfClass('Humanoid').RequiresNeck==false,'Custom skin does not depend on an R15 neck motor')
 check(Rig.Capture(installed)~=nil,'Installed model passes the actual adapter')
+verified,report=installer.Verify()
+check(verified and report:find('оба установленных шаблона')~=nil,'Verifier checks both active templates after installation')
+check(installed:GetAttribute('QCSahurSource')=='OriginalSahur.blend'
+    and assets.sahur:GetAttribute('QCSahurSource')=='OriginalSahur.blend','Both installed templates retain source provenance')
+local installedTip=installed:FindFirstChild('ClubTip',true)
+installedTip.Name='MissingClubTip'
+verified,report=installer.Verify()
+check(not verified and report:find('ServerStorage.SahurBoss')~=nil,'Original marker flag alone cannot hide a broken boss skeleton')
+installedTip.Name='ClubTip'
+local catch=assets.sahur
+catch:SetAttribute('QCSahurOriginal',false)
+verified,report=installer.Verify()
+check(not verified and report:find('CreatureAssets.sahur')~=nil,'A correct boss cannot hide an old inventory model')
+catch:SetAttribute('QCSahurOriginal',true)
+local catchHand=catch:FindFirstChild('Hand.R',true)
+local handParent=catchHand.Parent
+catchHand.Parent=catch:FindFirstChild('Body',true)
+verified,report=installer.Verify()
+check(not verified and report:find('неверная цепочка костей')~=nil,'Verifier validates bone ancestry rather than names alone')
+catchHand.Parent=handParent
+check(installer.Verify(),'Restored templates pass read-only verification')
 local before=installed
 env.Services.Selection.Get=function()return {installed}end
 check(not pcall(installer.OriginalSelected) and before.Parent==env.Services.ServerStorage,'Installing an installed model cannot replace itself')

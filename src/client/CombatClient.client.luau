@@ -309,13 +309,21 @@ local function musket()
 	local dir = shotDirection(c, camera, origin)
 	animator.playMusket(c, "kick")
 	kickCamera(-8, .28)
-	local soundId = config.Musket.ShotSoundId
+	-- An edit-time attribute lets an uploaded Sound be connected without
+	-- modifying ModuleScript.Source or having Rojo overwrite a local source edit.
+	local soundId = combat:GetAttribute("MusketShotSoundId")
+	if type(soundId) == "number" then soundId = "rbxassetid://" .. tostring(soundId) end
+	if type(soundId) ~= "string" or not soundId:match("^rbxassetid://%d+$") then
+		soundId = config.Musket.ShotSoundId
+	end
+	local custom = type(soundId) == "string" and soundId:match("^rbxassetid://%d+$") ~= nil
+	if not custom then soundId = config.Musket.ShotFallbackSoundId end
 	if type(soundId) == "string" and soundId ~= "" then
 		local s = Instance.new("Sound")
 		s.Name = "MusketShot"
 		s.SoundId = soundId
-		s.Volume = config.Musket.ShotVolume
-		s.PlaybackSpeed = config.Musket.ShotPlaybackSpeed
+		s.Volume = custom and config.Musket.ShotVolume or config.Musket.ShotFallbackVolume
+		s.PlaybackSpeed = custom and config.Musket.ShotPlaybackSpeed or 1
 		s.Parent = root
 		s:Play()
 		game:GetService("Debris"):AddItem(s, config.Musket.ShotSoundLifetime)
