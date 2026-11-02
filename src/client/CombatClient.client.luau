@@ -309,13 +309,17 @@ local function musket()
 	local dir = shotDirection(c, camera, origin)
 	animator.playMusket(c, "kick")
 	kickCamera(-8, .28)
-	local s = Instance.new("Sound")
-	s.SoundId = "rbxasset://sounds/Rocket whoosh 01.wav"
-	s.Volume = 0.85
-	s.PlaybackSpeed = 0.72
-	s.Parent = root or t
-	s:Play()
-	game:GetService("Debris"):AddItem(s, 1.4)
+	local soundId = config.Musket.ShotSoundId
+	if type(soundId) == "string" and soundId ~= "" then
+		local s = Instance.new("Sound")
+		s.Name = "MusketShot"
+		s.SoundId = soundId
+		s.Volume = config.Musket.ShotVolume
+		s.PlaybackSpeed = config.Musket.ShotPlaybackSpeed
+		s.Parent = root
+		s:Play()
+		game:GetService("Debris"):AddItem(s, config.Musket.ShotSoundLifetime)
+	end
 	puff(origin, dir)
 	pendingHit = {Character = c, Tool = t, Serial = serial}
 	shotRemote:FireServer(origin, dir)

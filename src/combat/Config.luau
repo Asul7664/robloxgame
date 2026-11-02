@@ -10,6 +10,11 @@ return {
 		Hitbox = Vector3.new(4.4, 3.6, 5.4),
 	},
 	Musket = {
+		-- Upload assets/audio/MusketShot.wav to Roblox, then paste its Audio ID.
+		ShotSoundId = "",
+		ShotVolume = 0.85,
+		ShotPlaybackSpeed = 1,
+		ShotSoundLifetime = 3,
 		Damage = 28,
 		Range = 140,
 		Cooldown = 0.85,
