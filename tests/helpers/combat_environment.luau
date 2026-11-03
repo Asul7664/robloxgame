@@ -21,6 +21,13 @@ end}, {__index = CF})
 
 local function signal()
     local self = {Listeners = {}}
+    function self:Once(callback)
+        local connection
+        connection = self:Connect(function(...)
+            connection:Disconnect();callback(...)
+        end)
+        return connection
+    end
     function self:Connect(callback)
         local entry = {Callback = callback, Connected = true}
         table.insert(self.Listeners, entry)
@@ -131,7 +138,9 @@ function Environment:Node(class, name, parent)
         Children = {}, Attributes = {}, AttributeSignals = {}, PropertySignals = {},
         CFrame = CF.new(), Transform = CF.new(), C0 = CF.new(), C1 = CF.new(),
         Destroying = signal(), AncestryChanged = signal(), ChildAdded = signal(), ChildRemoved = signal()}
-    if class == "Humanoid" then
+    if class == "Sound" then
+        properties.IsLoaded = true; properties.Loaded = signal()
+    elseif class == "Humanoid" then
         properties.Health, properties.MaxHealth = 100, 100
         properties.HealthChanged, properties.Died = signal(), signal()
         properties.DamageCalls = {}; properties.CameraOffset = V.zero

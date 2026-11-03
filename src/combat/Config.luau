@@ -15,9 +15,11 @@ return {
 		-- Temporary built-in report until our uploaded file has an Audio asset ID.
 		-- This is not the supplied recording; never leave the weapon silent.
 		ShotFallbackSoundId = "rbxasset://sounds/impact_explosion_03.mp3",
-		ShotFallbackVolume = 0.55,
-		ShotVolume = 0.85,
+		ShotFallbackVolume = 0.28,
+		ShotVolume = 0.45,
 		ShotPlaybackSpeed = 1,
+		ShotDuration = 0.45,
+		ShotFadeTime = 0.18,
 		ShotSoundLifetime = 3,
 		Damage = 28,
 		Range = 140,

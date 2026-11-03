@@ -325,6 +325,16 @@ local function musket()
 		s.Volume = custom and config.Musket.ShotVolume or config.Musket.ShotFallbackVolume
 		s.PlaybackSpeed = custom and config.Musket.ShotPlaybackSpeed or 1
 		s.Parent = root
+		local function shortenShot()
+			local fade = config.Musket.ShotFadeTime
+			task.delay(math.max(0, config.Musket.ShotDuration - fade), function()
+				if not s.Parent then return end
+				TweenService:Create(s, TweenInfo.new(fade, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Volume = 0}):Play()
+				task.delay(fade, function() if s.Parent then s:Destroy() end end)
+			end)
+		end
+		-- Count from audio readiness, so a cold load isn't cut before playback.
+		if s.IsLoaded then shortenShot() else s.Loaded:Once(shortenShot) end
 		s:Play()
 		game:GetService("Debris"):AddItem(s, config.Musket.ShotSoundLifetime)
 	end

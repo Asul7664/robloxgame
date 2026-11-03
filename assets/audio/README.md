@@ -6,6 +6,12 @@
 This removes the ~0.46-second leading silence without cutting the onset.
 No gain, compression or pitch processing has been applied.
 
+In-game playback is quieter: volume 0.45 for the uploaded recording and 0.28
+for the temporary built-in sound. Playback keeps the original pitch and lasts
+at most 0.45 seconds, including a soft 0.18-second fade-out. This envelope is
+applied after loading, so a cold asset load cannot consume the playback window.
+The stored WAV is unchanged; re-uploading audio is not needed for this adjustment.
+
 Upload `MusketShot.wav` through Creator Dashboard → Creations / Development
 Items → Audio (or Studio Asset Manager audio import). Grant the experience
 permission to use it, wait for processing, and copy the Audio asset ID.

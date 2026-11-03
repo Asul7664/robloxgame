@@ -690,7 +690,7 @@ for _,case in ipairs({
     check(shot and shot.Played and shot.SoundId==case.Expected,"Shot plays the selected uploaded asset or an audible fallback")
     check(shot.PlaybackSpeed==1,"Neither the recording nor fallback is pitched down like the old rocket")
     check(shot.Volume>0 and shot.Parent==player.Character.HumanoidRootPart,"Shot is audible and attached to the firing character")
-    check(shot.Volume==(case.Custom and .85 or .55),"Custom recording preserves its configured level; fallback is quieter")
+    check(shot.Volume==(case.Custom and .45 or .28),"Both custom recording and fallback use the quieter levels")
     local cleaned=false
     for _,item in ipairs(env.DebrisItems) do
         if item.Object==shot and item.Lifetime>=2 then cleaned=true end
@@ -699,6 +699,32 @@ for _,case in ipairs({
     check(#env.Requests==1 and env.Requests[1].Remote=="Shot","Audio selection never gates the actual shot request")
     env:Click()
     check(#env.Requests==1,"Audio does not bypass magazine/reload gating")
+    env:Advance(.28)
+    local fade
+    for _,tween in ipairs(env.Tweens) do if tween.Target==shot and tween.Goals.Volume==0 then fade=tween end end
+    check(fade and fade.Played and fade.Info.Time==.18,"Shot tail fades softly after the initial report")
+    check(not shot.Destroyed,"Short shot fades before cleanup")
+    env:Advance(.18)
+    check(shot.Destroyed,"Shot ends after 0.45 seconds instead of playing the full tail")
+    env.ClientScript:Destroy()
+end
+
+do
+    local env=Environment.new();local player=env:AddPlayer(1,true)
+    env:Weapon("Musket",player.Character)
+    local create=env.Globals.Instance.new;local shot
+    env.Globals.Instance.new=function(class,parent)
+        local object=create(class,parent)
+        if class=="Sound" then object.IsLoaded=false;shot=object end
+        return object
+    end
+    env:StartClient();env:Click();env:Advance(.6)
+    check(shot and not shot.Destroyed and shot.Volume==.28,"Slow-loading audio keeps its playback window")
+    shot.Loaded:Fire();shot.Loaded:Fire()
+    env:Advance(.46)
+    local fades=0
+    for _,tween in ipairs(env.Tweens) do if tween.Target==shot and tween.Goals.Volume==0 then fades+=1 end end
+    check(shot.Destroyed and fades==1,"Loaded sound plays one short envelope with a single fade")
     env.ClientScript:Destroy()
 end
 
