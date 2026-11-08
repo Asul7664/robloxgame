@@ -15,6 +15,7 @@ local CatchLedger = require(shared:WaitForChild("CatchLedger"))
 local Quests = require(shared:WaitForChild("Quests"))
 local DodgeSettings = require(shared:WaitForChild("SideDodge"))
 local DodgeService = require(script.Parent:WaitForChild("DodgeService"))
+local WaterHazardService = require(script.Parent:WaitForChild("WaterHazardService"))
 local WeaponCatalog = require(shared:WaitForChild("WeaponCatalog"))
 local WeaponShop = require(script.Parent:WaitForChild("WeaponShop"))
 local TesterAccess = require(script.Parent:WaitForChild("TesterAccess"))
@@ -51,6 +52,7 @@ local function send(player, kind, data)
     if player.Parent == Players then Update:FireClient(player, kind, data) end
 end
 local function notice(player, text) send(player, "Notice", {Text = text}) end
+local waterHazard = WaterHazardService.new(Config.WaterHazard, notice)
 dodges = DodgeService.new(DodgeSettings, send, function(player)
     return sessions[player] ~= nil or not Profiles.Get(player)
 end)
@@ -419,6 +421,7 @@ Action.OnServerEvent:Connect(function(player, kind, id, value)
 end)
 local accumulator, environment = 0, 0
 RunService.Heartbeat:Connect(function(dt)
+    waterHazard:Step(workspace:GetServerTimeNow())
     dodges:Step(workspace:GetServerTimeNow())
     dialogues:Step()
     if sahur then sahur:Step(workspace:GetServerTimeNow()) end
@@ -499,6 +502,7 @@ local function playerAdded(player)
     local stats = Instance.new("Folder"); stats.Name = "leaderstats"; stats.Parent = player
     for _, name in ipairs({"Coins", "Level", "Caught"}) do local v = Instance.new("IntValue"); v.Name = name; v.Parent = stats end
     connections[player] = player.CharacterAdded:Connect(function(character)
+        waterHazard:Remove(player)
         if dialogues then dialogues:Close(player) end
         if sahur then sahur:Remove(player) end
         dodges:Remove(player)
@@ -523,6 +527,7 @@ local function playerAdded(player)
 end
 Players.PlayerAdded:Connect(playerAdded)
 Players.PlayerRemoving:Connect(function(player)
+    waterHazard:Remove(player)
     if dialogues then dialogues:Close(player,true) end
     if sahur then sahur:Remove(player) end
     dodges:Remove(player)

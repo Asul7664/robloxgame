@@ -32,6 +32,7 @@ end
 local methods = {}
 local function node(class, name)
     local properties = {ClassName = class, Name = name or class, Children = {}, Attributes = {}, CFrame = CF.new()}
+    if class=='Part' or class=='WedgePart' then properties.Size=V.new(1,1,1) end
     if class == "ProximityPrompt" then properties.Triggered=signal(); properties.Enabled=true end
     return setmetatable({_properties = properties}, {
         __index = function(self, key)
@@ -72,7 +73,12 @@ function methods:GetDescendants()
     end
     return descendants
 end
-function methods:IsA(class) return self.ClassName == class or (class == "BasePart" and self.ClassName == "Part") end
+function methods:IsA(class) return self.ClassName == class or (class == "BasePart" and (self.ClassName == "Part" or self.ClassName=='WedgePart')) end
+function methods:PivotTo(frame)
+    local origin=self.PrimaryPart and self.PrimaryPart.CFrame or self.CFrame
+    local delta=frame*origin:Inverse()
+    for _,part in self:GetDescendants() do if part:IsA('BasePart') then part.CFrame=delta*part.CFrame end end
+end
 function methods:GetAttribute(key) return self.Attributes[key] end
 function methods:SetAttribute(key, value) self.Attributes[key] = value end
 function methods:Destroy() self.Parent = nil; self.Destroyed = true end
@@ -134,7 +140,8 @@ function Environment.new()
     local shared = child(replicated, "Folder", "QuietCove")
     local server = node("Folder", "QuietCove")
     for _, name in ipairs({"Config", "BrainrotExpansion", "Quests", "CatchLedger", "CastMath", "Reel", "FightBalance", "EquipmentModels", "SideDodge", "WeaponCatalog", "VisualTheme"}) do child(shared, "ModuleScript", name) end
-    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels", "NPCDialogueService"}) do child(server, "ModuleScript", name) end
+    for _, name in ipairs({"Profiles", "TesterAccess", "World", "Archipelago", "BoatService", "DodgeService", "WeaponShop", "WeaponModels", "NPCDialogueService", "WaterHazardService", "SharkVisual"}) do child(server, "ModuleScript", name) end
+    local combat=child(replicated,'Folder','Combat');child(combat,'ModuleScript','Damage')
     local mainScript = child(server, "Script", "Main")
     local action, update = child(shared, "RemoteEvent", "Action"), child(shared, "RemoteEvent", "Update")
     action.OnServerEvent = signal()
@@ -159,6 +166,8 @@ function Environment.new()
     local game = {GetService = function(_, name) return assert(services[name], name) end,
         BindToClose = function(_, callback) self.close = callback end}
     local workspace = node("Workspace", "Workspace")
+    services.Workspace=workspace
+    workspace.Raycast=function() return nil end
     workspace.GetServerTimeNow = function() return self.epoch + self.clock end
     local stall = child(workspace, "Model", "WeaponStall")
     child(stall, "Folder", "Displays")
@@ -169,7 +178,9 @@ function Environment.new()
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
     local fakeTask = {spawn = function(callback, ...) return callback(...) end, wait = function() return nil end}
-    local fakeEnum = {PartType = {Ball = "Ball"}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding"}}
+    local fakeEnum = {PartType = {Ball = "Ball"}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding", Jumping='Jumping',Freefall='Freefall'},
+        Material={Air='Air',Water='Water',SmoothPlastic='SmoothPlastic'},
+        SurfaceType={Smooth='Smooth'},RaycastFilterType={Exclude='Exclude'}}
     local world = {Model = node("Model"), Spots = {Cove = {Name = "Тихая бухта", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
         Spawn = V.new(0, 4, 0), ReefSpawn = V.new(450, 4, -650)}
     world.Merchant, world.Shop, world.Ferry, world.ReturnFerry = node("Part"), node("Part"), node("Part"), node("Part")
@@ -231,10 +242,12 @@ function Environment.new()
         CastMath = "src/shared/CastMath.luau", Profiles = "src/server/Profiles.luau",
         SideDodge = "src/shared/SideDodge.luau", DodgeService = "src/server/DodgeService.luau",
         WeaponCatalog = "src/shared/WeaponCatalog.luau", WeaponShop = "src/server/WeaponShop.luau",
-        VisualTheme = "src/shared/VisualTheme.luau", NPCDialogueService="src/server/NPCDialogueService.luau"}
+        VisualTheme = "src/shared/VisualTheme.luau", NPCDialogueService="src/server/NPCDialogueService.luau",
+        WaterHazardService='src/server/WaterHazardService.luau',SharkVisual='src/server/SharkVisual.luau',Damage='src/combat/Damage.luau'}
     local function environment(scriptNode)
         return {game = game, workspace = workspace, script = scriptNode, os = fakeOs, task = fakeTask,
             Enum = fakeEnum, Vector3 = V, CFrame = CF, Color3 = roblox.Color3,
+            RaycastParams={new=function() return {} end},
             Instance = {new = node}, Random = {new = function()
                 return {NextNumber = function(_, lo, hi) return lo and lo + (hi - lo) * .1 or 0 end,
                     NextInteger = function(_, lo) return lo end}
@@ -275,7 +288,8 @@ function Environment:Character()
     local humanoid = child(character, "Humanoid", "Humanoid")
     humanoid.Died = signal()
     humanoid.Health, humanoid.WalkSpeed, humanoid.JumpPower, humanoid.JumpHeight, humanoid.AutoRotate = 100, 16, 50, 7.2, true
-    local root = child(character, "Part", "HumanoidRootPart"); root.Position = V.new(0, 4, 0)
+    humanoid.FloorMaterial='Ground'
+    local root = child(character, "Part", "HumanoidRootPart"); root.Position = V.new(0, 4, 0);root.Size=V.new(2,2,1)
     return character
 end
 function Environment:Advance(seconds)

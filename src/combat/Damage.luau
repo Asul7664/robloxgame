@@ -1,6 +1,15 @@
 -- Shared server damage entry for purchased weapons and encounter attacks.
 local Players = game:GetService('Players')
 local Damage = {}
+-- Environmental death is server-only and deliberately ignores combat dodge
+-- immunity and spawn ForceFields. It must not weaken the PvP Apply entrypoint.
+function Damage.KillFromHazard(victimHum, cause)
+    local model = victimHum and victimHum.Parent
+    if not model or victimHum.Health <= 0 or model:GetAttribute('QCNPC') == true then return false end
+    model:SetAttribute('QCDeathCause', cause)
+    victimHum.Health = 0
+    return true
+end
 function Damage.Apply(attacker, victimHum, amount)
     local model = victimHum and victimHum.Parent
     if not model or victimHum.Health <= 0 or model == attacker or model:GetAttribute('IFrame')

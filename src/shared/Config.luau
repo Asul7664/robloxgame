@@ -40,6 +40,14 @@ Config.WaterJump = {
     SwimReleaseSeconds = 0.35, -- Briefly leave Swimming so water does not cancel the leap.
     ExitGraceSeconds = 0.18, -- Covers the normal control script changing the state first.
 }
+Config.WaterHazard = {
+    Enabled = true,
+    Seconds = 30,
+    WarningSeconds = 10, -- One warning with this many seconds left.
+    CheckInterval = 0.1,
+    GroundTolerance = 0.65,
+    EffectSeconds = 1.3,
+}
 Config.Rarities = {
     {Name = "Обычная", Color = {184, 184, 184}},
     {Name = "Необычная", Color = {118, 223, 174}},
@@ -117,6 +125,7 @@ Config.Boats = {
 Config.BoatById={}
 for _,boat in ipairs(Config.Boats) do Config.BoatById[boat.Id]=boat end
 Config.Ocean={HalfExtent=2700,SurfaceY=0,BoatHeight=0.60,MapSpan=5400}
+Config.WaterHazard.SurfaceY=Config.Ocean.SurfaceY
 Config.CatchVisuals={HaloSize=338,HaloOpacity=0.70,PortraitSizes={capybara=260,patapim=260}}
 Config.RodLooks={
     wood="Тёплое дерево, латунная катушка",
