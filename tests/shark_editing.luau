@@ -172,4 +172,77 @@ service:Destroy()
 check(realAttack.Destroyed and nextTemplate.Parent==env.Storage and not nextTemplate.Destroyed,
     'Attack teardown removes only the transient shark, preserving the editor template')
 
+-- Explicit replacement is needed when a corrected procedural model arrives:
+-- ordinary Edit intentionally preserves a user's existing saved appearance.
+env.Run.IsRunning=function()return false end
+env.Globals.require=function(module)
+    assert(module.Name=='SharkVisual');return Shark
+end
+local beforePreview=Edit.Edit()
+beforePreview:PivotTo(CF.new(13,9,-17)*CF.Angles(0,.8,0))
+local oldFrame=beforePreview:GetPivot()
+local rebuilt,rebuiltTemplate=Edit.Rebuild()
+local defaults=Shark.Create(nil,CF.new())
+check(rebuilt~=beforePreview and rebuiltTemplate~=nextTemplate,'Rebuild replaces old editor and attack models')
+check(rebuilt.PrimaryPart.Color==defaults.PrimaryPart.Color and rebuilt.PrimaryPart.Size==defaults.PrimaryPart.Size,
+    'Rebuild starts from the latest default, not the saved custom geometry')
+frameNear(rebuilt:GetPivot(),oldFrame,'Rebuild keeps the preview at its existing viewing position')
+local backups=env.Storage:FindFirstChild('OceanSharkBackups')
+check(backups and beforePreview.Parent==backups.Version1 and nextTemplate.Parent==backups.Version1,
+    'Previous preview and template are archived together')
+check(not beforePreview.Destroyed and not nextTemplate.Destroyed,'Rebuild preserves old user work for rollback')
+check(beforePreview.PrimaryPart.Color==body.Color,'Archiving retains previous edited appearance')
+check(selected[1]==rebuilt and rebuilt:GetAttribute('QCSharkEditorPreview')==true,'Replacement preview is selected and editable')
+check(rebuiltTemplate.Parent==env.Storage and rebuiltTemplate.Name=='OceanSharkTemplate','Corrected model is saved for real attacks')
+local again,againTemplate=Edit.Rebuild()
+check(backups.Version2 and rebuilt.Parent==backups.Version2 and rebuiltTemplate.Parent==backups.Version2,
+    'Repeated rebuilding creates a distinct backup revision')
+local previewCount=0
+for _,child in env.World:GetChildren() do if child.Name=='SharkPreview' then previewCount+=1 end end
+check(previewCount==1,'Repeated rebuilding leaves one editor preview')
+
+local staged;local calls=0
+env.Globals.require=function(module)
+    assert(module.Name=='SharkVisual')
+    return {Create=function(parent,frame,template)
+        calls+=1
+        if calls==2 then error('Simulated template staging failure') end
+        staged=Shark.Create(parent,frame,template);return staged
+    end}
+end
+local failingEdit=env:Execute('src/server/SharkStudioEdit.luau')
+check(not pcall(failingEdit.Rebuild),'A failed new template aborts replacement')
+check(again.Parent==env.World and againTemplate.Parent==env.Storage and not again.Destroyed,
+    'Staging failure preserves both currently active models')
+check(staged and staged.Destroyed and not backups:FindFirstChild('Version3'),'Failed staging cleans its temporary model without creating backups')
+env.Globals.require=function(module)assert(module.Name=='SharkVisual');return Shark end
+again.Parent=nil
+local occupied=env:Node('Model','SharkPreview',env.World)
+check(not pcall(Edit.Rebuild) and occupied.Parent==env.World and againTemplate.Parent==env.Storage,
+    'Rebuild refuses an unrelated same-name editor object')
+occupied:Destroy();again.Parent=env.World
+env.Run.IsRunning=function()return true end
+check(not pcall(Edit.Rebuild) and again.Parent==env.World,'Rebuild cannot replace place assets during Play')
+env.Run.IsRunning=function()return false end
+
+local editorModule=env:Node('ModuleScript','SharkStudioEdit',server)
+local freshCopies={}
+env.Globals.require=function(module)
+    if module.Name=='SharkVisual' then return Shark end
+    check(module~=editorModule and module.Name=='SharkStudioEditFresh','Wrapper bypasses the previously cached editor module')
+    table.insert(freshCopies,module)
+    return Edit
+end
+local rebuildCommand=env:Execute('src/server/SharkStudioRebuild.luau')
+local fromCommand,commandTemplate=rebuildCommand()
+check(fromCommand.Parent==env.World and commandTemplate.Parent==env.Storage,'One-command entrypoint rebuilds both models')
+check(#freshCopies==1 and freshCopies[1].Destroyed,'Wrapper releases its temporary module after success')
+env.Globals.require=function(module)
+    if module.Name=='SharkVisual' then return Shark end
+    table.insert(freshCopies,module);error('Simulated editor load failure')
+end
+local failingCommand=env:Execute('src/server/SharkStudioRebuild.luau')
+check(not pcall(failingCommand) and freshCopies[#freshCopies].Destroyed,'Wrapper releases its temporary module on failure too')
+check(fromCommand.Parent==env.World and commandTemplate.Parent==env.Storage,'Failed wrapper load leaves the working models intact')
+
 print('PASS shark editing: '..checks..' checks (saved geometry, runtime template, sanitization and edit guards)')

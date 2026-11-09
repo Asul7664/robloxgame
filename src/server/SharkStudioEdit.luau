@@ -45,4 +45,39 @@ function Editor.Save()
     print('Сохранено в ServerStorage.OceanSharkTemplate. Атаки используют эту модель. Нажми Ctrl+S для сохранения места.')
     return model
 end
+function Editor.Rebuild()
+    guard()
+    local oldPreview=Workspace:FindFirstChild('SharkPreview')
+    assert(not oldPreview or (oldPreview:IsA('Model') and oldPreview:GetAttribute('QCSharkVisual')==true),
+        'Имя SharkPreview занято другой моделью. Переименуй её перед пересборкой акулы.')
+    local oldTemplate=Storage:FindFirstChild('OceanSharkTemplate')
+    local backups=Storage:FindFirstChild('OceanSharkBackups')
+    assert(not backups or backups:IsA('Folder'),'Имя OceanSharkBackups занято другим объектом.')
+    local frame=oldPreview and oldPreview:GetPivot() or CFrame.new(0,12,-10)
+    local preview,template
+    -- Do not replace either working model until both new copies exist.
+    local ok,reason=pcall(function()
+        local Shark=factory()
+        preview=Shark.Create(nil,frame)
+        template=Shark.Create(nil,CFrame.new(),preview)
+    end)
+    if not ok then
+        if preview then preview:Destroy() end
+        if template then template:Destroy() end
+        error(reason,0)
+    end
+    if oldPreview or oldTemplate then
+        if not backups then backups=Instance.new('Folder');backups.Name='OceanSharkBackups';backups.Parent=Storage end
+        local index=1
+        while backups:FindFirstChild('Version'..index) do index+=1 end
+        local archive=Instance.new('Folder');archive.Name='Version'..index;archive.Parent=backups
+        if oldPreview then oldPreview.Parent=archive end
+        if oldTemplate then oldTemplate.Parent=archive end
+    end
+    preview.Name='SharkPreview';preview:SetAttribute('QCSharkEditorPreview',true);preview.Parent=Workspace
+    template.Name='OceanSharkTemplate';template.Parent=Storage
+    game:GetService('Selection'):Set({preview})
+    print('Акула пересобрана и сохранена как шаблон атак. Прежние модели находятся в ServerStorage.OceanSharkBackups. Нажми Ctrl+S.')
+    return preview,template
+end
 return Editor

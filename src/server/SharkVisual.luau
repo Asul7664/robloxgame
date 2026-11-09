@@ -2,9 +2,9 @@
 -- The owning service moves/destroys the whole model; these parts never collide.
 local Shark = {}
 local V, CF = Vector3.new, CFrame.new
-local BLUE = Color3.fromRGB(65, 100, 121)
-local FIN = Color3.fromRGB(48, 77, 97)
-local BELLY = Color3.fromRGB(223, 235, 228)
+local BLUE = Color3.fromRGB(79, 124, 147)
+local FIN = Color3.fromRGB(57, 95, 119)
+local BELLY = Color3.fromRGB(223, 233, 226)
 local INK = Color3.fromRGB(16, 29, 39)
 local TOOTH = Color3.fromRGB(255, 247, 221)
 
@@ -14,7 +14,14 @@ local function part(model, origin, name, size, frame, color, wedge)
     p.Material = Enum.Material.SmoothPlastic
     p.Anchored = true; p.CanCollide = false; p.CanTouch = false; p.CanQuery = false
     p.TopSurface = Enum.SurfaceType.Smooth; p.BottomSurface = Enum.SurfaceType.Smooth
-    if not wedge then p.Shape = Enum.PartType.Ball end
+    if not wedge then
+        -- Native Ball parts do not freely stretch on all axes in Studio.
+        -- Built-in Sphere meshes scale with the enclosing block's Size, so
+        -- the actual editor silhouette matches these elongated proportions.
+        p.Shape = Enum.PartType.Block
+        local mesh=Instance.new('SpecialMesh');mesh.MeshType=Enum.MeshType.Sphere
+        mesh.Scale=V(1,1,1);mesh.Parent=p
+    end
     p.Parent = model
     return p
 end
@@ -60,33 +67,40 @@ function Shark.Create(parent, frame, template)
     end
     local model = Instance.new("Model"); model.Name = "OceanShark"
     model:SetAttribute("QCSharkVisual",true)
-    local body = part(model,frame,"Body",V(3.1,2.35,6.25),CF(),BLUE)
+    model:SetAttribute('QCSharkRevision',2)
+    local body = part(model,frame,"Body",V(3.05,2.15,7.5),CF(),BLUE)
     model.PrimaryPart = body
-    part(model,frame,"Snout",V(2.5,1.7,3.1),CF(0,.02,-2.6),BLUE)
-    part(model,frame,"Belly",V(2.55,1.05,5.8),CF(0,-.78,-.35),BELLY)
-    part(model,frame,"OpenMouth",V(1.82,.82,.38),CF(0,-.36,-4.08),INK)
-    part(model,frame,"LowerJaw",V(1.92,.4,1.28),CF(0,-.83,-3.66),BELLY)
+    -- Broad overlapping volumes form one spindle, not a string of spheres.
+    part(model,frame,"Snout",V(2.45,1.6,3.4),CF(0,-.08,-2.55),BLUE)
+    part(model,frame,"UpperJaw",V(1.8,.62,1.3),CF(0,-.42,-3.55),BLUE)
+    part(model,frame,"Belly",V(2.45,.9,6.5),CF(0,-.75,-.25),BELLY)
+    part(model,frame,"OpenMouth",V(1.48,.34,.12),CF(0,-.69,-3.95),INK)
+    part(model,frame,"LowerJaw",V(1.55,.27,1.15),CF(0,-.89,-3.5),BELLY)
     for _,side in {-1,1} do
-        part(model,frame,"Eye",V(.4,.43,.42),CF(side*1.04,.38,-3.44),INK)
-        part(model,frame,"EyeGlint",V(.095,.095,.095),CF(side*1.09,.49,-3.62),TOOTH)
-        for i=0,1 do
-            part(model,frame,"Gill",V(.075,.46,.12),
-                CF(side*1.49,-.03,-1.18+i*.36)*CFrame.Angles(0,0,side*-.2),INK)
+        part(model,frame,"Eye",V(.19,.23,.17),CF(side*1.1,.22,-3.02),INK)
+        part(model,frame,"EyeGlint",V(.042,.042,.042),CF(side*1.165,.26,-3.075),TOOTH)
+        for i=0,3 do
+            local z=-1.55+i*.25
+            local x=1.525*math.sqrt(1-(z/3.75)^2-(.05/1.075)^2)+.012
+            part(model,frame,"Gill",V(.055,.36,.085),
+                CF(side*x,-.05,z)*CFrame.Angles(0,0,side*-.16),INK)
         end
-        triangle(model,frame,"PectoralFin",V(side*1.2,-.4,-.9),V(side*3.6,-.7,1.25),
-            V(side*1.2,-.4,1.25),FIN,.18)
+        triangle(model,frame,"PectoralFin",V(side*1.15,-.4,-.65),V(side*3,-.65,1.55),
+            V(side*.95,-.5,1.5),FIN,.14)
+        triangle(model,frame,"PelvicFin",V(side*.7,-.45,2.1),V(side*1.4,-.6,3.15),
+            V(side*.35,-.4,3.0),FIN,.11)
     end
-    triangle(model,frame,"DorsalFin",V(0,.95,-.8),V(0,.95,1.65),V(0,3.05,1.2),FIN,.22)
-    part(model,frame,"TailStock",V(1.15,.95,2.8),CF(0,-.02,3.35),BLUE)
-    triangle(model,frame,"UpperTail",V(0,0,4.15),V(0,2.05,5.9),V(0,.35,5.05),FIN,.2)
-    triangle(model,frame,"LowerTail",V(0,0,4.15),V(0,-1.45,5.55),V(0,-.25,5.05),FIN,.2)
-    -- A few broad ivory teeth read at player distance without noisy tiny parts.
-    for _,x in {-.5,.5} do
-        triangle(model,frame,"UpperTooth",V(x-.18,-.12,-4.29),V(x+.18,-.12,-4.29),
-            V(x,-.43,-4.29),TOOTH,.08)
+    triangle(model,frame,"DorsalFin",V(0,.8,-.8),V(0,.8,1.5),V(0,2.25,.55),FIN,.16)
+    triangle(model,frame,"RearDorsalFin",V(0,.3,2.9),V(0,.3,3.85),V(0,.95,3.45),FIN,.1)
+    part(model,frame,"TailStock",V(1.1,.8,3.4),CF(0,-.03,3.9),BLUE)
+    triangle(model,frame,"UpperTail",V(0,-.05,4.65),V(0,1.85,6.1),V(0,.18,5.22),FIN,.15)
+    triangle(model,frame,"LowerTail",V(0,-.05,4.65),V(0,-1.35,5.9),V(0,-.2,5.22),FIN,.15)
+    for _,x in {-.35,.35} do
+        triangle(model,frame,"UpperTooth",V(x-.105,-.59,-4.025),V(x+.105,-.59,-4.025),
+            V(x,-.74,-4.025),TOOTH,.04)
     end
-    triangle(model,frame,"LowerTooth",V(-.19,-.67,-4.25),V(.19,-.67,-4.25),
-        V(0,-.43,-4.25),TOOTH,.08)
+    triangle(model,frame,"LowerTooth",V(-.105,-.82,-4.025),V(.105,-.82,-4.025),
+        V(0,-.72,-4.025),TOOTH,.04)
     model.Parent = parent
     return model
 end

@@ -178,7 +178,7 @@ function Environment.new()
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
     local fakeTask = {spawn = function(callback, ...) return callback(...) end, wait = function() return nil end}
-    local fakeEnum = {PartType = {Ball = "Ball"}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding", Jumping='Jumping',Freefall='Freefall'},
+    local fakeEnum = {PartType = {Ball = "Ball",Block='Block'}, MeshType={Sphere='Sphere'}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding", Jumping='Jumping',Freefall='Freefall'},
         Material={Air='Air',Water='Water',SmoothPlastic='SmoothPlastic'},
         SurfaceType={Smooth='Smooth'},RaycastFilterType={Exclude='Exclude'}}
     local world = {Model = node("Model"), Spots = {Cove = {Name = "Тихая бухта", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
