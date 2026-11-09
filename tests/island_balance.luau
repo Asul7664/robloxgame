@@ -88,6 +88,8 @@ load("SceneryVegetation","src/server/SceneryVegetation.luau")
 load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
 load("NPCModels","src/server/NPCModels.luau")
+load('ReefScenery','src/server/ReefScenery.luau')
+load('OceanFloor','src/server/OceanFloor.luau')
 load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
 local archipelago=load("Archipelago","src/server/Archipelago.luau")
@@ -248,6 +250,14 @@ local function isNPCRig(object)
     end
     return false
 end
+local function isOcean(object)
+    local current=object.Parent
+    while current and current~=workspace do
+        if current:GetAttribute('QCOceanFloor')==true then return true end
+        current=current.Parent
+    end
+    return false
+end
 local function legacyNPC(object)
     local model=object.Parent
     if not model or not model:FindFirstChild("Body")or model:FindFirstChildOfClass("Humanoid")then return false end
@@ -259,8 +269,13 @@ local function legacyNPC(object)
 end
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not original[object]then
-        check(isScenery(object)or isNPCRig(object),"Migration added geometry outside owned scenery/NPC rigs")
-        check(not object.CanCollide and not object.CanQuery and not object.CanTouch,"Decoration intercepts physics or shots")
+        check(isScenery(object)or isNPCRig(object)or isOcean(object),"Migration added geometry outside owned scenery/NPC/ocean")
+        if object:GetAttribute('QCSeabed')==true then
+            check(object.CanCollide and object.CanQuery and not object.CanTouch,'Sand floor lost its solid surface')
+            check(object.Position.Y<config.Ocean.SurfaceY-9,'New sand obstructs boat navigation')
+        else
+            check(not object.CanCollide and not object.CanQuery and not object.CanTouch,"Decoration intercepts physics or shots")
+        end
     end
 end
 for object,frame in pairs(original)do

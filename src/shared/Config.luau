@@ -126,6 +126,7 @@ Config.BoatById={}
 for _,boat in ipairs(Config.Boats) do Config.BoatById[boat.Id]=boat end
 Config.Ocean={HalfExtent=2700,SurfaceY=0,BoatHeight=0.60,MapSpan=5400}
 Config.WaterHazard.SurfaceY=Config.Ocean.SurfaceY
+Config.Seabed={Enabled=true,CellSize=256,MinDepth=12,MaxDepth=26,ReefPatchesPerIsland=6}
 Config.CatchVisuals={HaloSize=338,HaloOpacity=0.70,PortraitSizes={capybara=260,patapim=260}}
 Config.RodLooks={
     wood="Тёплое дерево, латунная катушка",

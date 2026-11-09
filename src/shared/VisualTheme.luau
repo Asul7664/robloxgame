@@ -40,7 +40,7 @@ return {
         QCAtmosphere = {Class="Atmosphere", Properties={Density=0.13, Offset=0.1, Haze=0.3,
             Glare=0, Color=rgb(190,222,255), Decay=rgb(128,162,205)}},
     },
-    Water = {WaterColor=P.Water, WaterTransparency=0.3, WaterReflectance=0.22,
+    Water = {WaterColor=P.Water, WaterTransparency=0.42, WaterReflectance=0.22,
         WaterWaveSize=0.15, WaterWaveSpeed=7},
     UI = {Bg=rgb(26, 46, 66), Panel=rgb(40, 70, 89), Ink=rgb(255, 249, 232),
         Muted=rgb(187, 213, 232), Aqua=P.Shallows, Gold=P.Gold, Red=P.Coral},

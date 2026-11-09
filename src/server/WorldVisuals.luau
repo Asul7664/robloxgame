@@ -6,6 +6,7 @@ local Theme = require(shared:WaitForChild("VisualTheme"))
 local Config = require(shared:WaitForChild("Config"))
 local Scenery = require(script.Parent:WaitForChild("WorldScenery"))
 local NPCModels = require(script.Parent:WaitForChild("NPCModels"))
+local OceanFloor = require(script.Parent:WaitForChild("OceanFloor"))
 local P = Theme.Palette
 local V = {}
 
@@ -82,6 +83,7 @@ function V.ApplyEnvironment()
         end
     end
     for key,value in pairs(Theme.Water) do Workspace.Terrain[key]=value end
+    OceanFloor.Apply(Workspace,Config,Theme)
 end
 
 function V.ApplyMap(map)

@@ -202,7 +202,7 @@ def classic_face_material():
 
 face_material = None
 for index, part in enumerate(data['Parts']):
-    shape = 'ClassicHead' if part.get('ClassicHead') else ('Wedge' if part['Class'] == 'WedgePart' else part['Shape'])
+    shape = 'Ball' if part.get('SphereMesh') else ('ClassicHead' if part.get('ClassicHead') else ('Wedge' if part['Class'] == 'WedgePart' else part['Shape']))
     mesh = primitive(shape)
     mat = material(part['Color'], part['Material'])
     # Mesh instances can have distinct object-linked materials.
@@ -219,6 +219,8 @@ for index, part in enumerate(data['Parts']):
                  (frame[6],frame[7],frame[8],frame[1]),
                  (frame[9],frame[10],frame[11],frame[2]), (0,0,0,1)))
     size = part['Size']
+    if part.get('SphereMesh'):
+        size = [value * scale for value, scale in zip(size, part.get('MeshScale', (1, 1, 1)))]
     obj.matrix_world = convert @ cf @ Matrix.Diagonal((*size, 1))
     if part.get('ClassicFace'):
         if face_material is None:
@@ -312,6 +314,7 @@ ground('npc-mara', (-12, 11.9, -17), (-20, 11, -25), 1000, 1000, lens=36)
 ground('npc-captain', (-2, 12.3, 62), (-7, 11.1, 72), 1000, 1000, lens=36)
 ground('npc-mara-back', (-24.2, 12.2, -26.5), (-20, 11.8, -25), 1000, 1000, lens=50)
 ground('ferry-close', (34, 16, -65), (24, 2, -78), 1200, 850, lens=35)
+ground('seabed-cove', (29, -8, -139), (17, -12, -129), 1200, 850, lens=30)
 islands = {i['Id']: i for i in data['Islands']}
 dunes = islands['Dunes']
 ground('dunes-ground', (dunes['X'] + 7, 12.5, dunes['Z'] - 58),

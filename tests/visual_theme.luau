@@ -99,6 +99,8 @@ load("SceneryVegetation","src/server/SceneryVegetation.luau")
 load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
 load("NPCModels","src/server/NPCModels.luau")
+load('ReefScenery','src/server/ReefScenery.luau')
+load('OceanFloor','src/server/OceanFloor.luau')
 local visuals=load("WorldVisuals","src/server/WorldVisuals.luau")
 
 local map=child(workspace,"Model","QuietCoveMap")
@@ -290,12 +292,19 @@ local cargoProps=0
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not originals[object]then
         local rig=npcRig(object)
-        if not rig then added+=1 end
-        check((rig~=nil or object.Anchored==true)and not object.CanCollide and not object.CanTouch and not object.CanQuery,
-            "New decoration blocks movement, weapon shots or AI queries")
+        local ocean=object.Parent
+        while ocean and ocean:GetAttribute('QCOceanFloor')~=true do ocean=ocean.Parent end
+        if not rig and not ocean then added+=1 end
+        if object:GetAttribute('QCSeabed')==true then
+            check(object.Anchored and object.CanCollide and object.CanQuery and not object.CanTouch,'Sand floor must remain solid')
+            check(object.Position.Y<config.Ocean.SurfaceY-9,'Sand rises into the navigable water')
+        else
+            check((rig~=nil or object.Anchored==true)and not object.CanCollide and not object.CanTouch and not object.CanQuery,
+                "New decoration blocks movement, weapon shots or AI queries")
+        end
         local current=object.Parent
         while current and current.Name~="QCScenery"do current=current.Parent end
-        check(current~=nil or rig~=nil,"New decoration escaped its owned scenery/NPC folder")
+        check(current~=nil or rig~=nil or ocean~=nil,"New decoration escaped its owned scenery/NPC/ocean folder")
         if rig then
             check(object.Name=="HumanoidRootPart"and object.Anchored==true or object.Massless==true,
                 "NPC rig has a physical limb outside its anchored assembly")

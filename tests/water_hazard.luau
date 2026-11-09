@@ -190,4 +190,17 @@ do
     check(h.Health==100 and f.Service.States[f.Player]==nil,'Feature toggle disables attacks')
 end
 
+do
+    local f=fixture();local h=f.Player.Character.Humanoid
+    h.State=f.Env.Enum.HumanoidStateType.Running;h.FloorMaterial=f.Env.Enum.Material.Sand
+    f.Player.Character.HumanoidRootPart.CFrame=CF.new(0,-10,0)
+    f.Env.RayResult={Material=f.Env.Enum.Material.Sand,Position=V.new(0,-13,0),Normal=V.yAxis,
+        Instance=f.Env:Node('WedgePart','SandSlope',f.Env.World),Distance=3}
+    f:Step(0)
+    check(f.Service.States[f.Player]~=nil,'Standing on the submerged sand floor remains a water episode')
+    f:Step(29.9);check(h.Health==100,'Submerged floor retains the same thirty-second allowance')
+    f:Step(30)
+    check(h.Health==0,'Walking on the new seabed cannot evade the shark')
+end
+
 print('PASS water hazard: '..checks..' checks (server timer, water hopping, boat safety and lifecycle; Studio physics still required)')

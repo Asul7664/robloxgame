@@ -36,10 +36,15 @@ local function medium(character, humanoid, root, settings)
     params.IgnoreWater=false;params.RespectCanCollide=true
     local hit=Workspace:Raycast(root.Position,Vector3.new(0,-(feet+settings.GroundTolerance),0),params)
     if hit and hit.Material==Enum.Material.Water then return 'water' end
+    -- A solid seafloor is still underwater. Walking on sand at depth must not
+    -- grant the same safety as standing on a dry dock or boat deck.
+    if root.Position.Y<settings.SurfaceY and hit and hit.Position.Y<settings.SurfaceY-1 then return 'water' end
     if hit and hit.Normal.Y>=.5 and not airborne then return 'safe' end
     if state==Enum.HumanoidStateType.Swimming or humanoid.FloorMaterial==Enum.Material.Water then return 'water' end
     local floor=humanoid.FloorMaterial
-    if not airborne and floor and floor~=Enum.Material.Air and floor~=Enum.Material.Water then return 'safe' end
+    if not airborne and floor and floor~=Enum.Material.Air and floor~=Enum.Material.Water then
+        return root.Position.Y<settings.SurfaceY-1 and 'water' or 'safe'
+    end
     return 'air'
 end
 

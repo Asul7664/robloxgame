@@ -84,6 +84,8 @@ load("SceneryVegetation","src/server/SceneryVegetation.luau")
 load("SceneryLandmarks","src/server/SceneryLandmarks.luau")
 load("WorldScenery","src/server/WorldScenery.luau")
 load("NPCModels","src/server/NPCModels.luau")
+load('ReefScenery','src/server/ReefScenery.luau')
+load('OceanFloor','src/server/OceanFloor.luau')
 load("WorldVisuals","src/server/WorldVisuals.luau")
 local world=load("World","src/server/World.luau")
 local archipelago=load("Archipelago","src/server/Archipelago.luau")
@@ -103,6 +105,9 @@ for _,object in ipairs(workspace:GetDescendants()) do
             Shape=object.Shape and object.Shape.Name or "Block",Material=object.Material and object.Material.Name or "SmoothPlastic",
             Frame=components,Size={object.Size.X,object.Size.Y,object.Size.Z},
             Color={c.R,c.G,c.B},Transparency=object.Transparency,CastShadow=object.CastShadow~=false,
+            SphereMesh=headMesh~=nil and headMesh.MeshType==roblox.Enum.MeshType.Sphere,
+            MeshScale=headMesh and headMesh.MeshType==roblox.Enum.MeshType.Sphere
+                and {headMesh.Scale.X,headMesh.Scale.Y,headMesh.Scale.Z} or nil,
             ClassicHead=headMesh~=nil and headMesh.MeshType==roblox.Enum.MeshType.Head,
             ClassicFace=face~=nil and face:IsA("Decal") and face.Texture=="rbxasset://textures/face.png"})
     end
