@@ -2,12 +2,17 @@
 -- time, immunity or death. A water episode survives airborne WaterJump hops.
 local Players = game:GetService('Players')
 local Workspace = game:GetService('Workspace')
+local Storage = game:GetService('ServerStorage')
 local Damage = require(game:GetService('ReplicatedStorage'):WaitForChild('Combat'):WaitForChild('Damage'))
 local Visual = require(script.Parent:WaitForChild('SharkVisual'))
 local Service = {}
 Service.__index = Service
 
 function Service.new(settings, notice)
+    -- Studio preserves the editor's copy after Stop; only the runtime copy is
+    -- hidden here, so it cannot sit as a second static shark during gameplay.
+    local preview=Workspace:FindFirstChild('SharkPreview')
+    if preview and preview:GetAttribute('QCSharkEditorPreview')==true then preview:Destroy() end
     return setmetatable({Settings=settings, Notice=notice, States={}, Effects={}, NextCheck=0}, Service)
 end
 
@@ -49,7 +54,7 @@ function Service:_visual(player, root, now)
     local center=root.Position-direction*3.5
     center=Vector3.new(center.X,math.min(center.Y,self.Settings.SurfaceY)-.5,center.Z)
     local frame=CFrame.lookAt(center,center+direction)
-    local model=Visual.Create(folder,frame)
+    local model=Visual.Create(folder,frame,Storage:FindFirstChild('OceanSharkTemplate'))
     table.insert(self.Effects,{Player=player,Model=model,Frame=frame,At=now,Direction=direction})
 end
 

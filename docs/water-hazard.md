@@ -28,6 +28,37 @@ Seat/VehicleSeat, смерти, респавне и выходе. Прыжки �
 `Seconds=30`, `WarningSeconds=10`, `CheckInterval=0.1`, `EffectSeconds=1.3`.
 Высота эффекта берётся из `Config.Ocean.SurfaceY`.
 
+## Редактирование акулы в Studio
+
+Сделайте Pull, синхронизируйте Rojo и остановите Play. Откройте Command Bar:
+
+```lua
+require(game.ServerScriptService.QuietCove.SharkStudioEdit).Edit()
+```
+
+В Workspace появится `SharkPreview` и выделится в Explorer. Нажмите F над
+окном сцены. Раскройте модель: отдельные детали можно двигать, вращать,
+масштабировать, перекрашивать, добавлять и удалять обычными инструментами Studio.
+Сохраните `Body` как PrimaryPart (или назначьте другой опорный BasePart).
+Морда направлена вдоль локальной -Z опорной детали.
+
+Чтобы применить результат к настоящим атакам, выполните вне Play:
+
+```lua
+require(game.ServerScriptService.QuietCove.SharkStudioEdit).Save()
+```
+
+Затем **Ctrl+S**. Модель сохраняется в `ServerStorage.OceanSharkTemplate`;
+каждая атака клонирует её с вашими формой, цветами и размерами. Повторный Edit
+не стирает несохранённые изменения в уже открытом превью. Save работает и когда
+выделен отдельный плавник. Неверный шаблон не заменяет предыдущую рабочую копию.
+
+Превью остаётся видимым в редакторе. При Play его тестовая копия убирается,
+поэтому в игре нет лишней статичной акулы; после Stop превью снова видно.
+Пользовательский шаблон не управляется Rojo и хранится в сохранённом месте
+Studio. Если шаблон ещё не сохранён, атака использует исходную модель из кода.
+У копий отключаются физические столкновения и удаляются скрипты/package links.
+
 После Pull и синхронизации Rojo запустите новый Play. Проверьте в Studio:
 30 секунд плавания, выход на берег перед сроком, посадку/стояние на лодке,
 прыжки из воды, двух игроков одновременно и новый отсчёт после респавна.
@@ -37,6 +68,7 @@ Seat/VehicleSeat, смерти, респавне и выходе. Прыжки �
 lune run tests/water_hazard.luau
 lune run tests/water_hazard_server.luau
 lune run tests/shark_visual.luau
+lune run tests/shark_editing.luau
 lune run tests/combat.luau
 lune run tests/quest_server.luau
 rojo build default.project.json -o /tmp/quiet-cove-shark.rbxlx

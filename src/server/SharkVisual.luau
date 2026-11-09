@@ -40,7 +40,24 @@ local function triangle(model, origin, name, a, b, c, color, thickness)
     end
 end
 
-function Shark.Create(parent, frame)
+function Shark.Create(parent, frame, template)
+    if template then
+        assert(template:IsA('Model') and template.PrimaryPart
+            and template.PrimaryPart:IsA('BasePart') and template.PrimaryPart:IsDescendantOf(template),
+            'Shark template needs a PrimaryPart inside its Model')
+        local model=assert(template:Clone(),'Shark template must be Archivable')
+        for _,item in model:GetDescendants() do
+            if item:IsA('LuaSourceContainer') or item:IsA('PackageLink') then item:Destroy()
+            elseif item:IsA('BasePart') then
+                item.Anchored=true;item.CanCollide=false;item.CanTouch=false;item.CanQuery=false
+            end
+        end
+        model.Name='OceanShark';model:SetAttribute('QCSharkVisual',true)
+        model:SetAttribute('QCSharkEditorPreview',nil)
+        model:PivotTo(frame)
+        model.Parent=parent
+        return model
+    end
     local model = Instance.new("Model"); model.Name = "OceanShark"
     model:SetAttribute("QCSharkVisual",true)
     local body = part(model,frame,"Body",V(3.1,2.35,6.25),CF(),BLUE)
