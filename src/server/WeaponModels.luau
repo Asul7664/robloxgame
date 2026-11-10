@@ -4,24 +4,30 @@
 local Models = {}
 -- Only visual identity lives here; prices, levels and damage live in Catalog.
 Models.Tiers={
-    {Id='PracticeSaber',Kind='Saber',Tier=1,Name='Тренировочная сабля'},
-    {Id='Saber',Kind='Saber',Tier=2,Name='Сабля'},
-    {Id='Cutlass',Kind='Saber',Tier=3,Name='Абордажный тесак'},
+    {Id='PracticeSaber',Kind='Saber',Tier=1,Name='Ржавый меч'},
+    {Id='Saber',Kind='Saber',Tier=2,Name='Железный меч'},
+    {Id='Cutlass',Kind='Saber',Tier=3,Name='Ятаган'},
     {Id='CorsairSaber',Kind='Saber',Tier=4,Name='Сабля корсара'},
     {Id='Tideblade',Kind='Saber',Tier=5,Name='Клинок прилива'},
-    {Id='OldMusket',Kind='Musket',Tier=1,Name='Старый мушкет'},
-    {Id='Musket',Kind='Musket',Tier=2,Name='Мушкет'},
-    {Id='NavalMusket',Kind='Musket',Tier=3,Name='Флотский мушкет'},
-    {Id='CaptainMusket',Kind='Musket',Tier=4,Name='Ружьё капитана'},
-    {Id='StormMusket',Kind='Musket',Tier=5,Name='Грозовой мушкет'},
+    {Id='OldMusket',Kind='Musket',Tier=1,Name='Ржавый самопал'},
+    {Id='Musket',Kind='Musket',Tier=2,Name='Кремнёвый мушкет'},
+    {Id='NavalMusket',Kind='Musket',Tier=3,Name='Морской карабин'},
+    {Id='CaptainMusket',Kind='Musket',Tier=4,Name='Штуцер капитана'},
+    {Id='StormMusket',Kind='Musket',Tier=5,Name='Громобой'},
 }
 local specs={}
 for _,entry in ipairs(Models.Tiers) do specs[entry.Id]=entry end
 function Models.Kind(id)return assert(specs[id],'Unknown weapon visual '..tostring(id)).Kind end
+-- A single clear row of five belongs to each shop. These are floor-local
+-- display positions, so rebuilding Tools still uses unchanged handle geometry.
 function Models.DisplayOffset(id)
     local spec=assert(specs[id],'Unknown weapon display')
-    if spec.Kind=='Saber' then return Vector3.new(-3.4+(spec.Tier-1)*2,3.6,1.5) end
-    return Vector3.new(-4.3+(spec.Tier-1)*2.5,4.4,3.45)
+    return Vector3.new(4.8-(spec.Tier-1)*2.4,spec.Kind=='Saber' and 2.95 or 4.05,1.75)
+end
+function Models.DisplayFrame(id,floorFrame)
+    local spec=assert(specs[id],'Unknown weapon display')
+    return floorFrame*CFrame.new(Models.DisplayOffset(id))*CFrame.Angles(0,math.pi*.5,0)
+        *CFrame.Angles(spec.Kind=='Saber' and 0 or -.28,0,0)
 end
 function Models.Grip(id)
     -- The saber's +Y blade already follows the native hand grip. Adding
@@ -235,11 +241,11 @@ function Models.Sync(bank,displays)
         local id=spec.Id
         if not displays:FindFirstChild(id..'Display') then
             local base=assert(displays:FindFirstChild(spec.Kind..'Display'),'Missing legacy weapon display: '..spec.Kind)
-            -- Rear vertical racks: all ten silhouettes fit the original stall.
-            local origin=displays.Parent:FindFirstChild('Floor')
-            local position=origin and origin.CFrame.Position or base.Handle.CFrame.Position
-            local target=CFrame.new(position+Models.DisplayOffset(id))
-                *CFrame.Angles(0,math.pi*.5,0)*CFrame.Angles(spec.Kind=='Saber' and -1 or -.65,0,0)
+            local root=displays.Parent
+            local shop=root:FindFirstChild(spec.Kind=='Saber' and 'SwordShop' or 'GunShop')
+            local floor=(shop and shop:FindFirstChild('Floor')) or root:FindFirstChild('Floor')
+            local floorFrame=floor and floor.CFrame or CFrame.new(base.Handle.CFrame.Position)
+            local target=Models.DisplayFrame(id,floorFrame)
             local variant=Models.MakeDisplay(base,id,target);variant.Parent=displays
         end
         local display=assert(displays:FindFirstChild(id.."Display"),"Missing weapon display: "..id)

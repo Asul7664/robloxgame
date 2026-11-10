@@ -1,299 +1,221 @@
--- Original main-island weapon shop. Rebuild from the repository root with:
+-- Two original tropical weapon shops, mapped by Rojo as one static Model.
 -- lune run tools/build_weapon_stall.luau
--- Display weapons reuse the game's own Tool assets; this script converts
--- their visible geometry into anchored Models, never collectible Tools.
-local fs = require("@lune/fs")
-local roblox = require("@lune/roblox")
-local luau = require("@lune/luau")
-
-local Instance = roblox.Instance
-local Vector3 = roblox.Vector3
-local CFrame = roblox.CFrame
-local Color3 = roblox.Color3
-local Enum = roblox.Enum
-local palette = luau.load(fs.readFile("src/shared/VisualTheme.luau"), {environment={Color3=Color3}})().Palette
+-- Root Displays is the authoritative source of all ten equipped weapons.
+local fs=require('@lune/fs')
+local roblox=require('@lune/roblox')
+local luau=require('@lune/luau')
+local Instance,V,CF,C,Enum=roblox.Instance,roblox.Vector3,roblox.CFrame,roblox.Color3,roblox.Enum
+local palette=luau.load(fs.readFile('src/shared/VisualTheme.luau'),{environment={Color3=C}})().Palette
 local Models=luau.load(fs.readFile('src/server/WeaponModels.luau'),{environment={
-    Instance=Instance,Vector3=Vector3,CFrame=CFrame,Color3=Color3,Enum=Enum,
+    Instance=Instance,Vector3=V,CFrame=CF,Color3=C,Enum=Enum,
 }})()
-
-local origin = Vector3.new(24, 7.3, 8)
-local colors = {
-	wood = palette.Wood,
-	plank = palette.WoodLight,
-	trim = palette.WoodDark,
-	brass = palette.Gold,
-	rust = palette.Coral,
-	canvas = palette.Cream,
-	text = palette.Cream,
-	rack = palette.Ink,
+local root=Instance.new('Model');root.Name='WeaponStall'
+root:SetAttribute('WeaponShop',true);root:SetAttribute('GeneratedVersion',3)
+local displays=Instance.new('Folder');displays.Name='Displays';displays.Parent=root
+local cream=palette.Cream
+local wood=C.fromRGB(156,105,70)
+local lightWood=C.fromRGB(206,162,110)
+local darkWood=C.fromRGB(91,60,43)
+local bronze=C.fromRGB(185,134,65)
+local navy=C.fromRGB(39,66,86)
+local swordGold=C.fromRGB(232,186,91)
+local gunBlue=C.fromRGB(66,141,176)
+local labels={}
+local function part(parent,name,size,frame,color,collide,material,shape)
+    local p=Instance.new('Part');p.Name=name;p.Size=size;p.CFrame=frame;p.Color=color
+    p.Material=material or Enum.Material.WoodPlanks;p.Anchored=true
+    p.CanCollide=collide==true;p.CanQuery=collide==true;p.CanTouch=false
+    p.TopSurface=Enum.SurfaceType.Smooth;p.BottomSurface=Enum.SurfaceType.Smooth
+    if shape then p.Shape=shape end
+    p.Parent=parent;return p
+end
+local function label(parent,name,text,color,wrap)
+    local gui=Instance.new('SurfaceGui');gui.Name=name;gui.Face=Enum.NormalId.Front
+    gui.SizingMode=Enum.SurfaceGuiSizingMode.PixelsPerStud;gui.PixelsPerStud=90
+    gui.LightInfluence=0;gui.Parent=parent
+    local item=Instance.new('TextLabel');item.Name='Text';item.BackgroundTransparency=1
+    item.Size=roblox.UDim2.fromScale(1,1);item.Text=text;item.Font=Enum.Font.GothamBold
+    item.TextColor3=color or cream;item.TextScaled=true;item.TextWrapped=wrap==true
+    item.TextStrokeTransparency=1;item.Parent=gui
+    local pad=Instance.new('UIPadding');pad.PaddingLeft=roblox.UDim.new(.045,0)
+    pad.PaddingRight=roblox.UDim.new(.045,0);pad.PaddingTop=roblox.UDim.new(.1,0)
+    pad.PaddingBottom=roblox.UDim.new(.1,0);pad.Parent=item
+    labels[parent]=text;return gui
+end
+local function buildShop(kind,center,name,title,subtitle,accent)
+    local shop=Instance.new('Model');shop.Name=name;shop:SetAttribute('WeaponKind',kind);shop.Parent=root
+    -- Local -Z/front faces world -X, towards the central island road.
+    local frame=CF.new(center)*CF.Angles(0,math.pi*.5,0)
+    local function p(n,size,pos,color,collide,material,rotation,shape)
+        return part(shop,n,size,frame*CF.new(pos)*(rotation or CF.new()),color,collide,material,shape)
+    end
+    local floor=p('Floor',V.new(14,.3,10),V.new(0,-.15,0),wood,true)
+    shop.PrimaryPart=floor
+    if kind=='Saber' then root.PrimaryPart=floor end
+    for i=0,13 do
+        p('DeckPlank',V.new(.94,.045,9.72),V.new(-6.5+i,.022,0),i%3==0 and lightWood or wood)
+    end
+    p('FrontDeckFascia',V.new(14,.38,.16),V.new(0,-.06,-4.95),darkWood)
+    p('FrontStep',V.new(11.8,.16,.55),V.new(0,-.16,-5.15),lightWood,true)
+    for _,x in ipairs({-6.5,6.5}) do for _,z in ipairs({-4.45,4.45}) do
+        p('TimberPost',V.new(.4,7.65,.4),V.new(x,3.825,z),darkWood)
+        p('PostBase',V.new(.64,.36,.64),V.new(x,.18,z),lightWood)
+        p('PostCollar',V.new(.48,.1,.48),V.new(x,2.7,z),accent,false,Enum.Material.Metal)
+        p('PostCapital',V.new(.7,.18,.64),V.new(x,7.5,z),lightWood)
+    end end
+    for _,z in ipairs({-4.45,4.45}) do
+        p('CrossBeam',V.new(13.7,.25,.38),V.new(0,7.48,z),wood)
+        for _,side in ipairs({-1,1}) do
+            p('KneeBrace',V.new(1.32,.16,.22),V.new(side*5.95,7.05,z),lightWood,false,nil,CF.Angles(0,0,side*.65))
+        end
+    end
+    for _,x in ipairs({-6.5,6.5}) do
+        p('SideBeam',V.new(.25,.26,9.2),V.new(x,7.5,0),wood)
+    end
+    -- Light canvas pavilion with a shallow ridge, sewn ribs and a scalloped edge.
+    local pitch=math.atan(.95/5.12)
+    for i=0,13 do
+        local color=i%3==0 and accent or cream
+        for _,half in ipairs({-1,1}) do
+            p('CanvasRoof',V.new(.995,.12,5.21),V.new(-6.5+i,8.005,half*2.56),color,false,
+                Enum.Material.Fabric,CF.Angles(half*pitch,0,0))
+        end
+        p('CanvasValance',V.new(.995,.28,.12),V.new(-6.5+i,7.45,-5.12),color,false,Enum.Material.Fabric)
+    end
+    p('RoofRidge',V.new(14,.14,.18),V.new(0,8.52,0),accent,false,Enum.Material.Metal)
+    local sign=p('ShopSign',V.new(10.8,1.04,.18),V.new(0,8.02,-5.24),navy)
+    label(sign,'ShopName',title,cream)
+    p('SignUpperBead',V.new(10.95,.07,.22),V.new(0,8.57,-5.25),accent,false,Enum.Material.Metal)
+    p('SignLowerBead',V.new(10.95,.07,.22),V.new(0,7.47,-5.25),accent,false,Enum.Material.Metal)
+    -- Solid carved emblem to distinguish each shop without luminous frames.
+    local emblem=p('EmblemMedallion',V.new(.15,1.05,1.05),V.new(-6.05,8.02,-5.26),accent,false,
+        Enum.Material.Metal,CF.Angles(0,math.pi*.5,0),Enum.PartType.Cylinder)
+    if kind=='Saber' then
+        p('EmblemBlade',V.new(.14,.65,.06),V.new(-6.05,8.12,-5.38),cream,false,Enum.Material.Metal,CF.Angles(0,0,-.4))
+        p('EmblemGuard',V.new(.48,.075,.07),V.new(-5.94,7.84,-5.39),navy,false,Enum.Material.Metal,CF.Angles(0,0,-.4))
+        p('EmblemGrip',V.new(.09,.2,.07),V.new(-5.9,7.74,-5.39),darkWood,false,Enum.Material.Wood)
+    else
+        p('EmblemBarrel',V.new(.12,.68,.06),V.new(-6.13,8.1,-5.38),cream,false,Enum.Material.Metal,CF.Angles(0,0,-.55))
+        p('EmblemStock',V.new(.21,.32,.07),V.new(-5.9,7.8,-5.39),darkWood,false,Enum.Material.Wood,CF.Angles(0,0,-.55))
+    end
+    -- Five individual bays form one unobstructed presentation row.
+    p('DisplayWall',V.new(12.45,4.8,.14),V.new(0,4.55,2.16),navy)
+    p('DisplayHeader',V.new(12.7,.15,.26),V.new(0,7.02,2.16),lightWood)
+    p('DisplayBase',V.new(12.7,.16,.52),V.new(0,2.1,1.96),lightWood)
+    for i=1,5 do
+        local x=-4.8+(i-1)*2.4
+        p('DisplayLinen',V.new(2.17,4.5,.04),V.new(x,4.55,2.06),C.fromRGB(234,222,194),false,Enum.Material.Fabric)
+        for _,y in ipairs({2.9,5.65}) do
+            p('WeaponPeg',V.new(.095,.1,.35),V.new(x,y,1.88),bronze,false,Enum.Material.Metal)
+        end
+    end
+    local counter=p('Counter',V.new(12.1,2.05,1.45),V.new(0,1.025,-3.6),wood,true)
+    counter:SetAttribute('WeaponKind',kind)
+    p('CounterTop',V.new(12.55,.18,1.8),V.new(0,2.14,-3.6),lightWood,true)
+    for i=0,10 do
+        p('CounterPanel',V.new(1.015,1.62,.065),V.new(-5.5+i*1.1,1.06,-4.365),i%2==0 and cream or C.fromRGB(229,215,180))
+    end
+    p('CounterFootRail',V.new(12.2,.13,.13),V.new(0,.24,-4.42),darkWood)
+    p('CounterUpperRail',V.new(12.2,.12,.13),V.new(0,1.89,-4.42),accent)
+    local sub=p('CounterSign',V.new(7.5,.74,.08),V.new(0,1.08,-4.45),navy)
+    label(sub,'TradeName',subtitle,cream)
+    local prompt=Instance.new('ProximityPrompt');prompt.Name='WeaponShopPrompt'
+    prompt.ActionText='Посмотреть оружие';prompt.ObjectText=title
+    prompt.KeyboardKeyCode=Enum.KeyCode.E;prompt.MaxActivationDistance=12
+    prompt.HoldDuration=.2;prompt.RequiresLineOfSight=false;prompt:SetAttribute('WeaponKind',kind);prompt.Parent=counter
+    -- A restrained pair of workshop details, kept beneath the display window.
+    p('StorageChest',V.new(2.2,.9,1.1),V.new(-4.7,.5,3.75),wood)
+    p('StorageChestLid',V.new(2.28,.12,1.18),V.new(-4.7,1.01,3.75),lightWood)
+    for _,x in ipairs({-5.4,-4.0}) do
+        p('ChestBand',V.new(.1,1.02,1.2),V.new(x,.55,3.75),bronze,false,Enum.Material.Metal)
+    end
+    p('WorkshopStool',V.new(1.18,.15,1.18),V.new(4.9,1.15,3.7),lightWood)
+    for _,x in ipairs({4.48,5.32}) do for _,z in ipairs({3.28,4.12}) do
+        p('StoolLeg',V.new(.15,1.12,.15),V.new(x,.56,z),darkWood)
+    end end
+    return shop
+end
+local shops={
+    Saber=buildShop('Saber',V.new(24,7.3,-8),'SwordShop','ЛАВКА КЛИНКОВ','МЕЧИ · САБЛИ · ЯТАГАНЫ',swordGold),
+    Musket=buildShop('Musket',V.new(24,7.3,8),'GunShop','ЛАВКА СТРЕЛКА','МУШКЕТЫ · КАРАБИНЫ · ШТУЦЕРЫ',gunBlue),
 }
-
-local stall = Instance.new("Model")
-stall.Name = "WeaponStall"
-stall:SetAttribute("WeaponShop", true)
-stall:SetAttribute("GeneratedVersion", 2)
-
-local function part(parent, name, size, position, color, collide, material)
-	local item = Instance.new("Part")
-	item.Name = name
-	item.Size = size
-	item.CFrame = CFrame.new(origin + position)
-	item.Color = color
-	item.Material = material or Enum.Material.WoodPlanks
-	item.Anchored = true
-	item.CanCollide = collide == true
-	item.CanTouch = false
-	item.CanQuery = collide == true
-	item.TopSurface = Enum.SurfaceType.Smooth
-	item.BottomSurface = Enum.SurfaceType.Smooth
-	item.Parent = parent
-	return item
+local originals={}
+for _,kind in ipairs({'Saber','Musket'}) do
+    local source=roblox.deserializeModel(fs.readFile('assets/weapons/'..kind..'.rbxmx'))
+    assert(#source==1 and source[1]:IsA('Tool'),'Expected existing native weapon Tool')
+    originals[kind]=source[1]
 end
-
-local function label(parent, name, text, color, size)
-	local gui = Instance.new("SurfaceGui")
-	gui.Name = name
-	gui.Face = Enum.NormalId.Front
-	gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-	gui.PixelsPerStud = 75
-	gui.LightInfluence = 0
-	gui.Parent = parent
-	local item = Instance.new("TextLabel")
-	item.Name = "Text"
-	item.BackgroundTransparency = 1
-	item.Size = roblox.UDim2.fromScale(1, 1)
-	item.Text = text
-	item.Font = Enum.Font.GothamBold
-	item.TextColor3 = color or colors.text
-	item.TextSize = size or 48
-	item.TextScaled = true
-	item.TextWrapped = false
-	item.TextStrokeTransparency = 0.82
-	item.Parent = gui
-	local pad = Instance.new("UIPadding")
-	pad.PaddingLeft = roblox.UDim.new(0.025, 0)
-	pad.PaddingRight = roblox.UDim.new(0.025, 0)
-	pad.PaddingTop = roblox.UDim.new(0.08, 0)
-	pad.PaddingBottom = roblox.UDim.new(0.08, 0)
-	pad.Parent = item
-	return gui
-end
-
--- The top of the floor lies at 7.3, level with the island's flat ground.
-local floor = part(stall, "Floor", Vector3.new(14, 0.3, 10), Vector3.new(0, -0.15, 0), colors.wood, true)
-stall.PrimaryPart = floor
-for index = 0, 9 do
-	part(stall, "FloorBoard" .. index, Vector3.new(13.95, 0.035, 0.94),
-		Vector3.new(0, 0.02, -4.5 + index), index % 2 == 0 and colors.plank or colors.wood)
-end
-
-for xIndex, x in { -6.5, 6.5 } do
-	for zIndex, z in { -4.45, 4.45 } do
-		part(stall, "Post" .. xIndex .. zIndex, Vector3.new(0.4, 6.7, 0.4), Vector3.new(x, 3.35, z), colors.trim)
-		part(stall, "PostFoot" .. xIndex .. zIndex, Vector3.new(0.58, 0.35, 0.58), Vector3.new(x, 0.18, z), colors.wood)
-	end
-end
-part(stall, "FrontRoofBeam", Vector3.new(14, 0.27, 0.28), Vector3.new(0, 6.45, -4.55), colors.trim)
-part(stall, "BackRoofBeam", Vector3.new(14, 0.27, 0.28), Vector3.new(0, 7.22, 4.55), colors.trim)
-part(stall, "LeftRoofBeam", Vector3.new(0.27, 0.27, 10), Vector3.new(-6.5, 6.85, 0), colors.trim)
-part(stall, "RightRoofBeam", Vector3.new(0.27, 0.27, 10), Vector3.new(6.5, 6.85, 0), colors.trim)
-
-local roofPitch = -math.atan(0.8 / 10.4)
-for index = 0, 13 do
-	local color = index % 2 == 0 and colors.rust or colors.canvas
-	local stripe = part(stall, "AwningStripe" .. index, Vector3.new(1.035, 0.13, 10.4),
-		Vector3.new(-6.5 + index, 7.08, 0), color, false, Enum.Material.Fabric)
-	stripe.CFrame *= CFrame.Angles(roofPitch, 0, 0)
-	part(stall, "AwningFrill" .. index, Vector3.new(1.035, 0.25, 0.13),
-		Vector3.new(-6.5 + index, 6.56, -5.2), color, false, Enum.Material.Fabric)
-end
-
-local sign = part(stall, "ShopSign", Vector3.new(11.5, 0.7, 0.22), Vector3.new(0, 7.15, -5.15), colors.trim)
-label(sign, "ShopName", "ОРУЖЕЙНАЯ ЛАВКА", colors.text, 54)
-part(stall, "SignTopTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 7.52, -5.15), colors.brass, false, Enum.Material.Metal)
-part(stall, "SignBottomTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 6.78, -5.15), colors.brass, false, Enum.Material.Metal)
-for _,x in ipairs({-4.5,4.5}) do
-    part(stall,'SignSupport',Vector3.new(.18,.44,.15),Vector3.new(x,6.65,-5.12),colors.trim)
-end
-
-local counter = part(stall, "Counter", Vector3.new(12.3, 2.7, 1.6), Vector3.new(0, 1.35, -3.5), colors.wood, true)
-part(stall, "CounterTop", Vector3.new(12.9, 0.2, 1.9), Vector3.new(0, 2.8, -3.5), colors.plank, true)
-for index = 0, 10 do
-	part(stall, "CounterSlat" .. index, Vector3.new(1.04, 2.5, 0.05),
-		Vector3.new(-5.5 + index * 1.1, 1.36, -4.325), index % 2 == 0 and colors.plank or colors.wood)
-end
-part(stall, "CounterLowerRail", Vector3.new(12.45, 0.13, 0.12), Vector3.new(0, 0.34, -4.35), colors.trim)
-part(stall, "CounterUpperRail", Vector3.new(12.45, 0.13, 0.12), Vector3.new(0, 2.55, -4.35), colors.trim)
-
-local prompt = Instance.new("ProximityPrompt")
-prompt.Name = "WeaponShopPrompt"
-prompt.ActionText = "Открыть оружейную"
-prompt.ObjectText = "Сабля и мушкет"
-prompt.KeyboardKeyCode = Enum.KeyCode.E
-prompt.MaxActivationDistance = 12
-prompt.HoldDuration = 0.2
-prompt.RequiresLineOfSight = false
-prompt.Parent = counter
-
-local displays = Instance.new("Folder")
-displays.Name = "Displays"
-displays.Parent = stall
-
-local function displayWeapon(weaponName, localHandle, plaqueX, text)
-	local source = roblox.deserializeModel(fs.readFile("assets/weapons/" .. weaponName .. ".rbxmx"))
-	assert(#source == 1 and source[1]:IsA("Tool"), "Expected the existing " .. weaponName .. " Tool asset")
-	local model = Instance.new("Model")
-	model.Name = weaponName .. "Display"
-	model:SetAttribute("WeaponType", weaponName)
-	model.Parent = displays
-	-- Local Y is the weapon's long axis. Lay it left-to-right with the broad
-	-- silhouette facing the front of the counter (-Z), rather than edge-on.
-	local target = CFrame.fromMatrix(origin + localHandle, Vector3.zAxis, Vector3.xAxis, Vector3.yAxis)
-	for _, child in source[1]:GetChildren() do
-		assert(not child:IsA("LuaSourceContainer"), "Weapon display source must not contain scripts")
-		if child:IsA("BasePart") then
-			local copy = child:Clone()
-			for _, descendant in copy:GetDescendants() do
-				if descendant:IsA("WeldConstraint") or descendant:IsA("JointInstance") then
-					descendant:Destroy()
-				end
-			end
-			copy.CFrame = target * child.CFrame
-			copy.Anchored = true
-			copy.CanCollide = false
-			copy.CanTouch = false
-			copy.CanQuery = false
-			copy.Parent = model
-		end
-	end
-	model.PrimaryPart = model:FindFirstChild("Handle")
-	local rack = part(stall, weaponName .. "Rack", Vector3.new(5.0, 0.1, 0.22),
-		Vector3.new(plaqueX, 3.0, -3.05), colors.rack)
-	part(stall, weaponName .. 'RackTop', Vector3.new(5.0,.1,.22),Vector3.new(plaqueX,4.55,-3.05),colors.rack)
-	for _,side in ipairs({-1,1}) do
-		part(stall,weaponName..'RackSide',Vector3.new(.1,1.65,.22),Vector3.new(plaqueX+side*2.45,3.775,-3.05),colors.rack)
-	end
-	local plaque = part(stall, weaponName .. "Label", Vector3.new(4.9, 0.65, 0.12),
-		Vector3.new(plaqueX, 2.05, -4.42), colors.trim)
-	plaque:SetAttribute("WeaponType", weaponName)
-	label(plaque, "WeaponName", text, colors.text, 44)
-	-- Small brass pins hold the display without obscuring the silhouette.
-	for _, x in { plaqueX - 1.7, plaqueX + 1.7 } do
-		part(stall, weaponName .. "RackPin", Vector3.new(0.08, 0.24, 0.35),
-			Vector3.new(x, 3.1, -3.25), colors.brass, false, Enum.Material.Metal)
-	end
-	return model, rack
-end
-
-displayWeapon("Saber", Vector3.new(-4.8, 3.75, -3.25), -3.2, "1. САБЛЯ")
-displayWeapon("Musket", Vector3.new(2.9, 3.75, -3.25), 3.2, "2. МУШКЕТ")
--- Ten full-size progression silhouettes on the rear racks. The original two
--- front displays retain their geometry/pose and still provide the base shapes.
-local temporaryBank=Instance.new('Folder')
-Models.Sync(temporaryBank,displays)
-temporaryBank:Destroy()
--- The front sword rack must be open or it hides the entire firearm row.
-for _,y in ipairs({3.0,5.55}) do
-    part(stall,'SwordTierRackRail',Vector3.new(12.2,.12,.12),Vector3.new(0,y,1.8),colors.rack)
-end
-for _,x in ipairs({-6.05,6.05}) do
-    part(stall,'SwordTierRackPost',Vector3.new(.12,2.65,.12),Vector3.new(x,4.275,1.8),colors.rack)
-end
-part(stall,'MusketTierRack',Vector3.new(12.2,3.8,.1),Vector3.new(0,4.4,3.9),colors.rack)
 for _,entry in ipairs(Models.Tiers) do
-    local x=Models.DisplayOffset(entry.Id).X
-    local plaque=part(stall,entry.Id..'TierPlaque',Vector3.new(1.8,.32,.08),
-        Vector3.new(x,3.07,entry.Kind=='Saber' and 1.38 or 3.28),colors.trim)
-    label(plaque,'TierName',(entry.Kind=='Saber' and 'КЛИНОК ' or 'МУШКЕТ ')..entry.Tier,colors.text,22)
+    local shop=shops[entry.Kind]
+    local model=Models.MakeDisplay(originals[entry.Kind],entry.Id,Models.DisplayFrame(entry.Id,shop.Floor.CFrame))
+    model:SetAttribute('WeaponDisplayName',entry.Name);model.Parent=displays
+    local offset=Models.DisplayOffset(entry.Id)
+    local frame=shop.Floor.CFrame*CF.new(offset.X,2.55,1.29)
+    local plaque=part(shop,entry.Id..'Plaque',V.new(2.22,.62,.1),frame,navy)
+    plaque:SetAttribute('WeaponId',entry.Id);label(plaque,'WeaponName',entry.Name,cream,true)
 end
-
--- Rear shelf and crates give the shop a silhouette from the island path.
-part(stall, "RearShelf", Vector3.new(11.2, 0.18, 0.6), Vector3.new(0, 2.9, 4.5), colors.plank)
-part(stall, "RearShelfSupportLeft", Vector3.new(0.3, 2.9, 0.5), Vector3.new(-4.8, 1.45, 4.5), colors.trim)
-part(stall, "RearShelfSupportRight", Vector3.new(0.3, 2.9, 0.5), Vector3.new(4.8, 1.45, 4.5), colors.trim)
-for index, x in { -4.5, -1.75, 1.0 } do
-	part(stall, "StockCrate" .. index, Vector3.new(2.1, 1.5, 1.1), Vector3.new(x, .75, 4.2), colors.wood)
-	for _, offset in { -0.8, 0.8 } do
-		part(stall, "CrateBand" .. index, Vector3.new(0.12, 1.57, 1.16),
-			Vector3.new(x + offset, .75, 4.2), colors.trim)
-	end
+local function bounds(model,frame)
+    local lo=V.new(math.huge,math.huge,math.huge);local hi=-lo
+    for _,p in ipairs(model:GetDescendants()) do if p:IsA('BasePart') then
+        for _,x in ipairs({-1,1}) do for _,y in ipairs({-1,1}) do for _,z in ipairs({-1,1}) do
+            local v=frame:PointToObjectSpace(p.CFrame:PointToWorldSpace(p.Size*V.new(x,y,z)*.5))
+            lo=V.new(math.min(lo.X,v.X),math.min(lo.Y,v.Y),math.min(lo.Z,v.Z))
+            hi=V.new(math.max(hi.X,v.X),math.max(hi.Y,v.Y),math.max(hi.Z,v.Z))
+        end end end
+    end end
+    return lo,hi
 end
-local lantern = part(stall, "Lantern", Vector3.new(0.46, 0.75, 0.46), Vector3.new(5.0, 3.36, 3.8), colors.canvas, false, Enum.Material.Neon)
-part(stall, "LanternTop", Vector3.new(0.57, 0.10, 0.57), Vector3.new(5.0, 3.78, 3.8), colors.trim, false, Enum.Material.Metal)
-part(stall, "LanternBase", Vector3.new(0.57, 0.10, 0.57), Vector3.new(5.0, 2.95, 3.8), colors.trim, false, Enum.Material.Metal)
-local light = Instance.new("PointLight")
-light.Name = "WarmShopLight"
-light.Color = colors.canvas
-light.Brightness = 0.8
-light.Range = 12
-light.Shadows = false
-light.Parent = lantern
-
-local function verify(model)
-	assert(model:IsA("Model") and model.Name == "WeaponStall", "One named Model root is required")
-	assert(model:GetAttribute("WeaponShop") == true, "Shop marker must survive serialization")
-	local floorPart = model:FindFirstChild("Floor")
-	assert(floorPart and model.PrimaryPart == floorPart, "Root placement uses the floor")
-	assert((floorPart.CFrame.Position - Vector3.new(24, 7.15, 8)).Magnitude < 0.001, "Stall must be on the main island")
-	assert(math.abs(floorPart.CFrame.Position.Y + floorPart.Size.Y / 2 - 7.3) < 0.001, "Floor must sit on the island surface")
-	local actualPrompt = model:FindFirstChild("Counter"):FindFirstChild("WeaponShopPrompt")
-	assert(actualPrompt and actualPrompt:IsA("ProximityPrompt"), "Counter needs the shop interaction")
-	assert(actualPrompt.KeyboardKeyCode == Enum.KeyCode.E and actualPrompt.MaxActivationDistance == 12, "E / shop range")
-	assert(math.abs(actualPrompt.HoldDuration - 0.2) < 0.001 and not actualPrompt.RequiresLineOfSight, "Prompt must remain usable from the front")
-	assert(actualPrompt.ActionText == "Открыть оружейную" and actualPrompt.ObjectText == "Сабля и мушкет", "Russian prompt text must survive UTF-8 round trip")
-	local count = 0
-	local minimum = Vector3.new(math.huge, math.huge, math.huge)
-	local maximum = Vector3.new(-math.huge, -math.huge, -math.huge)
-	for _, child in model:GetDescendants() do
-		assert(not child:IsA("Tool") and not child:IsA("LuaSourceContainer") and not child:IsA("Humanoid"), "Shop must contain no Tools, scripts, or mob")
-		if child:IsA("BasePart") then
-			count += 1
-			assert(child.Anchored and not child.CanTouch, "Every part must be static")
-			assert(not child.CanCollide or child.Name == "Floor" or child.Name == "Counter" or child.Name == "CounterTop", "Only floor and counter may collide")
-			assert(child.CFrame.Position.Y > 6.9 and child.CFrame.Position.Y < 15, "All shop geometry must remain near the island ground")
-			assert(math.abs(child.CFrame.Position.X - 24) < 7.1 and math.abs(child.CFrame.Position.Z - 8) < 5.4, "Stall must fit its planned footprint")
-			for _, x in { -1, 1 } do
-				for _, y in { -1, 1 } do
-					for _, z in { -1, 1 } do
-						local corner = child.CFrame:PointToWorldSpace(child.Size * Vector3.new(x, y, z) * 0.5)
-						minimum = Vector3.new(math.min(minimum.X, corner.X), math.min(minimum.Y, corner.Y), math.min(minimum.Z, corner.Z))
-						maximum = Vector3.new(math.max(maximum.X, corner.X), math.max(maximum.Y, corner.Y), math.max(maximum.Z, corner.Z))
-					end
-				end
-			end
-		end
-	end
-	assert(minimum.Y >= 6.99 and maximum.Y < 15.2, "Actual model bounds must sit on the main-island ground")
-	assert(minimum.X > 16.7 and maximum.X < 31.3 and minimum.Z > 2.5 and maximum.Z < 13.5, "Rotated part bounds must fit the stall footprint")
-	assert(math.abs((minimum.X + maximum.X) * 0.5 - 24) < 0.1, "Model bounding box must remain centered at the weapon-shop location")
-	local weaponDisplays = model:FindFirstChild("Displays")
-	assert(weaponDisplays and #weaponDisplays:GetChildren() == 10, "Ten complete tier weapon displays")
-	for _, weapon in { "Saber", "Musket" } do
-		local display = weaponDisplays:FindFirstChild(weapon .. "Display")
-		local original = roblox.deserializeModel(fs.readFile("assets/weapons/" .. weapon .. ".rbxmx"))[1]
-		assert(display and display:IsA("Model") and display.PrimaryPart.Name == "Handle", "Display must be an anchored Model with a Handle")
-		local expectedParts, displayParts = 0, 0
-		for _, child in original:GetDescendants() do
-			if child:IsA("BasePart") then expectedParts += 1 end
-		end
-		for _, child in display:GetDescendants() do
-			if child:IsA("BasePart") then
-				displayParts += 1
-				assert(not child.CanCollide and not child.CanTouch and not child.CanQuery, "Displays must not block movement, prompts, or combat rays")
-			end
-		end
-		assert(displayParts == expectedParts, "Display must reuse the full " .. weapon .. " geometry")
-	end
-	assert(model:FindFirstChild("ShopSign"):FindFirstChild("ShopName"):FindFirstChild("Text").Text == "ОРУЖЕЙНАЯ ЛАВКА", "Shop sign text must remain valid UTF-8")
-	assert(model:FindFirstChild("SaberLabel"):FindFirstChild("WeaponName"):FindFirstChild("Text").Text == "1. САБЛЯ", "First weapon is the saber")
-	assert(model:FindFirstChild("MusketLabel"):FindFirstChild("WeaponName"):FindFirstChild("Text").Text == "2. МУШКЕТ", "Second weapon is the musket")
-	return count
+local function verify(stall)
+    assert(stall.Name=='WeaponStall' and stall:IsA('Model') and stall:GetAttribute('WeaponShop'),'One mapped shop root')
+    local displayFolder=stall:FindFirstChild('Displays')
+    assert(displayFolder and #displayFolder:GetChildren()==10,'Exactly ten displays, without duplicated hero weapons')
+    local partCount=0
+    for _,p in ipairs(stall:GetDescendants()) do
+        assert(not p:IsA('Tool') and not p:IsA('LuaSourceContainer') and not p:IsA('Humanoid'),'No executable imported models')
+        if p:IsA('BasePart') then
+            partCount+=1;assert(p.Anchored and not p.CanTouch,'Static anchored scenery only')
+            assert(not p.CanCollide or p.Name=='Floor' or p.Name=='FrontStep' or p.Name=='Counter' or p.Name=='CounterTop','Only useful floor and counter collision')
+        end
+    end
+    for _,kind in ipairs({'Saber','Musket'}) do
+        local name=kind=='Saber' and 'SwordShop' or 'GunShop'
+        local shop=assert(stall:FindFirstChild(name),'Both separate shops must survive XML round trip')
+        local floor=assert(shop:FindFirstChild('Floor'));assert(shop.PrimaryPart==floor,'Independent shop placement')
+        assert((floor.CFrame.Position-V.new(24,7.15,kind=='Saber' and -8 or 8)).Magnitude<.001,'Shop stays clear of island props')
+        assert(floor.CFrame.LookVector:Dot(-V.xAxis)>.999,'Shop opens towards central road')
+        local lo,hi=bounds(shop,floor.CFrame)
+        assert(lo.X>=-7.01 and hi.X<=7.01,'No canopy overhang into neighboring workshop')
+        assert(lo.Z>=-5.5 and hi.Z<=5.3 and lo.Y>=-.16 and hi.Y<8.85,'Planned shop footprint and height '..tostring(lo)..' / '..tostring(hi))
+        local prompt=shop.Counter:FindFirstChild('WeaponShopPrompt')
+        assert(prompt and prompt.KeyboardKeyCode==Enum.KeyCode.E and prompt:GetAttribute('WeaponKind')==kind,'One family-specific counter prompt per shop')
+        assert(prompt.MaxActivationDistance==12 and not prompt.RequiresLineOfSight,'Usable counter interaction')
+        assert(shop.ShopSign.ShopName.Text.Text~='' and shop.CounterSign.TradeName.Text.Text~='','Readable family shop signs')
+        local previousMin=math.huge
+        for _,entry in ipairs(Models.Tiers) do if entry.Kind==kind then
+            local display=assert(displayFolder:FindFirstChild(entry.Id..'Display'))
+            assert(display.PrimaryPart==display.Handle and display:GetAttribute('WeaponId')==entry.Id,'Complete uniquely identified display')
+            local min,max=bounds(display,floor.CFrame)
+            assert(max.X<previousMin-.025,'Separated display silhouettes cannot overlap')
+            assert(min.X> -6.2 and max.X<6.2 and min.Y>2.1 and max.Y<7.1,'Weapon remains fully above counter within its own shop')
+            previousMin=min.X
+            local plaque=assert(shop:FindFirstChild(entry.Id..'Plaque'))
+            assert(plaque.WeaponName.Text.Text==entry.Name,'Full unique weapon names survive UTF-8 serialization')
+            for _,p in ipairs(display:GetDescendants()) do if p:IsA('BasePart') then
+                assert(not p.CanCollide and not p.CanQuery and not p.CanTouch,'Display physics cannot obstruct combat or movement')
+            end end
+            if entry.Id==kind then
+                local count,expected=0,0
+                for _,p in ipairs(display:GetDescendants()) do if p:IsA('BasePart') then count+=1 end end
+                for _,p in ipairs(originals[kind]:GetDescendants()) do if p:IsA('BasePart') then expected+=1 end end
+                assert(count==expected,'Native held model geometry preserved')
+            end
+        end end
+    end
+    return partCount
 end
-
-verify(stall)
-local path = "assets/weapons/WeaponStall.rbxmx"
-fs.writeFile(path, roblox.serializeModel({ stall }, true))
-local loaded = roblox.deserializeModel(fs.readFile(path))
-assert(#loaded == 1, "XML round trip must preserve a single Model root")
-local count = verify(loaded[1])
-print(string.format("PASS %s: %d anchored parts, ten complete weapon displays, prompt, UTF-8, placement, collision, and XML round-trip", path, count))
+verify(root)
+local path='assets/weapons/WeaponStall.rbxmx'
+fs.writeFile(path,roblox.serializeModel({root},true))
+local loaded=roblox.deserializeModel(fs.readFile(path));assert(#loaded==1,'One Rojo root')
+local count=verify(loaded[1])
+print(string.format('PASS %s: two separated shops, %d anchored parts, ten nonoverlapping displays, full UTF-8 names, two prompts, XML round-trip',path,count))

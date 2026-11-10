@@ -8,8 +8,18 @@ local source = fs.readFile('src/client/QuietCoveClient.client.luau')
 luau.compile(source)
 local first = assert(source:find('local function renderModal()', 1, true))
 local last = assert(source:find('local function updateStage()', first, true))
-local fragment = source:sub(first, last - 1)
-    .. '\nreturn {Render=renderModal,UpdateStats=updateStats}'
+local marker='elseif kind == "WeaponShop" then'
+local eventStart=assert(source:find(marker,1,true))
+local eventEnd=assert(source:find('elseif kind == "Shake"',eventStart,true))
+local eventBody=source:sub(eventStart+#marker,eventEnd-1)
+local profileMarker='elseif kind == "Profile" then'
+local profileStart=assert(source:find(profileMarker,1,true))
+local profileEnd=assert(source:find('elseif kind == "Notice"',profileStart,true))
+local profileBody=source:sub(profileStart+#profileMarker,profileEnd-1)
+local fragment = 'local weaponShopFamily="Saber"\nlocal data=data\nlocal memoryOnly=memoryOnly\n' .. source:sub(first, last - 1)
+    .. '\nlocal function openShop(payload)\n' .. eventBody .. '\nend'
+    .. '\nlocal function profile(payload)\n' .. profileBody .. '\nend'
+    .. '\nreturn {Render=renderModal,UpdateStats=updateStats,OpenShop=openShop,Profile=profile}'
 local checks, calls = 0, {}
 local function check(value, reason) checks += 1; assert(value, reason) end
 local Methods = {}
@@ -54,73 +64,77 @@ end
 env.button = function(parent, content, size, position, bg)
     return create('TextButton', {Text=content,Size=size,Position=position,BackgroundColor3=bg}, parent)
 end
-local ui = luau.load(fragment, {environment=env})()
+local ui
+env.openModal=function(mode)env.shownMode=mode;env.modal.Visible=true;ui.Render()end
+ui = luau.load(fragment, {environment=env})()
 local function buy(id)
-    return scroll:FindFirstChild('WeaponRow_'..id):FindFirstChild('WeaponBuy_'..id)
+    local r=assert(scroll:FindFirstChild('WeaponRow_'..id),'Weapon is not in this shop: '..id)
+    return r:FindFirstChild('WeaponBuy_'..id)
 end
-ui.Render()
-check(not env.bagTab.Visible and not env.bookTab.Visible, 'shop hides collection tabs')
-check(scroll.Position.Y.Offset == 55 and scroll.Size.Y.Offset == -65, 'shop uses existing shop layout')
-check(#Catalog.List==10, 'catalog offers five swords and five guns')
-local swords,guns=0,0
-for _,weapon in ipairs(Catalog.List) do
-    if weapon.Kind=='Saber' then swords+=1 else guns+=1 end
-    local r=scroll:FindFirstChild('WeaponRow_'..weapon.Id)
-    check(r and r:FindFirstChild('WeaponName').Text:find(weapon.Name,1,true), 'all catalog names are visible')
-    check(r.Size.Y.Offset>=180 and r:FindFirstChild('WeaponRequirement').Text:find('Уровень '..weapon.Level,1,true),
-        'rows reserve space for name, tier and required level on narrow screens')
-    local stats=r:FindFirstChild('WeaponStats').Text
-    check(stats:find('Урон: '..weapon.Damage,1,true)~=nil, 'every tier displays its own damage')
-    check(weapon.Kind=='Saber' and stats:find('комбо:',1,true)~=nil
-        or weapon.Kind=='Musket' and stats:find('Перезарядка:',1,true)~=nil,
-        'stats follow combat family rather than one legacy ID')
+-- Execute the real WeaponShop event branch, with only the existing modal opener
+-- doubled. This exercises reopening and malformed server payloads as well as rows.
+local openShop=ui.OpenShop
+local function family(kind)
+    local count=0
+    for _,weapon in ipairs(Catalog.List) do
+        local r=scroll:FindFirstChild('WeaponRow_'..weapon.Id)
+        if weapon.Kind==kind then
+            count+=1
+            check(r and r:FindFirstChild('WeaponName').Text==weapon.Name,'weapon has its own name without a numbered prefix')
+            check(r.Size.Y.Offset>=180 and r:FindFirstChild('WeaponRequirement').Text:find('Уровень '..weapon.Level,1,true),
+                'rows reserve space for name, tier and level on narrow screens')
+            local stats=r:FindFirstChild('WeaponStats').Text
+            check(stats:find('Урон: '..weapon.Damage,1,true)~=nil,'each tier displays its real damage')
+            check(kind=='Saber' and stats:find('комбо:',1,true)~=nil
+                or kind=='Musket' and stats:find('Перезарядка:',1,true)~=nil,'stats follow the combat family')
+        else check(r==nil,'physical shop never displays the other weapon family') end
+    end
+    check(count==5 and #scroll:GetChildren()==7,'each shop has exactly five entries, one heading and one note')
+    check(scroll:FindFirstChild('WeaponFamily_'..kind)~=nil,'shop has the correct family heading')
+    check(scroll:FindFirstChild('WeaponFamily_'..(kind=='Saber' and 'Musket' or 'Saber'))==nil,
+        'there is no in-menu switch to the other physical shop')
+    check(env.modalTitle.Text:find(kind=='Saber' and 'ЛАВКА МЕЧЕЙ' or 'ЛАВКА РУЖЕЙ',1,true)~=nil,
+        'title identifies the currently visited shop')
 end
-check(swords==5 and guns==5, 'both progression families have five tiers')
-check(scroll:FindFirstChild('WeaponFamily_Saber').LayoutOrder < scroll:FindFirstChild('WeaponRow_PracticeSaber').LayoutOrder,
-    'swords have a readable family heading')
-check(scroll:FindFirstChild('WeaponFamily_Musket').LayoutOrder > scroll:FindFirstChild('WeaponRow_Tideblade').LayoutOrder,
-    'gun heading starts after the five swords')
-check(buy('PracticeSaber').Active and buy('PracticeSaber').Text=='БЕСПЛАТНО\nВЗЯТЬ',
-    'starter sword remains available when an old payload lacks ownership')
-check(buy('OldMusket').Active and buy('OldMusket').Text=='БЕСПЛАТНО\nВЗЯТЬ', 'starter gun has no coin barrier')
-check(not buy('Saber').Active and buy('Saber').Text=='С УРОВНЯ\n2', 'coins cannot bypass the next sword level requirement')
-check(not buy('Musket').Active and not buy('Musket').AutoButtonColor, 'locked gun purchase is disabled')
-buy('Musket').Activated:Fire()
-check(#calls == 0, 'disabled purchase has no remote callback')
+openShop({Family='Saber'});family('Saber')
+check(not env.bagTab.Visible and not env.bookTab.Visible,'shop hides collection tabs')
+check(scroll.Position.Y.Offset==55 and scroll.Size.Y.Offset==-65,'shop preserves the existing scrolling layout')
+check(buy('PracticeSaber').Active and buy('PracticeSaber').Text=='БЕСПЛАТНО\nВЗЯТЬ','free starter is available without legacy ownership fields')
+check(not buy('Saber').Active and buy('Saber').Text=='С УРОВНЯ\n2','coins cannot bypass required level')
+buy('Saber').Activated:Fire();check(#calls==0,'level-locked purchase sends no request')
 buy('PracticeSaber').Activated:Fire()
-check(#calls==1 and calls[1][1]=='WeaponBuy' and calls[1][3]=='PracticeSaber', 'free tier uses existing server purchase action')
+check(#calls==1 and calls[1][1]=='WeaponBuy' and calls[1][2]=='' and calls[1][3]=='PracticeSaber','free tier uses existing server action')
 env.data.XP=100;ui.UpdateStats()
-check(buy('Saber').Active and buy('Saber').Text==Catalog.ById.Saber.Price..'\nКУПИТЬ',
-    'sufficient level and exact coins unlock the catalog sword')
-buy('Saber').Activated:Fire()
-check(#calls == 2 and calls[2][1] == 'WeaponBuy' and calls[2][2] == '' and calls[2][3] == 'Saber',
-    'purchase sends catalog ID through existing Action')
-env.data.Coins = Catalog.ById.Saber.Price - 1; ui.UpdateStats()
-check(not buy('Saber').Active, 'profile refresh disables purchase one coin below price')
-env.data.Coins = Catalog.ById.Musket.Price; ui.UpdateStats()
-check(buy('Musket').Active, 'profile refresh permits musket at its exact price')
-env.data.Coins = 0; env.data.OwnedWeapons = {Musket=true}; ui.UpdateStats()
-check(not buy('Saber').Active, 'wallet update refreshes affordability')
-check(buy('Musket').Active and buy('Musket').Text == 'ВЗЯТЬ', 'owned weapon remains available without money')
-buy('Musket').Activated:Fire()
-check(#calls == 3 and calls[3][3] == 'Musket', 'owned weapon requests restore via same action')
-env.data.XP=0;env.data.EquippedWeapons={Musket='Musket'};ui.UpdateStats()
-check(buy('Musket').Active and buy('Musket').Text=='ВЗЯТЬ', 'legacy purchased gun can be recovered below its new level requirement')
+check(buy('Saber').Active and buy('Saber').Text==Catalog.ById.Saber.Price..'\nКУПИТЬ','exact price and required level unlock purchase')
+buy('Saber').Activated:Fire();check(#calls==2 and calls[2][3]=='Saber','sword sends the canonical item ID')
+env.data.Coins=Catalog.ById.Saber.Price-1;ui.UpdateStats()
+check(not buy('Saber').Active and buy('Saber').Text:find('НЕ ХВАТАЕТ',1,true),'wallet refresh clearly blocks insufficient coins')
+env.data.Coins=Catalog.ById.Musket.Price
+openShop({Family='Musket'});family('Musket')
+check(buy('OldMusket').Active and buy('OldMusket').Text=='БЕСПЛАТНО\nВЗЯТЬ','gun shop offers its own free starter')
+check(buy('Musket').Active,'gun unlocks at its exact price')
+buy('Musket').Activated:Fire();check(#calls==3 and calls[3][3]=='Musket','gun sends its canonical item ID through the same server action')
+env.data.Coins=0;env.data.XP=0;env.data.OwnedWeapons={Musket=true};env.data.EquippedWeapons={Musket='Musket'}
+ui.UpdateStats();family('Musket')
+check(buy('Musket').Active and buy('Musket').Text=='ВЗЯТЬ','legacy purchased gun remains recoverable below the new level')
 check(scroll:FindFirstChild('WeaponRow_Musket'):FindFirstChild('WeaponRequirement').Text:find('В НАБОРЕ',1,true),
-    'selected loadout is identified without claiming both weapons are in the hands')
-buy('Musket').Activated:Fire()
-check(#calls==4 and calls[4][3]=='Musket', 'selected gun remains recoverable from the shop')
-env.data.TestMode = true; ui.UpdateStats()
-check(buy('Saber').Active and buy('Saber').Text == 'ТЕСТЕР\nВЗЯТЬ', 'tester can take unowned weapon free')
-check(buy('Musket').Text == 'ВЗЯТЬ', 'tester keeps owned caption')
-for _,weapon in ipairs(Catalog.List) do check(buy(weapon.Id).Active,'tester bypasses both price and level for every tier') end
-buy('Saber').Activated:Fire()
-check(#calls == 5 and calls[5][1] == 'WeaponBuy' and calls[5][3] == 'Saber', 'tester uses the same server-owned issuance action')
-env.data.TestMode=false;env.data.XP=900;env.data.Coins=100000;ui.UpdateStats()
-for _,weapon in ipairs(Catalog.List) do check(buy(weapon.Id).Active,'level-ten player with money can choose every tier') end
-check(env.modalTitle.Text:find('УР. 10',1,true)~=nil,'shop title displays current progression level')
-check(#scroll:GetChildren() == #Catalog.List + 3, 'profile refresh clears old rows and family headings without stacking')
-local oldRow = scroll:FindFirstChild('WeaponRow_Saber')
-env.modal.Visible = false; env.data.Coins = Catalog.ById.Saber.Price; ui.UpdateStats()
-check(scroll:FindFirstChild('WeaponRow_Saber') == oldRow, 'closed modal avoids rebuilding unused rows')
-print('PASS weapon shop UI: '..checks..' production render/profile/action checks; complete client compiles')
+    'selected loadout is marked without claiming both weapons are in the hands')
+buy('Musket').Activated:Fire();check(#calls==4 and calls[4][3]=='Musket','selected weapon remains recoverable')
+-- A fresh Profile snapshot must not reset the visited family to the sword shop.
+env.data={Coins=100000,XP=900,Rod=1,Bag={},OwnedWeapons={Saber=true},EquippedWeapons={Saber='Saber'}}
+ui.Profile({Data=env.data,MemoryOnly=false});family('Musket')
+check(env.modalTitle.Text:find('УР. 10',1,true)~=nil,'shop title updates the player level')
+for _,weapon in ipairs(Catalog.List) do if weapon.Kind=='Musket' then check(buy(weapon.Id).Active,'high-level wallet permits every gun') end end
+env.data.TestMode=true;env.data.Coins=0;env.data.XP=0;ui.UpdateStats()
+for _,weapon in ipairs(Catalog.List) do if weapon.Kind=='Musket' then check(buy(weapon.Id).Active,'tester bypasses gun level and price') end end
+openShop({Family='Saber'});family('Saber')
+check(buy('PracticeSaber').Text=='ТЕСТЕР\nВЗЯТЬ','tester receives unowned items free')
+for _,weapon in ipairs(Catalog.List) do if weapon.Kind=='Saber' then check(buy(weapon.Id).Active,'tester bypasses sword level and price') end end
+check(buy('Saber').Text=='ВЗЯТЬ','tester retains ownership caption')
+-- Malformed/missing family is safe and cannot expose a mixed catalog.
+for _,payload in ipairs({{}, {Family='Bow'}, {Family=123}, 'Musket'}) do openShop(payload);family('Saber') end
+openShop(nil);family('Saber')
+local oldRow=scroll:FindFirstChild('WeaponRow_Saber')
+env.modal.Visible=false;env.data.Coins=0;ui.UpdateStats()
+check(scroll:FindFirstChild('WeaponRow_Saber')==oldRow,'closed modal avoids rebuilding unused rows')
+print('PASS weapon shop UI: '..checks..' split-shop render/profile/action checks; complete client compiles')

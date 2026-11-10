@@ -117,10 +117,12 @@ local function getSahur()
     return sahur
 end
 weaponShop = WeaponShop.new(WeaponCatalog, Profiles, ServerStorage:WaitForChild("Weapons"),
-    workspace:WaitForChild("WeaponStall"):WaitForChild("Counter"), send, sync, function(player)
+    workspace:WaitForChild("WeaponStall"), send, sync, function(player)
         return sessions[player]~=nil or dodges:IsActive(player)
     end, notice, Config.Level)
-weaponShop.Counter:WaitForChild("WeaponShopPrompt").Triggered:Connect(function(player) weaponShop:Open(player) end)
+for family,counter in pairs(weaponShop.Counters) do
+    counter:WaitForChild('WeaponShopPrompt').Triggered:Connect(function(player) weaponShop:Open(player,family) end)
+end
 local function stage(player, s, name, extra)
     s.Stage = name
     if s.Tool and s.Tool.Parent then

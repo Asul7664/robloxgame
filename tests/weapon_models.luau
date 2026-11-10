@@ -214,12 +214,14 @@ local rod = Instance.new("Tool")
 rod.Name = "FishingRod"; rod:SetAttribute("QuietCoveRod", true); rod.Parent = character
 local unrelated = Instance.new("Tool")
 unrelated.Name = "UnrelatedEquipment"; unrelated:SetAttribute("WeaponType", "Other"); unrelated.Parent = backpack
-local counter = {Position = freshStall:FindFirstChild("Counter").CFrame.Position,
-    Parent = {WaitForChild = function(_, name)
-        check(name == "Displays", "Shop synchronizes from its actual stall displays")
-        return freshStall:FindFirstChild("Displays")
-    end}}
-local shop = Shop.new(Catalog, profiles, bank, counter,
+local function runtimeLookup(native)
+    return {WaitForChild=function(_,name)
+        local child=assert(native:FindFirstChild(name),'Missing shop fixture '..name)
+        if child:IsA('Folder') or child:IsA('BasePart') then return child end
+        return runtimeLookup(child)
+    end}
+end
+local shop = Shop.new(Catalog, profiles, bank, runtimeLookup(freshStall),
     function() end, function() end, function() return false end, function() end)
 local granted = shop:Grant(player, character)
 check(oldHand.Parent == nil and oldBag.Parent == nil,
@@ -321,22 +323,37 @@ check(allBank.CaptainMusket:FindFirstChild('ScopeTube') and allBank.StormMusket:
 local authored=Instance.new('Model');authored.Name='UserDecoration';authored.Parent=tierDisplays
 local current=allBank.StormMusket;Models.Sync(allBank,tierDisplays)
 check(authored.Parent==tierDisplays and allBank.StormMusket==current,'Repeated tier sync preserves user decor and current templates')
-check(tierStall:FindFirstChild('SwordTierRack')==nil and tierStall.SwordTierRackRail.Size.Y<.2,
-    'Open sword rails do not hide the firearm row behind them')
-check(tierStall.SaberRack.Size.Y<.2 and tierStall.MusketRack.Size.Y<.2,
-    'Legacy front showcases remain open frames rather than opaque view blockers')
-local oldStall=Instance.new('Model');local oldFloor=tierStall.Floor:Clone();oldFloor.Parent=oldStall
+check(tierStall:FindFirstChild('SwordTierRack')==nil and tierStall:FindFirstChild('SaberRack')==nil,
+    'Separate shops have no overlaid rear rows or duplicated front hero weapons')
+check(#tierDisplays:GetChildren()==11,'Ten weapon models plus unrelated user decoration remain intact')
+for _,entry in ipairs(Models.Tiers) do
+    local shop=tierStall:FindFirstChild(entry.Kind=='Saber' and 'SwordShop' or 'GunShop')
+    local display=tierDisplays:FindFirstChild(entry.Id..'Display')
+    closeFrame(display.Handle.CFrame,Models.DisplayFrame(entry.Id,shop.Floor.CFrame),entry.Id..': display belongs to the correct independent shop')
+    check(shop:FindFirstChild(entry.Id..'Plaque').WeaponName.Text.Text==Catalog.ById[entry.Id].Name,
+        entry.Id..': full in-world plaque matches the catalog and hotbar name')
+    check(entry.Name==Catalog.ById[entry.Id].Name,entry.Id..': visual tooltip matches catalog identity')
+end
+check((tierStall.SwordShop.Floor.CFrame.Position-V.new(24,7.15,-8)).Magnitude<.001
+    and (tierStall.GunShop.Floor.CFrame.Position-V.new(24,7.15,8)).Magnitude<.001,
+    'Independent shop floors retain two-stud separation and clearance from workshop')
+for _,name in ipairs({'SwordShop','GunShop'}) do
+    local shop=tierStall:FindFirstChild(name)
+    check(shop.Floor.CFrame.LookVector:Dot(-V.xAxis)>.999,name..': entrance faces central island road')
+    check(shop.Counter:FindFirstChild('WeaponShopPrompt')~=nil,name..': its own existing E interaction')
+end
+local oldStall=Instance.new('Model')
 local oldDisplays=Instance.new('Folder');oldDisplays.Name='Displays';oldDisplays.Parent=oldStall
-tierDisplays.SaberDisplay:Clone().Parent=oldDisplays;tierDisplays.MusketDisplay:Clone().Parent=oldDisplays
+for _,name in ipairs({'SwordShop','GunShop'}) do tierStall:FindFirstChild(name):Clone().Parent=oldStall end
+for _,kind in ipairs({'Saber','Musket'}) do tierDisplays:FindFirstChild(kind..'Display'):Clone().Parent=oldDisplays end
 Models.Sync(Instance.new('Folder'),oldDisplays)
-for _,pair in ipairs({{'PracticeSaber','OldMusket'},{'Cutlass','NavalMusket'},
-    {'CorsairSaber','CaptainMusket'},{'Tideblade','StormMusket'}}) do
-    local sword=oldDisplays:FindFirstChild(pair[1]..'Display')
-    local gun=oldDisplays:FindFirstChild(pair[2]..'Display')
-    check(gun.Handle.CFrame.Position.Y>11 and sword.Handle.CFrame.Position.Y>10.5,
-        'Raised display handles show weapons above the counter rather than hiding their stocks')
-    check(math.abs(gun.Handle.CFrame.UpVector.X)>.5 and math.abs(sword.Handle.CFrame.UpVector.X)>.5,
-        'Diagonal silhouettes fit the visible window between counter and awning')
+check(#oldDisplays:GetChildren()==10,'Runtime source migration fills eight missing displays without creating duplicate heroes')
+for _,entry in ipairs(Models.Tiers) do
+    if entry.Id~=entry.Kind then
+        local shop=oldStall:FindFirstChild(entry.Kind=='Saber' and 'SwordShop' or 'GunShop')
+        local display=oldDisplays:FindFirstChild(entry.Id..'Display')
+        closeFrame(display.Handle.CFrame,Models.DisplayFrame(entry.Id,shop.Floor.CFrame),entry.Id..': missing model restored to its own family shop')
+    end
 end
 
 print("PASS weapon display/runtime identity: " .. checks .. " checks (ten tier models, exact display identity, native grips and owned migration)")

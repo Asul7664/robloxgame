@@ -18,8 +18,9 @@ local function server(id, tester)
     if not tester then data.XP=100 end
     return env, player, data
 end
-local function approach(env, player)
-    player.Character.HumanoidRootPart.Position = env.WeaponCounter.Position + V.new(0, 0, 4)
+local function approach(env, player, family)
+    local counter=family=='Musket' and env.GunCounter or env.WeaponCounter
+    player.Character.HumanoidRootPart.Position = counter.Position + V.new(-4, 0, 0)
 end
 local function tools(player, id)
     local found = {}
@@ -47,6 +48,13 @@ local function paidOwned(data,catalog)
     return count
 end
 local function buy(env, player, id)
+    -- Transaction/migration cases below move between the two physical stalls
+    -- only when already at a counter. Far-position gates stay unchanged, and
+    -- explicit wrong-shop tests below call Main's Action directly.
+    local entry=type(id)=='string' and env.modules.WeaponCatalog.ById[id]
+    local root=player.Character and player.Character:FindFirstChild('HumanoidRootPart')
+    if entry and root and ((root.Position-env.WeaponCounter.Position).Magnitude<=5
+        or (root.Position-env.GunCounter.Position).Magnitude<=5) then approach(env,player,entry.Kind) end
     -- Main's existing Action RemoteEvent owns the shop route and rate limit.
     env:Fire(player, "WeaponBuy", "", id)
 end
@@ -57,8 +65,12 @@ local function messageCount(env, player, kind)
     end
     return count
 end
-local function shop(env, player)
-    env.WeaponCounter.WeaponShopPrompt.Triggered:Fire(player)
+local function shop(env, player, family)
+    local root=player.Character and player.Character:FindFirstChild('HumanoidRootPart')
+    local gun=family=='Musket' or (not family and root
+        and (root.Position-env.GunCounter.Position).Magnitude<(root.Position-env.WeaponCounter.Position).Magnitude)
+    local counter=gun and env.GunCounter or env.WeaponCounter
+    counter.WeaponShopPrompt.Triggered:Fire(player)
     return env:Last(player, "WeaponShop")
 end
 
@@ -82,6 +94,7 @@ do
     approach(env, player)
     local payload = shop(env, player)
     check(payload ~= nil, "Stall prompt opens the existing server Update route when nearby")
+    check(payload.Family=='Saber','Sword counter opens only the sword family in the existing modal')
     check(not data.OwnedWeapons.Saber and not data.OwnedWeapons.Musket and data.Coins == 0,
         "Opening the shop never grants ownership or charges currency")
     data.Coins = 1200
@@ -573,6 +586,36 @@ do
     env:Leave(player)
     check(paidOwned(env.documents.u_764.Data,env.modules.WeaponCatalog)==0,
         'Leaving the tester sandbox cannot persist top-tier ownership')
+end
+
+-- Adjacent counters have overlapping 18-stud ranges. The nearest actual
+-- counter, not a forged item family or prompt, decides the available shop.
+do
+    local env,player,data=server(770)
+    data.XP=900;data.Coins=50000;approach(env,player,'Saber')
+    local opened=shop(env,player,'Saber')
+    check(opened and opened.Family=='Saber','Physical sword prompt emits the sword-only shop payload')
+    local openings=messageCount(env,player,'WeaponShop')
+    env.GunCounter.WeaponShopPrompt.Triggered:Fire(player)
+    check(messageCount(env,player,'WeaponShop')==openings,'Spoofed gun prompt is rejected while standing at the nearer sword counter')
+    env:Fire(player,'WeaponBuy','','StormMusket')
+    check(data.Coins==50000 and not data.OwnedWeapons.StormMusket,'Sword counter cannot purchase a gun even within its overlapping distance')
+    env:Fire(player,'WeaponBuy','','Tideblade')
+    check(data.Coins==32000 and data.OwnedWeapons.Tideblade,'Sword counter still permits its own highest tier')
+    env:Advance(.6);approach(env,player,'Musket')
+    opened=shop(env,player,'Musket')
+    check(opened and opened.Family=='Musket','Physical gun prompt emits the gun-only shop payload')
+    openings=messageCount(env,player,'WeaponShop')
+    env.WeaponCounter.WeaponShopPrompt.Triggered:Fire(player)
+    check(messageCount(env,player,'WeaponShop')==openings,'Spoofed sword prompt is rejected at the nearer gun counter')
+    env:Fire(player,'WeaponBuy','','CorsairSaber')
+    check(data.Coins==32000 and not data.OwnedWeapons.CorsairSaber,'Gun counter cannot purchase a sword using a forged remote ID')
+    env:Fire(player,'WeaponBuy','','StormMusket')
+    check(data.Coins==4000 and data.OwnedWeapons.StormMusket,'Gun counter permits its own highest tier after the failed cross-family request')
+    env:Advance(.6)
+    player.Character.HumanoidRootPart.Position=(env.WeaponCounter.Position+env.GunCounter.Position)*.5
+    check(shop(env,player,'Saber').Family=='Saber' and shop(env,player,'Musket').Family=='Musket',
+        'At the exact midpoint either chosen prompt opens normally without a dead strip')
 end
 
 print("PASS weapon shop integration: " .. checks .. " checks (real Main/WeaponShop/Profiles)")

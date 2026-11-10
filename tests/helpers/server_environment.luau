@@ -172,9 +172,11 @@ function Environment.new()
     workspace.GetServerTimeNow = function() return self.epoch + self.clock end
     local stall = child(workspace, "Model", "WeaponStall")
     child(stall, "Folder", "Displays")
-    local counter = child(stall, "Part", "Counter")
-    counter.Position = V.new(24, 9, 3)
+    local counter = child(child(stall,'Model','SwordShop'), "Part", "Counter")
+    counter.Position = V.new(20.5, 8.65, -8)
     prompt(counter, "WeaponShopPrompt")
+    local gunCounter=child(child(stall,'Model','GunShop'),'Part','Counter')
+    gunCounter.Position=V.new(20.5,8.65,8);prompt(gunCounter,'WeaponShopPrompt')
     local fakeOs = table.clone(os)
     fakeOs.clock = function() return self.clock end
     fakeOs.time = function() return self.epoch + math.floor(self.clock) end
@@ -264,6 +266,7 @@ function Environment.new()
     self.environment = environment
     self.Players, self.RunService, self.Action, self.Update, self.World = players, run, action, update, world
     self.Workspace, self.ServerStorage, self.Weapons, self.WeaponCounter = workspace, storage, weapons, counter
+    self.GunCounter=gunCounter
     self.shared, self.server, self.mainScript = shared, server, mainScript
     self.Config = environment(mainScript).require(shared.Config)
     self.Quests = environment(mainScript).require(shared.Quests)

@@ -2,17 +2,29 @@
 local Models = require(script.Parent:WaitForChild("WeaponModels"))
 local Shop = {}
 Shop.__index = Shop
-function Shop.new(catalog, profiles, bank, counter, send, sync, busy, notice, levelFromXP)
-    local keys=Models.Sync(bank,counter.Parent:WaitForChild("Displays"))
-    return setmetatable({Catalog=catalog, Profiles=profiles, Bank=bank, Counter=counter,
+function Shop.new(catalog, profiles, bank, root, send, sync, busy, notice, levelFromXP)
+    local keys=Models.Sync(bank,root:WaitForChild("Displays"))
+    local counters={Saber=root:WaitForChild('SwordShop'):WaitForChild('Counter'),
+        Musket=root:WaitForChild('GunShop'):WaitForChild('Counter')}
+    return setmetatable({Catalog=catalog, Profiles=profiles, Bank=bank, Counters=counters,Counter=counters.Saber,
         ModelKeys=keys, Send=send, Sync=sync, Busy=busy, Notice=notice,Level=levelFromXP or function()return 1 end}, Shop)
 end
-function Shop:_can(player)
+function Shop:_can(player,family)
+    local counter=self.Counters[family]
+    if not counter then return false end
     local c=player.Character
     local h=c and c:FindFirstChildOfClass("Humanoid")
     local root=c and c:FindFirstChild("HumanoidRootPart")
-    return h and h.Health>0 and root and not h.SeatPart and not h.Sit
-        and not self.Busy(player) and (root.Position-self.Counter.Position).Magnitude<=18
+    if not h or h.Health<=0 or not root or h.SeatPart or h.Sit or self.Busy(player) then return false end
+    local distance=(root.Position-counter.Position).Magnitude
+    if distance>18 then return false end
+    -- The two stalls are close enough for activation ranges to overlap. The
+    -- nearest counter decides the family; at the exact midpoint either prompt
+    -- is valid, so there is no dead interaction strip between the shops.
+    for otherFamily,other in pairs(self.Counters) do
+        if otherFamily~=family and (root.Position-other.Position).Magnitude<distance-.0001 then return false end
+    end
+    return true
 end
 function Shop:_source(id)
     local source=self.Bank:FindFirstChild(id)
@@ -22,9 +34,9 @@ function Shop:_source(id)
         and source:GetAttribute("WeaponModelKey")==self.ModelKeys[id]
         and source.Archivable~=false and handle and handle:IsA("BasePart") and handle.Archivable~=false then return source end
 end
-function Shop:Open(player)
-    if not self:_can(player) or not self.Profiles.Get(player) then return false end
-    self.Send(player,"WeaponShop",{})
+function Shop:Open(player,family)
+    if not self:_can(player,family) or not self.Profiles.Get(player) then return false end
+    self.Send(player,"WeaponShop",{Family=family})
     return true
 end
 function Shop:Grant(player,character)
@@ -67,7 +79,9 @@ function Shop:Grant(player,character)
     return found
 end
 function Shop:Buy(player,id)
-    if type(id)~="string" or not self.Catalog.ById[id] or not self:_can(player) then return false end
+    if type(id)~="string" then return false end
+    local weapon=self.Catalog.ById[id]
+    if not weapon or not self:_can(player,weapon.Kind) then return false end
     local data=self.Profiles.Get(player)
     if not data then return false end
     local c=player.Character
@@ -78,7 +92,6 @@ function Shop:Buy(player,id)
         self.Notice(player,"Оружие пока недоступно. Монеты не списаны.")
         return false
     end
-    local weapon=self.Catalog.ById[id]
     local owned=data.OwnedWeapons or {}
     local purchased=owned[id]~=true
     if purchased and not data.TestMode and self.Level(data.XP)<weapon.Level then

@@ -201,6 +201,7 @@ local stageName, sessionId, chargeStarted, hookDeadline, hookWindow = "Idle", ni
 local activeInput, holding, pendingRelease = nil, false, false
 local requestAt, resendAt = 0, 0
 local shownMode, memoryOnly = "bag", true
+local weaponShopFamily = "Saber"
 local latest = {Bar = 0.5, Fish = 0.5, Width = 0.30, Progress = 0.34, Inside = true}
 local displayBar, displayFish = 0.5, 0.5
 fishColor = function(fish)
@@ -225,6 +226,7 @@ local function renderModal()
     thumbnails:Clear()
     for _, child in ipairs(scroll:GetChildren()) do if child:IsA("GuiObject") then child:Destroy() end end
     if not data then return end
+    modalTitle.TextSize = 20
     local shopMode = shownMode == "shop" or shownMode == "weapons"
     bagTab.Visible = not shopMode; bookTab.Visible = not shopMode
     scroll.Position = UDim2.fromOffset(12, shopMode and 55 or 91)
@@ -283,11 +285,14 @@ local function renderModal()
         end
     elseif shownMode == "weapons" then
         local level = Config.Level(data.XP)
-        modalTitle.Text = "ОРУЖИЕ · " .. (data.TestMode and "ТЕСТЕР" or "УР. " .. level .. " · " .. data.Coins .. " монет")
+        local family = weaponShopFamily == "Musket" and "Musket" or "Saber"
+        modalTitle.Text = (family == "Saber" and "ЛАВКА МЕЧЕЙ" or "ЛАВКА РУЖЕЙ") .. " · "
+            .. (data.TestMode and "ТЕСТЕР" or "УР. " .. level .. " · " .. data.Coins .. " монет")
+        modalTitle.TextSize = 18
         local ownedWeapons = data.OwnedWeapons or {}
         local equippedWeapons = data.EquippedWeapons or {}
         local order = 0
-        for _, family in ipairs({"Saber", "Musket"}) do
+        do
             local accent = family == "Saber" and C.Gold or C.Aqua
             local count = 0
             for _, weapon in ipairs(WeaponCatalog.List) do if weapon.Kind == family then count += 1 end end
@@ -305,7 +310,7 @@ local function renderModal()
                 local r = create("Frame", {Name = "WeaponRow_" .. weapon.Id, LayoutOrder = order,
                     Size = UDim2.new(1, -8, 0, 184), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
                 rounded(r, 8)
-                local nameLabel = text(r, weapon.Tier .. ". " .. weapon.Name, UDim2.new(1, -24, 0, 40),
+                local nameLabel = text(r, weapon.Name, UDim2.new(1, -24, 0, 40),
                     UDim2.fromOffset(12, 7), 15, accent)
                 nameLabel.Name = "WeaponName"; nameLabel.Font = Enum.Font.GothamBold
                 local requirement = "Уровень " .. weapon.Level .. " · ступень " .. weapon.Tier .. "/" .. count
@@ -333,7 +338,7 @@ local function renderModal()
                 end
             end
         end
-        local note = row("В наборе — один меч и одна пушка. «ВЗЯТЬ» выбирает оружие и возвращает его в руки. Все покупки сохраняются; старые варианты остаются доступны. Повышай уровень на рыбалке, чтобы открыть следующие ступени.", C.Muted, 100)
+        local note = row("«ВЗЯТЬ» выбирает оружие этой лавки и возвращает его в руки. Все покупки сохраняются; старые варианты остаются доступны. Повышай уровень на рыбалке, чтобы открыть следующие ступени.", C.Muted, 100)
         note.Name = "WeaponProgressionNote"; note.LayoutOrder = order + 1
     else
         modalTitle.Text = "МАСТЕР УДОЧЕК · " .. (data.TestMode and "∞ монет · ТЕСТЕР" or data.Coins .. " монет")
@@ -593,7 +598,9 @@ Update.OnClientEvent:Connect(function(kind, payload)
     elseif kind == "Rejected" then
         stageName = "Idle"; sessionId = nil; pendingRelease = false; updateStage(); notify(payload.Text, C.Gold)
     elseif kind == "Shop" then openModal("shop")
-    elseif kind == "WeaponShop" then openModal("weapons")
+    elseif kind == "WeaponShop" then
+        weaponShopFamily = type(payload) == "table" and payload.Family == "Musket" and "Musket" or "Saber"
+        openModal("weapons")
     elseif kind == "Shake" then trackText.Text = "Рыба подплывает ближе…"
     elseif kind == "Stage" then
         stageName = payload.Stage; sessionId = stageName ~= "Idle" and payload.Id or nil
