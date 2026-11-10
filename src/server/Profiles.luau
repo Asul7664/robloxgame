@@ -26,12 +26,8 @@ local function clean(raw)
     raw = type(raw) == "table" and raw or {}
     local data = {Coins = integer(raw.Coins, 0, 1000000000, 0), XP = integer(raw.XP, 0, 100000000, 0),
         Rod = integer(raw.Rod, 1, #Config.Rods, 1), TotalCaught = integer(raw.TotalCaught, 0, 100000000, 0),
-        Bag = {}, Bestiary = {}, OwnedWeapons = {}}
-    if type(raw.OwnedWeapons)=="table" then
-        for id,owned in pairs(raw.OwnedWeapons) do
-            if WeaponCatalog.ById[id] and owned==true then data.OwnedWeapons[id]=true end
-        end
-    end
+        Bag = {}, Bestiary = {}, OwnedWeapons = WeaponCatalog.CleanOwned(raw.OwnedWeapons)}
+    data.EquippedWeapons=WeaponCatalog.CleanEquipped(data.OwnedWeapons,raw.EquippedWeapons)
     if type(raw.Bag) == "table" then
         for _, record in ipairs(raw.Bag) do
             if #data.Bag >= Config.BagCapacity then break end

@@ -1,3 +1,5 @@
+-- Shared animation, health and audio defaults. Per-tier combat stats, shop
+-- prices and required levels are defined in QuietCove.WeaponCatalog.
 return {
 	MaxHealth = 100,
 	Saber = {

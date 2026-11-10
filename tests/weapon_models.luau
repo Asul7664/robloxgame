@@ -53,7 +53,7 @@ local function verify(display, tool, id, label)
     local displayParts, toolParts = parts(display), parts(tool)
     local reference = display:FindFirstChild("Handle")
     local handle = tool:FindFirstChild("Handle")
-    check(tool:IsA("Tool") and tool.Name == id, label .. ": correct Tool root")
+    check(tool:IsA("Tool") and tool:GetAttribute('WeaponId') == id, label .. ": canonical Tool identity survives a localized hotbar name")
     check(tool:GetAttribute("WeaponType") == id, label .. ": combat weapon identity")
     check(tool.RequiresHandle and not tool.CanBeDropped, label .. ": safe Tool settings")
     check(handle and handle:IsA("BasePart"), label .. ": direct Handle")
@@ -157,7 +157,7 @@ bank.Name = "Weapons"
 local oldSaber, oldMusket = legacy("Saber", bank), legacy("Musket", bank)
 local keys = Models.Sync(bank, displays)
 check(oldSaber.Parent == nil and oldMusket.Parent == nil, "Stock migration removes legacy two-part templates")
-check(#bank:GetChildren() == 2, "Stock migration retains exactly two templates")
+check(#bank:GetChildren() == 10, "Stock migration supplies all ten tier templates")
 local firstSaber, firstMusket = bank:FindFirstChild("Saber"), bank:FindFirstChild("Musket")
 check(countParts(firstSaber) == 52 and countParts(firstMusket) == 43,
     "Stock migration replaces stubs with the full displayed weapons")
@@ -230,7 +230,7 @@ check(granted.Saber and countParts(granted.Saber) == 52
 check(granted.Saber:GetAttribute("WeaponModelKey") == bank:FindFirstChild("Saber"):GetAttribute("WeaponModelKey")
     and granted.Musket:GetAttribute("WeaponModelKey") == bank:FindFirstChild("Musket"):GetAttribute("WeaponModelKey"),
     "Granted inventory carries the current model keys")
-check(data.Coins == 1234 and data.OwnedWeapons == owned and owned.Saber and owned.Musket,
+check(data.Coins == 1234 and data.OwnedWeapons.Saber and data.OwnedWeapons.Musket,
     "Inventory migration preserves money and purchase ownership without charging again")
 check(rod.Parent == character and unrelated.Parent == backpack,
     "Inventory migration preserves the fishing rod and unrelated equipment")
@@ -267,7 +267,7 @@ check(oldDetailedSaber.Parent == nil and corrected.Saber ~= oldDetailedSaber,
     "Owned detailed Saber is replaced when only its grip revision is stale")
 verify(display, corrected.Saber, "Saber", "owned grip-only migration")
 check(corrected.Musket == granted.Musket, "Saber grip migration preserves the existing current Musket")
-check(data.Coins == 1234 and data.OwnedWeapons == owned and owned.Saber and owned.Musket,
+check(data.Coins == 1234 and data.OwnedWeapons.Saber and data.OwnedWeapons.Musket,
     "Grip-only migration never charges existing owners or clears ownership")
 check(rod.Parent == character and unrelated.Parent == backpack,
     "Grip-only migration preserves the fishing rod and unrelated equipment")
@@ -282,4 +282,61 @@ for _, id in {"Saber", "Musket"} do
         id .. ": v2 fingerprint invalidates the previous deployed revision")
 end
 
-print("PASS weapon display/runtime identity: " .. checks .. " checks (real 52/43-part XML models, stock sync, owned inventory migration)")
+local variantKeys,variantCounts={},{}
+local tierStall=stall();local tierDisplays=tierStall.Displays
+local allBank=Instance.new('Folder');Models.Sync(allBank,tierDisplays)
+for _,entry in ipairs(Models.Tiers) do
+    local id=entry.Id
+    local display=tierDisplays:FindFirstChild(id..'Display')
+    local tool=allBank:FindFirstChild(id)
+    check(display and display:IsA('Model') and display.PrimaryPart==display.Handle,id..': full progression display exists')
+    check(tool and tool:GetAttribute('WeaponId')==id and tool:GetAttribute('WeaponType')==entry.Kind,id..': unique ownership ID retains the combat family')
+    closeFrame(tool.Grip,expectedGrips[entry.Kind],id..': tier uses the existing family grip')
+    local key=tool:GetAttribute('WeaponModelKey')
+    check(not variantKeys[key],id..': distinct authoritative model key')
+    variantKeys[key]=true;variantCounts[id]=countParts(tool)
+    check(variantCounts[id]==countParts(display),id..': hands receive exactly displayed geometry')
+    local template=tool.Handle
+    for _,p in ipairs(parts(tool)) do
+        check(not p.Anchored and p.Massless and not p.CanCollide and not p.CanQuery and not p.CanTouch,id..': equipped model does not fight player physics')
+        if p~=template then
+            local weld=p:FindFirstChild('HandleWeld')
+            check(weld and weld.Part0==template and weld.Part1==p,id..': new tier details weld to actual handle')
+        end
+    end
+    if entry.Kind=='Musket' then
+        local barrel=tool.Barrel;local muzzle=barrel:FindFirstChild('Muzzle')
+        check(muzzle and muzzle:IsA('Attachment'),id..': barrel retains the actual shot origin')
+        check(math.abs(muzzle.CFrame.Position.X-barrel.Size.X*.5)<.09,id..': muzzle remains at the resized barrel end')
+    else check(tool.Blade and tool.Blade.Transparency==1,id..': saber trail anchor remains available') end
+    local serialized=roblox.deserializeModel(roblox.serializeModel({tool},true))[1]
+    check(serialized:GetAttribute('WeaponId')==id and countParts(serialized)==variantCounts[id],id..': tier survives XML serialization')
+end
+check(variantCounts.PracticeSaber<variantCounts.Saber,'Starter sword has a visibly simpler straight blade and guard')
+check(variantCounts.Tideblade>variantCounts.CorsairSaber and variantCounts.CorsairSaber>variantCounts.Saber,'Better swords gain guard and blade detail')
+check(allBank.OldMusket.Barrel.Size.X<allBank.Musket.Barrel.Size.X
+    and allBank.NavalMusket.Barrel.Size.X>allBank.Musket.Barrel.Size.X,'Gun barrels have progressively different proportions')
+check(allBank.CaptainMusket:FindFirstChild('ScopeTube') and allBank.StormMusket:FindFirstChild('StormCore'),
+    'Premium guns add a visible optic and reinforced energy-core silhouette')
+local authored=Instance.new('Model');authored.Name='UserDecoration';authored.Parent=tierDisplays
+local current=allBank.StormMusket;Models.Sync(allBank,tierDisplays)
+check(authored.Parent==tierDisplays and allBank.StormMusket==current,'Repeated tier sync preserves user decor and current templates')
+check(tierStall:FindFirstChild('SwordTierRack')==nil and tierStall.SwordTierRackRail.Size.Y<.2,
+    'Open sword rails do not hide the firearm row behind them')
+check(tierStall.SaberRack.Size.Y<.2 and tierStall.MusketRack.Size.Y<.2,
+    'Legacy front showcases remain open frames rather than opaque view blockers')
+local oldStall=Instance.new('Model');local oldFloor=tierStall.Floor:Clone();oldFloor.Parent=oldStall
+local oldDisplays=Instance.new('Folder');oldDisplays.Name='Displays';oldDisplays.Parent=oldStall
+tierDisplays.SaberDisplay:Clone().Parent=oldDisplays;tierDisplays.MusketDisplay:Clone().Parent=oldDisplays
+Models.Sync(Instance.new('Folder'),oldDisplays)
+for _,pair in ipairs({{'PracticeSaber','OldMusket'},{'Cutlass','NavalMusket'},
+    {'CorsairSaber','CaptainMusket'},{'Tideblade','StormMusket'}}) do
+    local sword=oldDisplays:FindFirstChild(pair[1]..'Display')
+    local gun=oldDisplays:FindFirstChild(pair[2]..'Display')
+    check(gun.Handle.CFrame.Position.Y>11 and sword.Handle.CFrame.Position.Y>10.5,
+        'Raised display handles show weapons above the counter rather than hiding their stocks')
+    check(math.abs(gun.Handle.CFrame.UpVector.X)>.5 and math.abs(sword.Handle.CFrame.UpVector.X)>.5,
+        'Diagonal silhouettes fit the visible window between counter and awning')
+end
+
+print("PASS weapon display/runtime identity: " .. checks .. " checks (ten tier models, exact display identity, native grips and owned migration)")

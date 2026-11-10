@@ -282,37 +282,59 @@ local function renderModal()
             fishRow(fish,nil,known==true)
         end
     elseif shownMode == "weapons" then
-        modalTitle.Text = "ОРУЖЕЙНЫЙ ЛАРЁК · " .. (data.TestMode and "ТЕСТЕР" or data.Coins .. " монет")
+        local level = Config.Level(data.XP)
+        modalTitle.Text = "ОРУЖИЕ · " .. (data.TestMode and "ТЕСТЕР" or "УР. " .. level .. " · " .. data.Coins .. " монет")
         local ownedWeapons = data.OwnedWeapons or {}
-        for index, weapon in ipairs(WeaponCatalog.List) do
-            local owned = ownedWeapons[weapon.Id] == true
-            local affordable = data.TestMode or owned or data.Coins >= weapon.Price
-            local accent = weapon.Id == "Saber" and C.Gold or C.Aqua
-            local r = create("Frame", {Name = "WeaponRow_" .. weapon.Id, LayoutOrder = index,
-                Size = UDim2.new(1, -8, 0, 145), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
-            rounded(r, 8)
-            local nameLabel = text(r, index .. ". " .. weapon.Name, UDim2.new(1, -124, 0, 26),
-                UDim2.fromOffset(12, 8), 17, accent)
-            nameLabel.Font = Enum.Font.GothamBold
-            local stats = weapon.Id == "Saber"
-                and string.format("Урон: %d · комбо: %d", weapon.Damage, weapon.ComboDamage)
-                or string.format("Урон: %d\nПерезарядка: %.1f с · дальность: %d", weapon.Damage, weapon.Reload, weapon.Range)
-            text(r, stats, UDim2.new(1, -124, 0, 46), UDim2.fromOffset(12, 36), 12, C.Ink)
-            text(r, weapon.Description, UDim2.new(1, -24, 0, 42), UDim2.fromOffset(12, 88), 12, C.Muted)
-            local caption = owned and "ВЗЯТЬ" or weapon.Price .. "\nКУПИТЬ"
-            if data.TestMode and not owned then caption = "ТЕСТЕР\nВЗЯТЬ" end
-            if not affordable then caption = weapon.Price .. " монет\nНЕ ХВАТАЕТ" end
-            local b = button(r, caption, UDim2.fromOffset(92, 62), UDim2.new(1, -102, 0, 14),
-                affordable and accent or C.Bg)
-            b.Name = "WeaponBuy_" .. weapon.Id
-            b.TextSize = 12; b.Active = affordable; b.AutoButtonColor = affordable
-            if not affordable then b.TextColor3 = C.Muted end
-            if affordable then
-                b.Activated:Connect(function() Action:FireServer("WeaponBuy", "", weapon.Id) end)
+        local equippedWeapons = data.EquippedWeapons or {}
+        local order = 0
+        for _, family in ipairs({"Saber", "Musket"}) do
+            local accent = family == "Saber" and C.Gold or C.Aqua
+            local count = 0
+            for _, weapon in ipairs(WeaponCatalog.List) do if weapon.Kind == family then count += 1 end end
+            order += 1
+            local heading = row((family == "Saber" and "МЕЧИ" or "ПУШКИ") .. " · " .. count .. " СТУПЕНЕЙ", accent, 40)
+            heading.Name = "WeaponFamily_" .. family; heading.LayoutOrder = order
+            for _, weapon in ipairs(WeaponCatalog.List) do
+                if weapon.Kind ~= family then continue end
+                local owned = ownedWeapons[weapon.Id] == true
+                local selected = owned and equippedWeapons[family] == weapon.Id
+                local levelAllowed = data.TestMode or owned or level >= weapon.Level
+                local affordable = data.TestMode or owned or data.Coins >= weapon.Price
+                local available = levelAllowed and affordable
+                order += 1
+                local r = create("Frame", {Name = "WeaponRow_" .. weapon.Id, LayoutOrder = order,
+                    Size = UDim2.new(1, -8, 0, 184), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
+                rounded(r, 8)
+                local nameLabel = text(r, weapon.Tier .. ". " .. weapon.Name, UDim2.new(1, -24, 0, 40),
+                    UDim2.fromOffset(12, 7), 15, accent)
+                nameLabel.Name = "WeaponName"; nameLabel.Font = Enum.Font.GothamBold
+                local requirement = "Уровень " .. weapon.Level .. " · ступень " .. weapon.Tier .. "/" .. count
+                if selected then requirement ..= "\nВ НАБОРЕ" end
+                local requirementLabel = text(r, requirement, UDim2.new(1, -124, 0, 36),
+                    UDim2.fromOffset(12, 48), 11, levelAllowed and (selected and accent or C.Muted) or C.Gold)
+                requirementLabel.Name = "WeaponRequirement"
+                local stats = family == "Saber"
+                    and string.format("Урон: %d · комбо: %d", weapon.Damage, weapon.ComboDamage)
+                    or string.format("Урон: %d\nПерезарядка: %.1f с\nДальность: %d", weapon.Damage, weapon.Reload, weapon.Range)
+                local statsLabel = text(r, stats, UDim2.new(1, -124, 0, 46), UDim2.fromOffset(12, 86), 11, C.Ink)
+                statsLabel.Name = "WeaponStats"
+                text(r, weapon.Description, UDim2.new(1, -24, 0, 38), UDim2.fromOffset(12, 138), 11, C.Muted)
+                local caption = owned and "ВЗЯТЬ" or (weapon.Price == 0 and "БЕСПЛАТНО\nВЗЯТЬ" or weapon.Price .. "\nКУПИТЬ")
+                if data.TestMode and not owned then caption = "ТЕСТЕР\nВЗЯТЬ" end
+                if not levelAllowed then caption = "С УРОВНЯ\n" .. weapon.Level
+                elseif not affordable then caption = weapon.Price .. " монет\nНЕ ХВАТАЕТ" end
+                local b = button(r, caption, UDim2.fromOffset(92, 62), UDim2.new(1, -102, 0, 54),
+                    available and accent or C.Bg)
+                b.Name = "WeaponBuy_" .. weapon.Id
+                b.TextSize = 12; b.Active = available; b.AutoButtonColor = available
+                if not available then b.TextColor3 = C.Muted end
+                if available then
+                    b.Activated:Connect(function() Action:FireServer("WeaponBuy", "", weapon.Id) end)
+                end
             end
         end
-        local note = row("Покупка сохраняется. Нажми «ВЗЯТЬ», чтобы вернуть купленное оружие в рюкзак. Выбери его на панели предметов; ЛКМ — атака. Мушкет перезаряжается автоматически после выстрела.", C.Muted, 90)
-        note.LayoutOrder = #WeaponCatalog.List + 1
+        local note = row("В наборе — один меч и одна пушка. «ВЗЯТЬ» выбирает оружие и возвращает его в руки. Все покупки сохраняются; старые варианты остаются доступны. Повышай уровень на рыбалке, чтобы открыть следующие ступени.", C.Muted, 100)
+        note.Name = "WeaponProgressionNote"; note.LayoutOrder = order + 1
     else
         modalTitle.Text = "МАСТЕР УДОЧЕК · " .. (data.TestMode and "∞ монет · ТЕСТЕР" or data.Coins .. " монет")
         for index, rod in ipairs(Config.Rods) do

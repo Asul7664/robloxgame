@@ -3,8 +3,6 @@
 -- path, with deterministic service, Tool and datastore doubles.
 local Environment = require("./helpers/server_environment")
 local roblox = require("@lune/roblox")
-local fs = require("@lune/fs")
-local luau = require("@lune/luau")
 local V = roblox.Vector3
 local checks = 0
 local function check(condition, label)
@@ -14,7 +12,11 @@ end
 local function server(id, tester)
     local env = Environment.new(); env:Start()
     local player = env:Player(id, tester); env.Players.PlayerAdded:Fire(player)
-    return env, player, env.Profiles.Get(player)
+    local data=env.Profiles.Get(player)
+    -- Legacy transaction/validation scenarios below require the second tier's
+    -- level so they exercise their intended gate rather than stopping at level 1.
+    if not tester then data.XP=100 end
+    return env, player, data
 end
 local function approach(env, player)
     player.Character.HumanoidRootPart.Position = env.WeaponCounter.Position + V.new(0, 0, 4)
@@ -23,10 +25,26 @@ local function tools(player, id)
     local found = {}
     for _, parent in ipairs({player.Character, player.Backpack}) do
         for _, tool in ipairs(parent:GetChildren()) do
-            if tool:IsA("Tool") and tool:GetAttribute("WeaponType") == id then table.insert(found, tool) end
+            local family=tool:IsA('Tool') and tool:GetAttribute('WeaponType')
+            local actual=tool:IsA('Tool') and (tool:GetAttribute('WeaponId') or family)
+            if (family=='Saber' or family=='Musket') and actual==id then table.insert(found,tool) end
         end
     end
     return found
+end
+local function familyTools(player,kind)
+    local count=0
+    for _,parent in {player.Character,player.Backpack} do
+        for _,tool in parent:GetChildren() do
+            if tool:IsA('Tool') and tool:GetAttribute('WeaponType')==kind then count+=1 end
+        end
+    end
+    return count
+end
+local function paidOwned(data,catalog)
+    local count=0
+    for _,weapon in catalog.List do if weapon.Price>0 and data.OwnedWeapons[weapon.Id] then count+=1 end end
+    return count
 end
 local function buy(env, player, id)
     -- Main's existing Action RemoteEvent owns the shop route and rate limit.
@@ -47,18 +65,17 @@ end
 do
     local env, player, data = server(701)
     local catalog = env.modules.WeaponCatalog
-    local combat = luau.load(fs.readFile("src/combat/Config.luau"), {environment = {Vector3 = V}})()
-    check(#catalog.List == 2 and catalog.List[1].Id == "Saber" and catalog.List[2].Id == "Musket",
-        "Shop displays Saber first and Musket second")
-    check(catalog.ById.Saber.Damage == combat.Saber.Damage
-        and catalog.ById.Saber.ComboDamage == combat.Saber.Damage + 8,
-        "Saber shop damage and third combo damage match the existing combat")
-    check(catalog.ById.Musket.Damage == combat.Musket.Damage
-        and catalog.ById.Musket.Reload == combat.Musket.Reload
-        and catalog.ById.Musket.Range == combat.Musket.Range,
-        "Musket shop damage, range and reload match the existing combat")
-    check(type(data.OwnedWeapons) == "table" and next(data.OwnedWeapons) == nil,
-        "New saved profiles have empty weapon ownership")
+    check(#catalog.List == 10 and catalog.List[1].Id=='PracticeSaber' and catalog.List[6].Id=='OldMusket',
+        'Shop contains five sword tiers followed by five gun tiers')
+    check(catalog.ById.Saber.Price==250 and catalog.ById.Saber.Damage==18 and catalog.ById.Saber.ComboDamage==26,
+        'Legacy paid saber keeps its ID, price and damage')
+    check(catalog.ById.Musket.Price==900 and catalog.ById.Musket.Damage==28
+        and catalog.ById.Musket.Reload==1.7 and catalog.ById.Musket.Range==140,
+        'Legacy paid musket keeps its price and combat stats')
+    check(data.OwnedWeapons.PracticeSaber and data.OwnedWeapons.OldMusket and paidOwned(data,catalog)==0,
+        'New profiles own both weak starter weapons, without granting paid upgrades')
+    check(#tools(player,'PracticeSaber')==1 and #tools(player,'OldMusket')==1,
+        'Initial profile load issues the actual two starter tools')
     check(#tools(player, "Saber") == 0 and #tools(player, "Musket") == 0,
         "New players are not issued free weapons by profile load")
     check(shop(env, player) == nil, "Remote shop cannot open away from the physical stall")
@@ -136,10 +153,10 @@ do
         {Id = "Saber", Price = 0, Damage = 99999}}) do
         env:Advance(1); buy(env, player, forged)
     end
-    check(data.Coins == 5000 and next(data.OwnedWeapons) == nil,
+    check(data.Coins == 5000 and paidOwned(data,env.modules.WeaponCatalog)==0,
         "Unknown IDs and client supplied price/damage tables cannot buy any weapon")
-    check(#tools(player, "Saber") == 0 and #tools(player, "Musket") == 0,
-        "Malformed purchases do not leak Tool instances")
+    check(familyTools(player,'Saber')==1 and familyTools(player,'Musket')==1,
+        'Malformed purchases leave only the intended starter tools')
 end
 
 do
@@ -168,6 +185,11 @@ do
     check(data.Coins == 1500 and not data.OwnedWeapons.Saber,
         "An uncloneable template is rejected before charging")
     env.Weapons.Saber.Archivable = true
+    env.Weapons.Saber.Handle.Archivable = false
+    buy(env, player, "Saber")
+    check(data.Coins == 1500 and not data.OwnedWeapons.Saber,
+        "An uncloneable Handle is rejected before charging or granting a broken Tool")
+    env.Weapons.Saber.Handle.Archivable = true
     env.Weapons.Musket.Handle:Destroy()
     local invalidHandle = env.Weapons.Saber:Clone()
     invalidHandle.Name = "Handle"; invalidHandle.Parent = env.Weapons.Musket
@@ -193,7 +215,7 @@ do
         "Initial ownership grant retires the old unconditional Saber and Musket gifts")
     check(unrelated.Parent == player.Backpack and not unrelated.Destroyed,
         "Migration preserves unrelated equipment")
-    approach(env, player); data.Coins = 1500
+    approach(env, player); data.Coins = 1500;data.XP=100
     buy(env, player, "Saber")
     env.Weapons.Saber:Clone().Parent = player.Backpack
     check(#tools(player, "Saber") == 2, "Duplicate cleanup fixture contains two copies")
@@ -308,11 +330,11 @@ do
         and #tools(tester, "Saber") == 1 and #tools(tester, "Musket") == 1,
         "Tester can use both real Tool templates in the ephemeral session")
     check(env.Profiles.Records[tester].Data.Coins == 73
-        and next(env.Profiles.Records[tester].Data.OwnedWeapons) == nil,
+        and paidOwned(env.Profiles.Records[tester].Data,env.modules.WeaponCatalog)==0,
         "Tester purchases never mutate the underlying published profile record")
     env:Leave(tester)
     local saved = env.documents.u_708.Data
-    check(saved.Coins == original.Coins and next(saved.OwnedWeapons) == nil,
+    check(saved.Coins == original.Coins and paidOwned(saved,env.modules.WeaponCatalog)==0,
         "Actual tester leave/save cannot persist free weapons or sandbox coins")
 end
 
@@ -396,6 +418,161 @@ do
     buy(env, player, "Musket")
     check(data.Coins == 1500 and not data.OwnedWeapons.Musket and #tools(player, "Musket") == 0,
         "A source carrying an obsolete model key is rejected before charging")
+end
+
+-- Fresh level-one players receive weak gear without a shop trip or charge.
+do
+    local env=Environment.new();env:Start()
+    local player=env:Player(730);env.Players.PlayerAdded:Fire(player)
+    local data=env.Profiles.Get(player)
+    check(data.XP==0 and data.Coins==0,'Starter issue does not alter the initial wallet or level')
+    check(data.EquippedWeapons.Saber=='PracticeSaber' and data.EquippedWeapons.Musket=='OldMusket',
+        'Fresh selected gear is the weakest tier in both families')
+    check(#tools(player,'PracticeSaber')==1 and #tools(player,'OldMusket')==1
+        and familyTools(player,'Saber')==1 and familyTools(player,'Musket')==1,
+        'Fresh load issues exactly one starter sword and gun alongside the fishing rod')
+    check(tools(player,'PracticeSaber')[1].Name==env.modules.WeaponCatalog.ById.PracticeSaber.Name
+        and tools(player,'OldMusket')[1].Name==env.modules.WeaponCatalog.ById.OldMusket.Name,
+        'Hotbar uses player-facing weapon names rather than internal IDs')
+end
+
+-- The server must require both progression and the full price for EVERY paid
+-- tier. Client-supplied price/level is never part of the transaction.
+do
+    local catalog=Environment.new().modules.WeaponCatalog
+    for index,weapon in ipairs(catalog.List) do
+        if weapon.Price>0 then
+            local env,player,data=server(740+index)
+            approach(env,player)
+            data.Coins=weapon.Price;data.XP=(weapon.Level-1)*100-1
+            buy(env,player,weapon.Id)
+            check(data.Coins==weapon.Price and not data.OwnedWeapons[weapon.Id],
+                weapon.Id..': money alone cannot bypass one XP below the required level')
+            check(#tools(player,weapon.Id)==0,weapon.Id..': locked purchase cannot leak a tool')
+            env:Advance(.6);data.XP=900;data.Coins=weapon.Price-1
+            buy(env,player,weapon.Id)
+            check(data.Coins==weapon.Price-1 and not data.OwnedWeapons[weapon.Id],
+                weapon.Id..': maximum level cannot bypass one missing coin')
+            env:Advance(.6);data.XP=(weapon.Level-1)*100;data.Coins=weapon.Price
+            buy(env,player,weapon.Id)
+            check(data.Coins==0 and data.OwnedWeapons[weapon.Id],weapon.Id..': exact level and price permit purchase')
+            local issued=tools(player,weapon.Id)[1]
+            check(issued and issued.Parent==player.Character and issued:GetAttribute('WeaponType')==weapon.Kind
+                and issued:GetAttribute('WeaponId')==weapon.Id,weapon.Id..': issued tool carries unique ID and compatible combat family')
+            check(data.EquippedWeapons[weapon.Kind]==weapon.Id and familyTools(player,'Saber')==1 and familyTools(player,'Musket')==1,
+                weapon.Id..': purchase selects the new tier without filling the backpack with older tiers')
+            env:Advance(.6);data.XP=0
+            buy(env,player,weapon.Id)
+            check(data.Coins==0 and #tools(player,weapon.Id)==1,
+                weapon.Id..': an owned tier remains available for free even below its purchase level')
+        end
+    end
+end
+
+-- Buy the entire progression and preserve paid ownership while switching to
+-- older tiers. Only the selected sword and gun return on respawn/rejoin.
+do
+    local env,player,data=server(760);approach(env,player);data.XP=900
+    local catalog=env.modules.WeaponCatalog
+    local total=0;for _,weapon in ipairs(catalog.List) do total+=weapon.Price end
+    data.Coins=total
+    for _,weapon in ipairs(catalog.List) do
+        buy(env,player,weapon.Id)
+        check(data.OwnedWeapons[weapon.Id] and data.EquippedWeapons[weapon.Kind]==weapon.Id,
+            'All-tier sequence buys/selects '..weapon.Id)
+        check(familyTools(player,'Saber')==1 and familyTools(player,'Musket')==1,
+            'All-tier sequence keeps a two-weapon loadout after '..weapon.Id)
+        env:Advance(.6)
+    end
+    check(data.Coins==0 and paidOwned(data,catalog)==8,'All eight paid upgrades charge exactly their server catalog prices')
+    check(#tools(player,'Tideblade')==1 and #tools(player,'StormMusket')==1,
+        'Finishing progression selects both best weapons')
+    data.XP=0
+    buy(env,player,'PracticeSaber');env:Advance(.6);buy(env,player,'NavalMusket')
+    check(data.Coins==0 and data.EquippedWeapons.Saber=='PracticeSaber' and data.EquippedWeapons.Musket=='NavalMusket',
+        'An owned lower tier can be selected without rebuying or meeting its level again')
+    check(data.OwnedWeapons.Tideblade and data.OwnedWeapons.StormMusket
+        and #tools(player,'Tideblade')==0 and #tools(player,'StormMusket')==0,
+        'Switching gear retains best-tier ownership while retiring their active tools')
+    env:Reset(player)
+    check(#tools(player,'PracticeSaber')==1 and #tools(player,'NavalMusket')==1
+        and familyTools(player,'Saber')==1 and familyTools(player,'Musket')==1,
+        'Respawn restores only the selected owned tiers')
+    env:Leave(player)
+    local saved=env.documents.u_760.Data
+    check(saved.EquippedWeapons.Saber=='PracticeSaber' and saved.EquippedWeapons.Musket=='NavalMusket'
+        and paidOwned(saved,catalog)==8,'The actual lease save records all ownership and the chosen lower tiers')
+    local rejoin=env:Player(760);env.Players.PlayerAdded:Fire(rejoin)
+    local loaded=env.Profiles.Get(rejoin)
+    check(loaded.XP==0 and loaded.Coins==0 and paidOwned(loaded,catalog)==8,'Progression survives reload without changing XP or wallet')
+    check(#tools(rejoin,'PracticeSaber')==1 and #tools(rejoin,'NavalMusket')==1
+        and familyTools(rejoin,'Saber')==1 and familyTools(rejoin,'Musket')==1,
+        'Rejoin honors explicit selection rather than issuing every owned tier or always choosing the best')
+end
+
+-- Saved legacy purchases must stay usable at the player's original level.
+do
+    local env=Environment.new();env:Start()
+    env.documents.u_761={Version=1,Data={Coins=123,XP=0,OwnedWeapons={Saber=true,Musket=true}}}
+    local player=env:Player(761);env.Players.PlayerAdded:Fire(player)
+    local data=env.Profiles.Get(player)
+    check(data.OwnedWeapons.Saber and data.OwnedWeapons.Musket and data.OwnedWeapons.PracticeSaber and data.OwnedWeapons.OldMusket,
+        'Legacy profile keeps both purchased IDs and receives the starter baseline')
+    check(data.EquippedWeapons.Saber=='Saber' and data.EquippedWeapons.Musket=='Musket'
+        and #tools(player,'Saber')==1 and #tools(player,'Musket')==1,
+        'Missing legacy selection migrates to the best actually owned family tiers')
+    approach(env,player);buy(env,player,'Saber');buy(env,player,'Musket')
+    check(data.Coins==123 and data.XP==0,'Grandfathered gear never charges again or grants XP')
+end
+
+-- Invalid, unowned and cross-family selection is sanitized independently of
+-- ownership; a forged selection must neither grant nor remove a purchased tier.
+do
+    local env=Environment.new()
+    local player=env:Player(762);check(env.Profiles.Load(player),'Selection migration fixture acquires a lease')
+    local data=env.Profiles.Get(player)
+    data.Coins=719;data.XP=0
+    data.OwnedWeapons={Saber=true,Cutlass=true,Musket=true,StormMusket=true,CaptainMusket=false,
+        Tideblade=1,unknown=true}
+    data.EquippedWeapons={Saber='StormMusket',Musket='CaptainMusket',Unknown='Tideblade'}
+    env.Profiles.Save(player,true);env.Profiles.Load(player)
+    data=env.Profiles.Get(player)
+    check(data.EquippedWeapons.Saber=='Cutlass' and data.EquippedWeapons.Musket=='StormMusket',
+        'Cross-family and unowned selection fall back to the highest owned matching tier')
+    check(not data.EquippedWeapons.Unknown and not data.OwnedWeapons.CaptainMusket
+        and not data.OwnedWeapons.Tideblade and not data.OwnedWeapons.unknown,
+        'Cleaner discards unknown, false and non-boolean progression entries')
+    check(data.Coins==719 and data.XP==0,'Selection migration does not alter other progression data')
+end
+
+-- Top-tier template metadata is checked before the wallet changes, just as
+-- the earlier Saber/Musket source integrity checks above.
+do
+    local env,player,data=server(763);approach(env,player);data.XP=900;data.Coins=99999
+    env.Weapons.Tideblade:SetAttribute('WeaponId','StormMusket')
+    buy(env,player,'Tideblade')
+    check(data.Coins==99999 and not data.OwnedWeapons.Tideblade,'Forged tier ID on stock cannot charge a top sword purchase')
+    env:Advance(.6)
+    env.Weapons.StormMusket:SetAttribute('WeaponType','Saber')
+    buy(env,player,'StormMusket')
+    check(data.Coins==99999 and not data.OwnedWeapons.StormMusket,'Cross-family top-gun stock metadata cannot charge a purchase')
+end
+
+do
+    local env=Environment.new();env:Start()
+    local player=env:Player(764,true);env.Players.PlayerAdded:Fire(player);approach(env,player)
+    local sandbox=env.Profiles.Get(player)
+    env.modules.TesterAccess.Refresh=function(value)return value end
+    sandbox.Coins=0;sandbox.XP=0
+    buy(env,player,'Tideblade');buy(env,player,'StormMusket')
+    check(sandbox.TestMode and sandbox.Coins==0 and sandbox.XP==0
+        and sandbox.OwnedWeapons.Tideblade and sandbox.OwnedWeapons.StormMusket,
+        'Tester mode explicitly bypasses both top-tier price and level')
+    check(paidOwned(env.Profiles.Records[player].Data,env.modules.WeaponCatalog)==0,
+        'Top-tier tester gear never changes the underlying persistent ownership')
+    env:Leave(player)
+    check(paidOwned(env.documents.u_764.Data,env.modules.WeaponCatalog)==0,
+        'Leaving the tester sandbox cannot persist top-tier ownership')
 end
 
 print("PASS weapon shop integration: " .. checks .. " checks (real Main/WeaponShop/Profiles)")

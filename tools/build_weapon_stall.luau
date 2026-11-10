@@ -12,6 +12,9 @@ local CFrame = roblox.CFrame
 local Color3 = roblox.Color3
 local Enum = roblox.Enum
 local palette = luau.load(fs.readFile("src/shared/VisualTheme.luau"), {environment={Color3=Color3}})().Palette
+local Models=luau.load(fs.readFile('src/server/WeaponModels.luau'),{environment={
+    Instance=Instance,Vector3=Vector3,CFrame=CFrame,Color3=Color3,Enum=Enum,
+}})()
 
 local origin = Vector3.new(24, 7.3, 8)
 local colors = {
@@ -28,7 +31,7 @@ local colors = {
 local stall = Instance.new("Model")
 stall.Name = "WeaponStall"
 stall:SetAttribute("WeaponShop", true)
-stall:SetAttribute("GeneratedVersion", 1)
+stall:SetAttribute("GeneratedVersion", 2)
 
 local function part(parent, name, size, position, color, collide, material)
 	local item = Instance.new("Part")
@@ -101,14 +104,17 @@ for index = 0, 13 do
 	local stripe = part(stall, "AwningStripe" .. index, Vector3.new(1.035, 0.13, 10.4),
 		Vector3.new(-6.5 + index, 7.08, 0), color, false, Enum.Material.Fabric)
 	stripe.CFrame *= CFrame.Angles(roofPitch, 0, 0)
-	part(stall, "AwningFrill" .. index, Vector3.new(1.035, 0.42, 0.13),
-		Vector3.new(-6.5 + index, 6.45, -5.2), color, false, Enum.Material.Fabric)
+	part(stall, "AwningFrill" .. index, Vector3.new(1.035, 0.25, 0.13),
+		Vector3.new(-6.5 + index, 6.56, -5.2), color, false, Enum.Material.Fabric)
 end
 
-local sign = part(stall, "ShopSign", Vector3.new(11.5, 1.0, 0.22), Vector3.new(0, 5.8, -5.15), colors.trim)
+local sign = part(stall, "ShopSign", Vector3.new(11.5, 0.7, 0.22), Vector3.new(0, 7.15, -5.15), colors.trim)
 label(sign, "ShopName", "ОРУЖЕЙНАЯ ЛАВКА", colors.text, 54)
-part(stall, "SignTopTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 6.3, -5.15), colors.brass, false, Enum.Material.Metal)
-part(stall, "SignBottomTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 5.3, -5.15), colors.brass, false, Enum.Material.Metal)
+part(stall, "SignTopTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 7.52, -5.15), colors.brass, false, Enum.Material.Metal)
+part(stall, "SignBottomTrim", Vector3.new(11.7, 0.08, 0.26), Vector3.new(0, 6.78, -5.15), colors.brass, false, Enum.Material.Metal)
+for _,x in ipairs({-4.5,4.5}) do
+    part(stall,'SignSupport',Vector3.new(.18,.44,.15),Vector3.new(x,6.65,-5.12),colors.trim)
+end
 
 local counter = part(stall, "Counter", Vector3.new(12.3, 2.7, 1.6), Vector3.new(0, 1.35, -3.5), colors.wood, true)
 part(stall, "CounterTop", Vector3.new(12.9, 0.2, 1.9), Vector3.new(0, 2.8, -3.5), colors.plank, true)
@@ -161,8 +167,12 @@ local function displayWeapon(weaponName, localHandle, plaqueX, text)
 		end
 	end
 	model.PrimaryPart = model:FindFirstChild("Handle")
-	local rack = part(stall, weaponName .. "Rack", Vector3.new(5.0, 1.7, 0.22),
-		Vector3.new(plaqueX, 3.7, -3.05), colors.rack)
+	local rack = part(stall, weaponName .. "Rack", Vector3.new(5.0, 0.1, 0.22),
+		Vector3.new(plaqueX, 3.0, -3.05), colors.rack)
+	part(stall, weaponName .. 'RackTop', Vector3.new(5.0,.1,.22),Vector3.new(plaqueX,4.55,-3.05),colors.rack)
+	for _,side in ipairs({-1,1}) do
+		part(stall,weaponName..'RackSide',Vector3.new(.1,1.65,.22),Vector3.new(plaqueX+side*2.45,3.775,-3.05),colors.rack)
+	end
 	local plaque = part(stall, weaponName .. "Label", Vector3.new(4.9, 0.65, 0.12),
 		Vector3.new(plaqueX, 2.05, -4.42), colors.trim)
 	plaque:SetAttribute("WeaponType", weaponName)
@@ -177,16 +187,35 @@ end
 
 displayWeapon("Saber", Vector3.new(-4.8, 3.75, -3.25), -3.2, "1. САБЛЯ")
 displayWeapon("Musket", Vector3.new(2.9, 3.75, -3.25), 3.2, "2. МУШКЕТ")
+-- Ten full-size progression silhouettes on the rear racks. The original two
+-- front displays retain their geometry/pose and still provide the base shapes.
+local temporaryBank=Instance.new('Folder')
+Models.Sync(temporaryBank,displays)
+temporaryBank:Destroy()
+-- The front sword rack must be open or it hides the entire firearm row.
+for _,y in ipairs({3.0,5.55}) do
+    part(stall,'SwordTierRackRail',Vector3.new(12.2,.12,.12),Vector3.new(0,y,1.8),colors.rack)
+end
+for _,x in ipairs({-6.05,6.05}) do
+    part(stall,'SwordTierRackPost',Vector3.new(.12,2.65,.12),Vector3.new(x,4.275,1.8),colors.rack)
+end
+part(stall,'MusketTierRack',Vector3.new(12.2,3.8,.1),Vector3.new(0,4.4,3.9),colors.rack)
+for _,entry in ipairs(Models.Tiers) do
+    local x=Models.DisplayOffset(entry.Id).X
+    local plaque=part(stall,entry.Id..'TierPlaque',Vector3.new(1.8,.32,.08),
+        Vector3.new(x,3.07,entry.Kind=='Saber' and 1.38 or 3.28),colors.trim)
+    label(plaque,'TierName',(entry.Kind=='Saber' and 'КЛИНОК ' or 'МУШКЕТ ')..entry.Tier,colors.text,22)
+end
 
 -- Rear shelf and crates give the shop a silhouette from the island path.
-part(stall, "RearShelf", Vector3.new(11.2, 0.18, 1.0), Vector3.new(0, 2.9, 3.8), colors.plank)
-part(stall, "RearShelfSupportLeft", Vector3.new(0.3, 2.9, 0.7), Vector3.new(-4.8, 1.45, 3.8), colors.trim)
-part(stall, "RearShelfSupportRight", Vector3.new(0.3, 2.9, 0.7), Vector3.new(4.8, 1.45, 3.8), colors.trim)
+part(stall, "RearShelf", Vector3.new(11.2, 0.18, 0.6), Vector3.new(0, 2.9, 4.5), colors.plank)
+part(stall, "RearShelfSupportLeft", Vector3.new(0.3, 2.9, 0.5), Vector3.new(-4.8, 1.45, 4.5), colors.trim)
+part(stall, "RearShelfSupportRight", Vector3.new(0.3, 2.9, 0.5), Vector3.new(4.8, 1.45, 4.5), colors.trim)
 for index, x in { -4.5, -1.75, 1.0 } do
-	part(stall, "StockCrate" .. index, Vector3.new(2.1, 1.5, 1.5), Vector3.new(x, 3.75, 3.7), colors.wood)
+	part(stall, "StockCrate" .. index, Vector3.new(2.1, 1.5, 1.1), Vector3.new(x, .75, 4.2), colors.wood)
 	for _, offset in { -0.8, 0.8 } do
-		part(stall, "CrateBand" .. index, Vector3.new(0.12, 1.57, 1.56),
-			Vector3.new(x + offset, 3.75, 3.7), colors.trim)
+		part(stall, "CrateBand" .. index, Vector3.new(0.12, 1.57, 1.16),
+			Vector3.new(x + offset, .75, 4.2), colors.trim)
 	end
 end
 local lantern = part(stall, "Lantern", Vector3.new(0.46, 0.75, 0.46), Vector3.new(5.0, 3.36, 3.8), colors.canvas, false, Enum.Material.Neon)
@@ -238,7 +267,7 @@ local function verify(model)
 	assert(minimum.X > 16.7 and maximum.X < 31.3 and minimum.Z > 2.5 and maximum.Z < 13.5, "Rotated part bounds must fit the stall footprint")
 	assert(math.abs((minimum.X + maximum.X) * 0.5 - 24) < 0.1, "Model bounding box must remain centered at the weapon-shop location")
 	local weaponDisplays = model:FindFirstChild("Displays")
-	assert(weaponDisplays and #weaponDisplays:GetChildren() == 2, "Exactly two complete weapon displays")
+	assert(weaponDisplays and #weaponDisplays:GetChildren() == 10, "Ten complete tier weapon displays")
 	for _, weapon in { "Saber", "Musket" } do
 		local display = weaponDisplays:FindFirstChild(weapon .. "Display")
 		local original = roblox.deserializeModel(fs.readFile("assets/weapons/" .. weapon .. ".rbxmx"))[1]
@@ -267,4 +296,4 @@ fs.writeFile(path, roblox.serializeModel({ stall }, true))
 local loaded = roblox.deserializeModel(fs.readFile(path))
 assert(#loaded == 1, "XML round trip must preserve a single Model root")
 local count = verify(loaded[1])
-print(string.format("PASS %s: %d anchored parts, two complete weapon displays, prompt, UTF-8, placement, collision, and XML round-trip", path, count))
+print(string.format("PASS %s: %d anchored parts, ten complete weapon displays, prompt, UTF-8, placement, collision, and XML round-trip", path, count))

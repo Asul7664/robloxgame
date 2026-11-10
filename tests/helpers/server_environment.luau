@@ -155,9 +155,10 @@ function Environment.new()
     local lighting = {ClockTime = 11}
     local storage = node("ServerStorage", "ServerStorage")
     local weapons = child(storage, "Folder", "Weapons")
-    for _, id in ipairs({"Saber", "Musket"}) do
-        local tool = child(weapons, "Tool", id)
-        tool:SetAttribute("WeaponType", id)
+    local weaponCatalog=luau.load(fs.readFile('src/shared/WeaponCatalog.luau'))()
+    for _,entry in ipairs(weaponCatalog.List) do
+        local tool = child(weapons, "Tool", entry.Id)
+        tool:SetAttribute("WeaponType", entry.Kind);tool:SetAttribute('WeaponId',entry.Id)
         child(tool, "Part", "Handle")
     end
     local services = {Players = players, RunService = run, HttpService = http,
@@ -228,7 +229,8 @@ function Environment.new()
     function weaponModels.Key(id) return "test-" .. id end
     function weaponModels.Sync(bank, displays)
         local keys = {}
-        for _, id in ipairs({"Saber", "Musket"}) do
+        for _, entry in ipairs(weaponCatalog.List) do
+            local id=entry.Id
             local key = weaponModels.Key(id)
             keys[id] = key
             local stock = bank:FindFirstChild(id)

@@ -2,10 +2,10 @@
 local Models = require(script.Parent:WaitForChild("WeaponModels"))
 local Shop = {}
 Shop.__index = Shop
-function Shop.new(catalog, profiles, bank, counter, send, sync, busy, notice)
+function Shop.new(catalog, profiles, bank, counter, send, sync, busy, notice, levelFromXP)
     local keys=Models.Sync(bank,counter.Parent:WaitForChild("Displays"))
     return setmetatable({Catalog=catalog, Profiles=profiles, Bank=bank, Counter=counter,
-        ModelKeys=keys, Send=send, Sync=sync, Busy=busy, Notice=notice}, Shop)
+        ModelKeys=keys, Send=send, Sync=sync, Busy=busy, Notice=notice,Level=levelFromXP or function()return 1 end}, Shop)
 end
 function Shop:_can(player)
     local c=player.Character
@@ -17,9 +17,10 @@ end
 function Shop:_source(id)
     local source=self.Bank:FindFirstChild(id)
     local handle=source and source:FindFirstChild("Handle")
-    if source and source:IsA("Tool") and source:GetAttribute("WeaponType")==id
+    local weapon=self.Catalog.ById[id]
+    if source and source:IsA("Tool") and self.Catalog.Resolve(source)==weapon
         and source:GetAttribute("WeaponModelKey")==self.ModelKeys[id]
-        and source.Archivable~=false and handle and handle:IsA("BasePart") then return source end
+        and source.Archivable~=false and handle and handle:IsA("BasePart") and handle.Archivable~=false then return source end
 end
 function Shop:Open(player)
     if not self:_can(player) or not self.Profiles.Get(player) then return false end
@@ -32,27 +33,36 @@ function Shop:Grant(player,character)
     local pack=player:FindFirstChild("Backpack")
     local h=character:FindFirstChildOfClass("Humanoid")
     if not data or not pack or not h or h.Health<=0 then return end
-    local owned=data.OwnedWeapons or {}
+    local owned=self.Catalog.CleanOwned(data.OwnedWeapons)
+    data.OwnedWeapons=owned
+    data.EquippedWeapons=self.Catalog.CleanEquipped(owned,data.EquippedWeapons)
     local found={}
     for _, parent in ipairs({character,pack}) do
         for _, tool in ipairs(parent:GetChildren()) do
-            local id=tool:IsA("Tool") and tool:GetAttribute("WeaponType")
-            if id and self.Catalog.ById[id] then
+            local kind=tool:IsA('Tool') and tool:GetAttribute('WeaponType')
+            if self.Catalog.Starters[kind] then
+                local entry=self.Catalog.Resolve(tool)
+                local id=entry and entry.Id
                 -- Retire old unconditional gifts and duplicate Tools without
                 -- touching the player's fishing rod or unrelated equipment.
-                if not owned[id] or found[id] or tool:GetAttribute("WeaponModelKey")~=self.ModelKeys[id] then
+                if not id or data.EquippedWeapons[kind]~=id or not owned[id] or found[id]
+                    or tool:GetAttribute("WeaponModelKey")~=self.ModelKeys[id] then
                     tool:Destroy()
                 else found[id]=tool end
             end
         end
     end
     for _, weapon in ipairs(self.Catalog.List) do
-        if owned[weapon.Id] and not found[weapon.Id] then
+        if owned[weapon.Id] and data.EquippedWeapons[weapon.Kind]==weapon.Id and not found[weapon.Id] then
             local source=self:_source(weapon.Id)
             if source then
                 local tool=source:Clone();tool.Parent=pack;found[weapon.Id]=tool
             end
         end
+    end
+    for id,tool in pairs(found) do
+        tool.Name=self.Catalog.ById[id].Name
+        tool.ToolTip=self.Catalog.ById[id].Name..' · ЛКМ — атака'
     end
     return found
 end
@@ -71,6 +81,10 @@ function Shop:Buy(player,id)
     local weapon=self.Catalog.ById[id]
     local owned=data.OwnedWeapons or {}
     local purchased=owned[id]~=true
+    if purchased and not data.TestMode and self.Level(data.XP)<weapon.Level then
+        self.Notice(player,'Нужен уровень '..weapon.Level..' для оружия «'..weapon.Name..'».')
+        return false
+    end
     if purchased and not data.TestMode and data.Coins<weapon.Price then
         self.Notice(player,"Не хватает "..(weapon.Price-data.Coins).." монет.")
         return false
@@ -80,6 +94,8 @@ function Shop:Buy(player,id)
         if not data.TestMode then data.Coins-=weapon.Price end
         owned[id]=true;data.OwnedWeapons=owned
     end
+    data.EquippedWeapons=data.EquippedWeapons or {}
+    data.EquippedWeapons[weapon.Kind]=id
     local tools=self:Grant(player,c)
     if tools and tools[id] then h:EquipTool(tools[id]) end
     self.Sync(player)

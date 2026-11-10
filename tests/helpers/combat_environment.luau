@@ -289,7 +289,8 @@ function Environment.new()
         require = function(module)
             if not self.Modules[module.Name] then
                 local paths = {Config = "src/combat/Config.luau", Damage = "src/combat/Damage.luau", WeaponAnimator = "src/combat/WeaponAnimator.luau",
-                    WeaponCamera = "src/client/WeaponCamera.luau", DodgeAnimator = "src/client/DodgeAnimator.luau"}
+                    WeaponCamera = "src/client/WeaponCamera.luau", DodgeAnimator = "src/client/DodgeAnimator.luau",
+                    WeaponCatalog='src/shared/WeaponCatalog.luau'}
                 self.Modules[module.Name] = self:Execute(assert(paths[module.Name], module.Name))
             end
             return self.Modules[module.Name]
@@ -364,9 +365,13 @@ function Environment:AddPlayer(id, initial)
     if not initial then self.Players.PlayerAdded:Fire(player) end
     return player
 end
-function Environment:Weapon(kind, parent)
-    local tool = self:Node("Tool", kind)
+function Environment:Weapon(id, parent)
+    self.Modules.WeaponCatalog=self.Modules.WeaponCatalog or self:Execute('src/shared/WeaponCatalog.luau')
+    local record=self.Modules.WeaponCatalog.ById[id]
+    local kind=record and record.Kind or id
+    local tool = self:Node("Tool", id)
     tool:SetAttribute("WeaponType", kind)
+    if record then tool:SetAttribute('WeaponId',record.Id) end
     self:Node("Part", "Handle", tool)
     if kind == "Saber" then
         local blade = self:Node("Part", "Blade", tool); blade.Size = V.new(.08, 3.4, .28)
@@ -377,14 +382,20 @@ function Environment:Weapon(kind, parent)
         local muzzle = self:Node("Attachment", "Muzzle", barrel); muzzle.Position = V.new(0, 2, 0)
     end
     self.Modules.WeaponModels = self.Modules.WeaponModels or self:Execute("src/server/WeaponModels.luau")
-    tool.Grip = self.Modules.WeaponModels.Grip(kind)
+    tool.Grip = self.Modules.WeaponModels.Grip(id)
     if parent then tool.Parent = parent end
     return tool
 end
+function Environment:EnsureWeaponCatalog()
+    local shared=self.Replicated:FindFirstChild('QuietCove') or self:Node('Folder','QuietCove',self.Replicated)
+    if not shared:FindFirstChild('WeaponCatalog') then self:Node('ModuleScript','WeaponCatalog',shared) end
+end
 function Environment:StartServer()
+    self:EnsureWeaponCatalog()
     self:Execute("src/combat/CombatServer.server.luau"); self.ServerStarted = true; self:Flush()
 end
 function Environment:StartClient()
+    self:EnsureWeaponCatalog()
     for _, name in ipairs({"Swing", "Shot", "ConfirmHit"}) do
         if not self.Combat:FindFirstChild(name) then self:Node("RemoteEvent", name, self.Combat) end
     end

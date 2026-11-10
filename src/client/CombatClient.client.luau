@@ -8,6 +8,7 @@ local player = Players.LocalPlayer
 local combat = ReplicatedStorage:WaitForChild("Combat")
 local animator = require(combat:WaitForChild("WeaponAnimator"))
 local config = require(combat:WaitForChild("Config"))
+local Catalog = require(ReplicatedStorage:WaitForChild("QuietCove"):WaitForChild("WeaponCatalog"))
 local WeaponCamera = require(script.Parent:WaitForChild("WeaponCamera"))
 local swingRemote = combat:WaitForChild("Swing")
 local shotRemote = combat:WaitForChild("Shot")
@@ -39,7 +40,8 @@ end
 
 local function kind()
 	local t = tool()
-	return t and t:GetAttribute("WeaponType")
+	local weapon = t and Catalog.Resolve(t)
+	return weapon and weapon.Kind
 end
 
 local function clearRecoil()
@@ -264,7 +266,7 @@ local function puff(origin, dir)
 	game:GetService("Debris"):AddItem(p, 0.7)
 end
 
-local function shotDirection(c, camera, origin)
+local function shotDirection(c, camera, origin, range)
 	local forward = camera.CFrame.LookVector
 	local params = RaycastParams.new()
 	params.FilterType = Enum.RaycastFilterType.Exclude
@@ -273,7 +275,7 @@ local function shotDirection(c, camera, origin)
 	-- muzzle ray would miss the reticle after moving the camera to the shoulder.
 	-- The camera can be zoomed far behind the player; cover the complete muzzle
 	-- range from there while leaving the server's weapon range unchanged.
-	local aimDistance = config.Musket.Range + (origin - camera.CFrame.Position).Magnitude
+	local aimDistance = range + (origin - camera.CFrame.Position).Magnitude
 	local farPoint = camera.CFrame.Position + forward * aimDistance
 	local hit = workspace:Raycast(camera.CFrame.Position, forward * aimDistance, params)
 	local point = hit and hit.Position or farPoint
@@ -292,6 +294,8 @@ local function musket()
 	if not c or not t then
 		return
 	end
+	local weapon = Catalog.Resolve(t)
+	if not weapon or weapon.Kind ~= "Musket" then return end
 	busy = true
 	c:SetAttribute("CombatAttacking", true)
 	actionSerial += 1
@@ -306,7 +310,7 @@ local function musket()
 	end
 	local muzzle = t:FindFirstChild("Muzzle", true)
 	local origin = muzzle and muzzle.WorldPosition or (root.Position + Vector3.new(0, 1.4, 0))
-	local dir = shotDirection(c, camera, origin)
+	local dir = shotDirection(c, camera, origin, weapon.Range)
 	animator.playMusket(c, "kick")
 	kickCamera(-8, .28)
 	-- An edit-time attribute lets an uploaded Sound be connected without
@@ -347,7 +351,7 @@ local function musket()
 			c:SetAttribute("CombatAttacking", false)
 		end
 	end)
-	task.delay(config.Musket.Reload, function()
+	task.delay(weapon.Reload, function()
 		-- Switching weapons does not bypass reloading; respawn invalidates it.
 		if characterSerial == life and character() == c then
 			ammo = config.Musket.Magazine

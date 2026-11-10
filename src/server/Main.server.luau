@@ -119,7 +119,7 @@ end
 weaponShop = WeaponShop.new(WeaponCatalog, Profiles, ServerStorage:WaitForChild("Weapons"),
     workspace:WaitForChild("WeaponStall"):WaitForChild("Counter"), send, sync, function(player)
         return sessions[player]~=nil or dodges:IsActive(player)
-    end, notice)
+    end, notice, Config.Level)
 weaponShop.Counter:WaitForChild("WeaponShopPrompt").Triggered:Connect(function(player) weaponShop:Open(player) end)
 local function stage(player, s, name, extra)
     s.Stage = name

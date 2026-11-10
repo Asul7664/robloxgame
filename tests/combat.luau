@@ -728,4 +728,93 @@ do
     env.ClientScript:Destroy()
 end
 
+-- Progression keeps the existing family controller, while the actual server
+-- Tool identity selects its catalog stats. Attribute damage cannot override it.
+do
+    local probe=Environment.new();probe:EnsureWeaponCatalog()
+    local catalog=probe.Globals.require(probe.Replicated.QuietCove.WeaponCatalog)
+    for _,entry in ipairs(catalog.List) do
+        local env,player,victim,hum,weapon=setup(entry.Kind)
+        weapon:SetAttribute("WeaponId",entry.Id)
+        weapon:SetAttribute("Damage",999999)
+        if entry.Kind=="Saber" then
+            env.BoxParts={victim.Torso}
+            env.Combat.Swing.OnServerEvent:Fire(player,1)
+            check(hum.DamageCalls[1]==entry.Damage,"Server uses equipped sword tier damage: "..entry.Id)
+            env:Advance(.43);victim:SetAttribute("IFrame",false);hum.Health=100
+            env.Combat.Swing.OnServerEvent:Fire(player,3)
+            check(hum.DamageCalls[2]==entry.ComboDamage,"Third strike uses equipped sword tier finisher: "..entry.Id)
+        else
+            env.RayResult={Instance=victim.Torso}
+            env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+            check(hum.DamageCalls[1]==entry.Damage,"Server uses equipped gun tier damage: "..entry.Id)
+            near(env.Rays[1].Direction.Magnitude,entry.Range,"Server uses equipped gun tier range: "..entry.Id)
+            env:Advance(entry.Reload-.01)
+            env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+            check(#env.Rays==1,"Server enforces the full tier reload: "..entry.Id)
+            env:Advance(.02);env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+            check(#env.Rays==2,"Gun can fire after its actual reload: "..entry.Id)
+        end
+    end
+end
+do
+    local env,player,victim,hum,old=setup("Musket")
+    old:SetAttribute("WeaponId","OldMusket");env.RayResult={Instance=victim.Torso}
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    old.Parent=player.Backpack
+    local best=env:Weapon("Musket",player.Character);best:SetAttribute("WeaponId","StormMusket")
+    env:Advance(1.8);env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(#env.Rays==1,"Buying/equipping the best gun cannot shorten a fired starter reload")
+    env:Advance(.41);env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(#env.Rays==2 and hum.DamageCalls[2]==76,"Stronger gun starts with its own stats after the previous load finishes")
+    best:SetAttribute("WeaponId","Tideblade");env:Advance(2.5)
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(#env.Rays==2,"Mismatched sword identity cannot masquerade as a gun")
+    best:SetAttribute("WeaponId","MissingGun")
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(#env.Rays==2,"Unknown weapon identity cannot fall back to stronger stats")
+end
+do
+    local probe=Environment.new();probe:EnsureWeaponCatalog()
+    local catalog=probe.Globals.require(probe.Replicated.QuietCove.WeaponCatalog)
+    for _,entry in ipairs(catalog.List) do
+        if entry.Kind=="Musket" then
+            local env=Environment.new();local player=env:AddPlayer(1,true)
+            local gun=env:Weapon("Musket",player.Character);gun:SetAttribute("WeaponId",entry.Id)
+            env:StartClient();env:Advance(.03);env:Click()
+            local muzzle=gun:FindFirstChild("Muzzle",true).WorldPosition
+            local camera=env.World.CurrentCamera
+            near(env.Rays[1].Direction.Magnitude,entry.Range+(muzzle-camera.CFrame.Position).Magnitude,
+                "Tier reticle ray covers the real gun range: "..entry.Id)
+            check(player.PlayerGui.MusketAim.Enabled,"Every gun tier uses the existing shoulder camera and reticle: "..entry.Id)
+            env:Advance(entry.Reload-.01);env:Click()
+            check(#env.Requests==1,"Client waits for this gun's tier reload: "..entry.Id)
+            env:Advance(.02);env:Click()
+            check(#env.Requests==2,"Client fires when this gun's tier reload completes: "..entry.Id)
+            env.ClientScript:Destroy()
+        else
+            local env=Environment.new();local player=env:AddPlayer(1,true)
+            env:Weapon(entry.Id,player.Character);env:StartClient();env:Click();env:Advance(.3)
+            check(#env.Requests==1 and env.Requests[1].Remote=="Swing",
+                "Every sword tier enters the existing animated combo input: "..entry.Id)
+            check(not player.PlayerGui.MusketAim.Enabled,"Sword tiers never engage the gun camera: "..entry.Id)
+            env.ClientScript:Destroy()
+        end
+    end
+end
+do
+    local env,player,victim,hum,weapon=setup("Musket")
+    weapon:SetAttribute("WeaponId",nil);env.RayResult={Instance=victim.Torso}
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(hum.DamageCalls[1]==28,"Previously purchased legacy musket still works before its model migration")
+    env:Advance(2)
+    local rays=#env.Rays
+    env.Combat.Shot.OnServerEvent:Fire(player,V.new(0/0,0,0),V.xAxis)
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.new(math.huge,0,0))
+    check(#env.Rays==rays,"Non-finite client vectors cannot poison a tier raycast or reload state")
+    hum.Health=100;player.Character.Humanoid.Health=0
+    env.Combat.Shot.OnServerEvent:Fire(player,V.zero,V.xAxis)
+    check(#env.Rays==rays,"Dead players cannot fire upgraded or legacy guns")
+end
+
 print(string.format("Combat: %d behavior checks passed (engine doubles; visual Studio test still required).", checks))
