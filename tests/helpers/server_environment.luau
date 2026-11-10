@@ -184,7 +184,7 @@ function Environment.new()
     local fakeEnum = {PartType = {Ball = "Ball",Block='Block'}, MeshType={Sphere='Sphere'}, KeyCode={E="E"}, HumanoidStateType = {Swimming = "Swimming", PlatformStanding = "PlatformStanding", Jumping='Jumping',Freefall='Freefall'},
         Material={Air='Air',Water='Water',SmoothPlastic='SmoothPlastic'},
         SurfaceType={Smooth='Smooth'},RaycastFilterType={Exclude='Exclude'}}
-    local world = {Model = node("Model"), Spots = {Cove = {Name = "Тихая бухта", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
+    local world = {Model = node("Model"), Spots = {Cove = {Name = "Quiet Cove", Center = V.new(0, 4, 0), Radius = 25, Level = 1}},
         Spawn = V.new(0, 4, 0), ReefSpawn = V.new(450, 4, -650)}
     world.Merchant, world.Shop, world.Ferry, world.ReturnFerry = node("Part"), node("Part"), node("Part"), node("Part")
     world.Merchant.Name="Body";world.Merchant.Parent=child(world.Model,"Model","Merchant");world.Merchant.Position=V.new(0,4,0)
@@ -195,7 +195,7 @@ function Environment.new()
     world.Buyers = {world.Merchant}
     local captain=child(child(world.Model,"Model","Captain"),"Part","Body");captain.Position=V.new(-10,4,0)
     prompt(captain,"CaptainPrompt")
-    world.Docks={Cove={Id="Cove",Name="Тихая бухта",Captain=captain,Berth=V.new(20,1,20)}}
+    world.Docks={Cove={Id="Cove",Name="Quiet Cove",Captain=captain,Berth=V.new(20,1,20)}}
     local access = {Resolve = function() end}
     function access.Sandbox(player, saved)
         if not player.Tester then return nil end

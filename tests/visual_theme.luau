@@ -125,8 +125,8 @@ local handmadeBody=child(handmade,"Part","Body",V.new(20,9.2,-25))
 local handmadeHead=child(handmade,"Part","Head",V.new(20,11.4,-25))
 local sign=child(map,"Part","FishingSign")
 local signText=child(child(sign,"BillboardGui","Label"),"TextLabel","TextLabel")
-signText.Text="РЫБАЛКА";signText.TextColor3=C.new(1,1,1)
-local prompt=child(pier,"ProximityPrompt","Travel");prompt.ActionText="На риф"
+signText.Text="FISHING";signText.TextColor3=C.new(1,1,1)
+local prompt=child(pier,"ProximityPrompt","Travel");prompt.ActionText="To the reef"
 
 local archipelago=child(workspace,"Model","QuietCoveArchipelago")
 local harborPath=child(archipelago,"Part","HarborPath",V.new(0,7.25,38),V.new(11,.15,56))
@@ -244,7 +244,7 @@ check(colorDistance(pier.Color,theme.Palette.Wood)
     <=colorDistance(theme.Palette.Wood:Lerp(theme.Palette.WoodLight,.075),theme.Palette.Wood),
     "Pier variation leaves the accepted warm wood palette")
 check(merchantBody.Color==theme.Palette.Gold,"Existing merchant was not restyled")
-check(signText.Text=="РЫБАЛКА"and prompt.ActionText=="На риф","Art pass changed gameplay text")
+check(signText.Text=="FISHING"and prompt.ActionText=="To the reef","Art pass changed gameplay text")
 check(signText.TextStrokeColor3==theme.Palette.Ink,"World labels lack readable outline")
 for _,definition in ipairs(config.Islands)do
     if definition.Theme~="home"and definition.Theme~="reef"then

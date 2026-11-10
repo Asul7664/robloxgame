@@ -19,7 +19,7 @@
         <R22>-0</R22>
       </CoordinateFrame>
       <bool name="RequiresHandle">true</bool>
-      <string name="ToolTip">Мушкет · ЛКМ — выстрел · перезарядка 1.7 с</string>
+      <string name="ToolTip">Flintlock Musket · LMB — fire · 1.7s reload</string>
     </Properties>
     <Item class="Part" referent="1">
       <Properties>

@@ -16,7 +16,7 @@ env.modules.SahurService={new=function(callback)
         Step=function() end,
     }
 end}
-env.World.Spots={Dunes={Name='Пески Сахура',Center=r.Vector3.new(0,4,0),Radius=25,Level=3}}
+env.World.Spots={Dunes={Name='Sahur Sands',Center=r.Vector3.new(0,4,0),Radius=25,Level=3}}
 env.Config.IslandById.Dunes.Weights={sahur=100}
 env:Start()
 check(not env.ServerStorage:FindFirstChild('StudioSahur'),'Published server exposes no test shortcut')
@@ -74,7 +74,7 @@ studio.modules.SahurService={new=function()
             return true
         end}
 end}
-studio.World.Spots.Dunes={Name='Пески Сахура',Center=r.Vector3.new(-1350,8,-1545),Radius=25,Level=3}
+studio.World.Spots.Dunes={Name='Sahur Sands',Center=r.Vector3.new(-1350,8,-1545),Radius=25,Level=3}
 studio:Start()
 local sp=studio:Player(606);studio.Players.PlayerAdded:Fire(sp)
 local shortcut=studio.ServerStorage:FindFirstChild('StudioSahur')

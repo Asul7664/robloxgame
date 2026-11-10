@@ -56,10 +56,30 @@ local function refs(model)
         Spawn = Vector3.new(0, 11, -19),
         ReefSpawn = Vector3.new(reef.X, 11, reef.Z - 20),
         Spots = {
-            Cove = {Center = Vector3.new(0, 8, -99), Name = "Тихая бухта", Radius = 20},
-            Reef = {Center = Vector3.new(reef.X, 8, reef.Z - 32), Name = "Коралловый риф", Radius = 17},
+            Cove = {Center = Vector3.new(0, 8, -99), Name = "Quiet Cove", Radius = 20},
+            Reef = {Center = Vector3.new(reef.X, 8, reef.Z - 32), Name = "Coral Reef", Radius = 17},
         },
     }
+end
+-- Saved places keep authored geometry; refresh only their player-facing text.
+local function syncLabels(model)
+    local function caption(name,text)
+        local part=model:FindFirstChild(name)
+        local gui=part and part:FindFirstChild("Label")
+        local label=gui and gui:FindFirstChildOfClass("TextLabel")
+        if label then label.Text=text end
+    end
+    caption("FishingSign","FISHING\nHold and release LMB")
+    caption("Ferry","REEF FERRY\nLevel 2 required")
+    caption("ReturnFerry","QUIET COVE\nReturn to the traders")
+    for _,info in ipairs({
+        {"Ferry","Travel to Coral Reef","Ferry · Level 2"},
+        {"ReturnFerry","Return to Quiet Cove","Return ferry"},
+    }) do
+        local part=model:FindFirstChild(info[1])
+        local prompt=part and part:FindFirstChild("Travel")
+        if prompt then prompt.ActionText=info[2];prompt.ObjectText=info[3] end
+    end
 end
 local function syncReef(model)
     local reef = Config.IslandById.Reef
@@ -82,7 +102,7 @@ local function syncReef(model)
     local sign = model:FindFirstChild("ReefSign")
     local gui = sign and sign:FindFirstChild("Label")
     local text = gui and gui:FindFirstChildOfClass("TextLabel")
-    if text then text.Text = "КОРАЛЛОВЫЙ РИФ\n" .. reef.Target end
+    if text then text.Text = "CORAL REEF\n" .. reef.Target end
 end
 function World.Build()
     local reef = Config.IslandById.Reef
@@ -93,6 +113,7 @@ function World.Build()
     if oceanPreview then oceanPreview:Destroy() end
     local existing = Workspace:FindFirstChild("QuietCoveMap")
     if existing then
+        syncLabels(existing)
         syncReef(existing)
         Visuals.ApplyMap(existing)
         return refs(existing)
@@ -114,13 +135,13 @@ function World.Build()
         end
     end
     local fishingSign = part(model, "FishingSign", Vector3.new(1, 4, 1), Vector3.new(-10, 9, -101), {106, 74, 55}, Enum.Material.Wood)
-    label(fishingSign, "РЫБАЛКА\nЗажми и отпусти ЛКМ", 3, 300)
+    label(fishingSign, "FISHING\nHold and release LMB", 3, 300)
     local spawn = Instance.new("SpawnLocation")
     spawn.Name = "CoveSpawn"; spawn.Size = Vector3.new(8, 0.2, 8)
     spawn.Position = Vector3.new(0, 7.3, -19); spawn.Anchored = true; spawn.Neutral = true
     spawn.Duration = 0; spawn.Transparency = 1; spawn.CanCollide = false; spawn.Parent = model
-    npc(model, "Merchant", -20, -25, {215, 155, 82}, "МАРА · ПРОДАЖА УЛОВА", "Продать весь улов")
-    npc(model, "Rodsmith", 20, -25, {76, 139, 151}, "ЛЕВ · МАСТЕР УДОЧЕК", "Выбрать удочку")
+    npc(model, "Merchant", -20, -25, {215, 155, 82}, "MARA · CATCH TRADER", "Sell all catches")
+    npc(model, "Rodsmith", 20, -25, {76, 139, 151}, "LEV · RODSMITH", "Browse rods")
     for _, x in ipairs({-20, 20}) do
         part(model, "ShopCounter", Vector3.new(10, 2.4, 3.3), Vector3.new(x, 7.3, -29), {114, 84, 65}, Enum.Material.WoodPlanks)
         for _, dx in ipairs({-5, 5}) do
@@ -139,18 +160,18 @@ function World.Build()
     part(model, "LighthouseRoof", Vector3.new(10, 1, 10), Vector3.new(-32, 36.5, 17), {55, 76, 83})
     part(model, "FerryGangway", Vector3.new(18, 1, 8), Vector3.new(10, 7, -78), {141, 106, 74}, Enum.Material.WoodPlanks)
     local ferry = part(model, "Ferry", Vector3.new(1, 5, 1), Vector3.new(17, 9, -78), {59, 104, 126})
-    label(ferry, "ПЕРЕПРАВА НА РИФ\nСо 2-го уровня", 4)
-    prompt(ferry, "Travel", "На коралловый риф", "Переправа · уровень 2")
+    label(ferry, "REEF FERRY\nLevel 2 required", 4)
+    prompt(ferry, "Travel", "Travel to Coral Reef", "Ferry · Level 2")
     part(model, "BoatHull", Vector3.new(9, 2, 17), Vector3.new(24, 1, -78), {90, 67, 52}, Enum.Material.WoodPlanks)
     part(model, "BoatDeck", Vector3.new(7, 0.5, 14), Vector3.new(24, 2.2, -78), {173, 135, 93}, Enum.Material.WoodPlanks)
     part(model, "ReefRock", Vector3.new(47, 12, 38), Vector3.new(reef.X, -1, reef.Z), {96, 142, 144}, Enum.Material.Rock)
     part(model, "ReefSand", Vector3.new(45, 1.5, 36), Vector3.new(reef.X, 5.6, reef.Z), {236, 222, 177}, Enum.Material.Sand)
     part(model, "ReefPier", Vector3.new(18, 1, 35), Vector3.new(reef.X, 7, reef.Z - 27), {137, 104, 80}, Enum.Material.WoodPlanks)
     local returnFerry = part(model, "ReturnFerry", Vector3.new(1, 5, 1), Vector3.new(reef.X + 6, 9, reef.Z - 15), {59, 104, 126})
-    label(returnFerry, "ТИХАЯ БУХТА\nОбратно к торговцам", 4)
-    prompt(returnFerry, "Travel", "Вернуться в бухту", "Обратная переправа")
+    label(returnFerry, "QUIET COVE\nReturn to the traders", 4)
+    prompt(returnFerry, "Travel", "Return to Quiet Cove", "Return ferry")
     local reefSign = part(model, "ReefSign", Vector3.new(1, 4, 1), Vector3.new(reef.X - 7, 9, reef.Z - 37), {106, 74, 55})
-    label(reefSign, "КОРАЛЛОВЫЙ РИФ\n" .. reef.Target, 3.5, 300)
+    label(reefSign, "CORAL REEF\n" .. reef.Target, 3.5, 300)
     palm(model, reef.X - 11, reef.Z + 10, 14); palm(model, reef.X + 15, reef.Z + 10, 17)
     for i = 1, 10 do
         local a = i * 2.4

@@ -19,7 +19,7 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "МАРА · ПРОДАЖА УЛОВА"
+                "Text": "Mara\nCatch Trader"
               }
             }
           },
@@ -27,8 +27,8 @@
             "$className": "ProximityPrompt",
             "$ignoreUnknownInstances": true,
             "$properties": {
-              "ActionText": "Продать весь улов",
-              "ObjectText": "МАРА · ПРОДАЖА УЛОВА"
+              "ActionText": "Talk",
+              "ObjectText": "Mara"
             }
           }
         }
@@ -46,7 +46,7 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "ЛЕВ · МАСТЕР УДОЧЕК"
+                "Text": "Lev\nRodsmith"
               }
             }
           },
@@ -54,8 +54,8 @@
             "$className": "ProximityPrompt",
             "$ignoreUnknownInstances": true,
             "$properties": {
-              "ActionText": "Выбрать удочку",
-              "ObjectText": "ЛЕВ · МАСТЕР УДОЧЕК"
+              "ActionText": "Talk",
+              "ObjectText": "Lev"
             }
           }
         }
@@ -67,8 +67,19 @@
           "$className": "ProximityPrompt",
           "$ignoreUnknownInstances": true,
           "$properties": {
-            "ActionText": "На коралловый риф",
-            "ObjectText": "Переправа · уровень 2"
+            "ActionText": "Travel to Coral Reef",
+            "ObjectText": "Ferry · Level 2"
+          }
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "Text": "REEF FERRY\nLevel 2 required"
+            }
           }
         }
       },
@@ -79,8 +90,19 @@
           "$className": "ProximityPrompt",
           "$ignoreUnknownInstances": true,
           "$properties": {
-            "ActionText": "Вернуться в бухту",
-            "ObjectText": "Обратная переправа"
+            "ActionText": "Return to Quiet Cove",
+            "ObjectText": "Return ferry"
+          }
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "Text": "QUIET COVE\nReturn to the traders"
+            }
           }
         }
       },
@@ -94,7 +116,22 @@
             "$className": "TextLabel",
             "$ignoreUnknownInstances": true,
             "$properties": {
-              "Text": "КОРАЛЛОВЫЙ РИФ\nБобрито, Триппи Троппи и Бомбардиро"
+              "Text": "CORAL REEF\nBobrito Bandito, Trippi Troppi and Bombardiro Crocodilo"
+            }
+          }
+        }
+      },
+      "FishingSign": {
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "Text": "FISHING\nHold and release LMB"
             }
           }
         }
@@ -119,7 +156,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "КАПИТАН МИРОН · ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -127,8 +164,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "КАПИТАН МИРОН · ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Quiet Cove\nM — map · E at the captain"
               }
             }
           }
@@ -150,7 +202,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -158,8 +210,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Coral Reef\nM — map · E at the captain"
               }
             }
           }
@@ -181,7 +248,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -189,8 +256,8 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
               }
             }
           }
@@ -208,7 +275,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                  "Text": "Fisher\nCatch Trader"
                 }
               }
             },
@@ -216,8 +283,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Продать весь улов",
-                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                "ActionText": "Talk",
+                "ObjectText": "Fisher"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Patapim Grove\nM — map · E at the captain"
               }
             }
           }
@@ -239,7 +321,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -247,8 +329,8 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
               }
             }
           }
@@ -266,7 +348,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                  "Text": "Fisher\nCatch Trader"
                 }
               }
             },
@@ -274,8 +356,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Продать весь улов",
-                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                "ActionText": "Talk",
+                "ObjectText": "Fisher"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Sahur Sands\nM — map · E at the captain"
               }
             }
           }
@@ -297,7 +394,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -305,8 +402,8 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
               }
             }
           }
@@ -324,7 +421,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                  "Text": "Fisher\nCatch Trader"
                 }
               }
             },
@@ -332,8 +429,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Продать весь улов",
-                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                "ActionText": "Talk",
+                "ObjectText": "Fisher"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Bloom Island\nM — map · E at the captain"
               }
             }
           }
@@ -355,7 +467,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                  "Text": "Captain Miron\nCaptain"
                 }
               }
             },
@@ -363,8 +475,8 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Лодки / вызвать",
-                "ObjectText": "ПРИЧАЛ · ВЫЗОВ ЛОДКИ"
+                "ActionText": "Talk",
+                "ObjectText": "Captain Miron"
               }
             }
           }
@@ -382,7 +494,7 @@
                 "$className": "TextLabel",
                 "$ignoreUnknownInstances": true,
                 "$properties": {
-                  "Text": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                  "Text": "Fisher\nCatch Trader"
                 }
               }
             },
@@ -390,8 +502,23 @@
               "$className": "ProximityPrompt",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "ActionText": "Продать весь улов",
-                "ObjectText": "СКУПЩИК · ПРОДАЖА УЛОВА"
+                "ActionText": "Talk",
+                "ObjectText": "Fisher"
+              }
+            }
+          }
+        },
+        "DockSign": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Storm Island\nM — map · E at the captain"
               }
             }
           }
@@ -410,7 +537,22 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "РЫБАЛКА · УРОВЕНЬ 2\nБР-БР Патапим и Бонека Амбалабу"
+                "Text": "FISHING · LEVEL 2\nBrr Brr Patapim and Boneca Ambalabu"
+              }
+            }
+          }
+        },
+        "IslandBeacon": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Patapim Grove\nLevel 2"
               }
             }
           }
@@ -429,7 +571,22 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "РЫБАЛКА · УРОВЕНЬ 3\nТун Тун Сахур, Лирили и Фриго Камело"
+                "Text": "FISHING · LEVEL 3\nTung Tung Sahur, Lirili Larila and Frigo Camelo"
+              }
+            }
+          }
+        },
+        "IslandBeacon": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Sahur Sands\nLevel 3"
               }
             }
           }
@@ -448,7 +605,22 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "РЫБАЛКА · УРОВЕНЬ 4\nБалерина; ночью — Тралалелетралала"
+                "Text": "FISHING · LEVEL 4\nBallerina Cappuccina; at night: Tralalero Tralala"
+              }
+            }
+          }
+        },
+        "IslandBeacon": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Bloom Island\nLevel 4"
               }
             }
           }
@@ -467,8 +639,38 @@
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "РЫБАЛКА · УРОВЕНЬ 7\nГигачад-акула; ночью — Верити и Ла Вакка"
+                "Text": "FISHING · LEVEL 7\nGigaChad Shark; at night: Verity and La Vacca Saturno Saturnita"
               }
+            }
+          }
+        },
+        "IslandBeacon": {
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "Text": "Storm Island\nLevel 7"
+              }
+            }
+          }
+        }
+      },
+      "HomeHarborSign": {
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "Text": "BOATYARD → SOUTH\nM — island map"
             }
           }
         }

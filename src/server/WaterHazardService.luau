@@ -105,14 +105,14 @@ function Service:Step(now)
                     if where=='water' and elapsed>=self.Settings.Seconds then
                         state.Tripped=true
                         Damage.KillFromHazard(humanoid,'Shark')
-                        self.Notice(player,('Акула! Не оставайся в воде дольше %d секунд — пользуйся лодкой.'):format(self.Settings.Seconds))
+                        self.Notice(player,('Shark! Use a boat instead of staying in the water for more than %d seconds.'):format(self.Settings.Seconds))
                         -- A cosmetic asset failure must never disable the rule.
                         local ok,reason=pcall(self._visual,self,player,root,now)
                         if not ok then warn('[QuietCove] Shark visual: '..tostring(reason)) end
                     elseif not state.Warned and elapsed>=self.Settings.Seconds-self.Settings.WarningSeconds then
                         state.Warned=true
                         local left=math.max(1,math.ceil(self.Settings.Seconds-elapsed))
-                        self.Notice(player,'В воде опасно! До акулы '..left..' с. Заберись на сушу или в лодку.')
+                        self.Notice(player,'Watch out! A shark arrives in '..left..'s. Get onto land or into a boat.')
                     end
                 end
             end

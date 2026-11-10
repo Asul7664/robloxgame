@@ -94,26 +94,26 @@ local function healthBar(model, humanoid)
     fill.BackgroundColor3=Color3.fromRGB(224,81,52);fill.BorderSizePixel=0;fill.Parent=back
     return function()
         fill.Size=UDim2.fromScale(math.clamp(humanoid.Health/humanoid.MaxHealth,0,1),1)
-        label.Text=('ТУН ТУН САХУР · %d / %d'):format(math.ceil(humanoid.Health),humanoid.MaxHealth)
+        label.Text=('TUNG TUNG SAHUR · %d / %d'):format(math.ceil(humanoid.Health),humanoid.MaxHealth)
     end
 end
 function Service:Start(player, token, record, zone, island)
-    if self:IsActive(player) then return false,'Бой с Сахуром уже идёт.' end
+    if self:IsActive(player) then return false,'You are already fighting Sahur.' end
     local template=ServerStorage:FindFirstChild('SahurBoss')
     local target=living(player)
-    if not template then return false,'Не установлена модель ServerStorage.SahurBoss.' end
-    if not template:IsA('Model') then return false,'ServerStorage.SahurBoss должен быть моделью.' end
-    if not target then return false,'Персонаж не готов или погиб.' end
-    if not island then return false,'Не найдены Пески Сахура.' end
+    if not template then return false,'The ServerStorage.SahurBoss model is missing.' end
+    if not template:IsA('Model') then return false,'ServerStorage.SahurBoss must be a Model.' end
+    if not target then return false,'Your character is not ready or has died.' end
+    if not island then return false,'Sahur Sands was not found.' end
     local model=template:Clone()
     local root=model:FindFirstChild('HumanoidRootPart')
     local humanoid=model:FindFirstChildOfClass('Humanoid')
     if not root or not root:IsA('BasePart') or not humanoid then
-        model:Destroy();return false,'В модели Сахура не найдены HumanoidRootPart и Humanoid.'
+        model:Destroy();return false,'The Sahur model is missing a HumanoidRootPart or Humanoid.'
     end
     local rig=Club.Capture(model)
     if not rig then
-        model:Destroy();return false,'Повреждён скелет Сахура: не найдена цепочка дубинки.'
+        model:Destroy();return false,'The Sahur rig is invalid: the club joint chain is missing.'
     end
     -- Defense in depth for a template accidentally replaced with an unclean copy.
     for _,item in model:GetDescendants() do
@@ -139,7 +139,7 @@ function Service:Start(player, token, record, zone, island)
     local footHeight=humanoid.HipHeight+root.Size.Y/2
     -- Land on the island's central ground lane, clear of temple/trees/pier.
     local destination=landingPoint(island,footHeight)
-    if not destination then model:Destroy();return false,'Не найдено безопасное место на суше Песков Сахура.' end
+    if not destination then model:Destroy();return false,'No safe landing spot was found on Sahur Sands.' end
     local origin=Vector3.new(zone.Center.X,-footHeight-3,zone.Center.Z-17)
     local folder=workspace:FindFirstChild('SahurEncounters')
     if not folder then folder=Instance.new('Folder');folder.Name='SahurEncounters';folder.Parent=workspace end
@@ -165,7 +165,7 @@ function Service:Start(player, token, record, zone, island)
         self.Reward(player,record,token)
         task.delay(2,function() model:Destroy() end)
     end)
-    self.Notice(player,'Сахур выходит из воды! Возьми саблю или мушкет. Уклоняйся от замаха.')
+    self.Notice(player,'Sahur is emerging! Equip your sword or gun and dodge his swings.')
     return true
 end
 function Service:_path(player,s,target,now)
@@ -268,7 +268,7 @@ function Service:Step(now)
         local target, victim=living(player)
         if player.Parent~=Players or player.Character~=s.Character or not target or not s.Model.Parent
             or now-s.At>settings.Lifetime or (target.Position-s.Home).Magnitude>settings.LeashRange then
-            self:Remove(player,'Бой с Сахуром прерван. Улов не получен.')
+            self:Remove(player,'The Sahur fight has ended. No catch was awarded.')
         elseif now-s.At<settings.RiseTime then
             local t=math.clamp((now-s.At)/settings.RiseTime,0,1)
             -- Exactly one continuous arc; no second jump is used to clear shore.

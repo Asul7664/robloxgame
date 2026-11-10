@@ -12,7 +12,7 @@
       <Item class="Model" referent="3">
         <Properties>
           <string name="Name">PracticeSaberDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhMAAADQoNC20LDQstGL0Lkg0LzQtdGHCAAAAFdlYXBvbklkAg0AAABQcmFjdGljZVNhYmVyCgAAAFdlYXBvblRpZXIFAACAPwoAAABXZWFwb25UeXBlAgUAAABTYWJlcg==</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgsAAABSdXN0eSBTd29yZAgAAABXZWFwb25JZAINAAAAUHJhY3RpY2VTYWJlcgoAAABXZWFwb25UaWVyBQAAgD8KAAAAV2VhcG9uVHlwZQIFAAAAU2FiZXI=</BinaryString>
           <Ref name="PrimaryPart">4</Ref>
         </Properties>
         <Item class="Part" referent="5">
@@ -585,7 +585,7 @@
       <Item class="Model" referent="21">
         <Properties>
           <string name="Name">SaberDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhcAAADQltC10LvQtdC30L3Ri9C5INC80LXRhwgAAABXZWFwb25JZAIFAAAAU2FiZXIKAAAAV2VhcG9uVGllcgUAAABACgAAAFdlYXBvblR5cGUCBQAAAFNhYmVy</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgoAAABJcm9uIFN3b3JkCAAAAFdlYXBvbklkAgUAAABTYWJlcgoAAABXZWFwb25UaWVyBQAAAEAKAAAAV2VhcG9uVHlwZQIFAAAAU2FiZXI=</BinaryString>
           <Ref name="PrimaryPart">22</Ref>
         </Properties>
         <Item class="Part" referent="23">
@@ -2340,7 +2340,7 @@
       <Item class="Model" referent="74">
         <Properties>
           <string name="Name">CutlassDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgwAAADQr9GC0LDQs9Cw0L0IAAAAV2VhcG9uSWQCBwAAAEN1dGxhc3MKAAAAV2VhcG9uVGllcgUAAEBACgAAAFdlYXBvblR5cGUCBQAAAFNhYmVy</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgcAAABZYXRhZ2FuCAAAAFdlYXBvbklkAgcAAABDdXRsYXNzCgAAAFdlYXBvblRpZXIFAABAQAoAAABXZWFwb25UeXBlAgUAAABTYWJlcg==</BinaryString>
           <Ref name="PrimaryPart">75</Ref>
         </Properties>
         <Item class="Part" referent="76">
@@ -4127,7 +4127,7 @@
       <Item class="Model" referent="128">
         <Properties>
           <string name="Name">CorsairSaberDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhkAAADQodCw0LHQu9GPINC60L7RgNGB0LDRgNCwCAAAAFdlYXBvbklkAgwAAABDb3JzYWlyU2FiZXIKAAAAV2VhcG9uVGllcgUAAIBACgAAAFdlYXBvblR5cGUCBQAAAFNhYmVy</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAg0AAABDb3JzYWlyIFNhYmVyCAAAAFdlYXBvbklkAgwAAABDb3JzYWlyU2FiZXIKAAAAV2VhcG9uVGllcgUAAIBACgAAAFdlYXBvblR5cGUCBQAAAFNhYmVy</BinaryString>
           <Ref name="PrimaryPart">129</Ref>
         </Properties>
         <Item class="Part" referent="130">
@@ -6010,7 +6010,7 @@
       <Item class="Model" referent="185">
         <Properties>
           <string name="Name">TidebladeDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhsAAADQmtC70LjQvdC+0Log0L/RgNC40LvQuNCy0LAIAAAAV2VhcG9uSWQCCQAAAFRpZGVibGFkZQoAAABXZWFwb25UaWVyBQAAoEAKAAAAV2VhcG9uVHlwZQIFAAAAU2FiZXI=</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgkAAABUaWRlYmxhZGUIAAAAV2VhcG9uSWQCCQAAAFRpZGVibGFkZQoAAABXZWFwb25UaWVyBQAAoEAKAAAAV2VhcG9uVHlwZQIFAAAAU2FiZXI=</BinaryString>
           <Ref name="PrimaryPart">186</Ref>
         </Properties>
         <Item class="Part" referent="187">
@@ -8085,7 +8085,7 @@
       <Item class="Model" referent="248">
         <Properties>
           <string name="Name">OldMusketDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhsAAADQoNC20LDQstGL0Lkg0YHQsNC80L7Qv9Cw0LsIAAAAV2VhcG9uSWQCCQAAAE9sZE11c2tldAoAAABXZWFwb25UaWVyBQAAgD8KAAAAV2VhcG9uVHlwZQIGAAAATXVza2V0</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhEAAABSdXN0eSBIYW5kIENhbm5vbggAAABXZWFwb25JZAIJAAAAT2xkTXVza2V0CgAAAFdlYXBvblRpZXIFAACAPwoAAABXZWFwb25UeXBlAgYAAABNdXNrZXQ=</BinaryString>
           <Ref name="PrimaryPart">249</Ref>
         </Properties>
         <Item class="Part" referent="250">
@@ -9450,7 +9450,7 @@
       <Item class="Model" referent="290">
         <Properties>
           <string name="Name">MusketDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAh8AAADQmtGA0LXQvNC90ZHQstGL0Lkg0LzRg9GI0LrQtdGCCAAAAFdlYXBvbklkAgYAAABNdXNrZXQKAAAAV2VhcG9uVGllcgUAAABACgAAAFdlYXBvblR5cGUCBgAAAE11c2tldA==</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhAAAABGbGludGxvY2sgTXVza2V0CAAAAFdlYXBvbklkAgYAAABNdXNrZXQKAAAAV2VhcG9uVGllcgUAAABACgAAAFdlYXBvblR5cGUCBgAAAE11c2tldA==</BinaryString>
           <Ref name="PrimaryPart">291</Ref>
         </Properties>
         <Item class="Part" referent="292">
@@ -10917,7 +10917,7 @@
       <Item class="Model" referent="335">
         <Properties>
           <string name="Name">NavalMusketDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAh0AAADQnNC+0YDRgdC60L7QuSDQutCw0YDQsNCx0LjQvQgAAABXZWFwb25JZAILAAAATmF2YWxNdXNrZXQKAAAAV2VhcG9uVGllcgUAAEBACgAAAFdlYXBvblR5cGUCBgAAAE11c2tldA==</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAg0AAABOYXZhbCBDYXJiaW5lCAAAAFdlYXBvbklkAgsAAABOYXZhbE11c2tldAoAAABXZWFwb25UaWVyBQAAQEAKAAAAV2VhcG9uVHlwZQIGAAAATXVza2V0</BinaryString>
           <Ref name="PrimaryPart">336</Ref>
         </Properties>
         <Item class="Part" referent="337">
@@ -12448,7 +12448,7 @@
       <Item class="Model" referent="382">
         <Properties>
           <string name="Name">CaptainMusketDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAh0AAADQqNGC0YPRhtC10YAg0LrQsNC/0LjRgtCw0L3QsAgAAABXZWFwb25JZAINAAAAQ2FwdGFpbk11c2tldAoAAABXZWFwb25UaWVyBQAAgEAKAAAAV2VhcG9uVHlwZQIGAAAATXVza2V0</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAg8AAABDYXB0YWluJ3MgUmlmbGUIAAAAV2VhcG9uSWQCDQAAAENhcHRhaW5NdXNrZXQKAAAAV2VhcG9uVGllcgUAAIBACgAAAFdlYXBvblR5cGUCBgAAAE11c2tldA==</BinaryString>
           <Ref name="PrimaryPart">383</Ref>
         </Properties>
         <Item class="Part" referent="384">
@@ -14142,7 +14142,7 @@
       <Item class="Model" referent="434">
         <Properties>
           <string name="Name">StormMusketDisplay</string>
-          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAhAAAADQk9GA0L7QvNC+0LHQvtC5CAAAAFdlYXBvbklkAgsAAABTdG9ybU11c2tldAoAAABXZWFwb25UaWVyBQAAoEAKAAAAV2VhcG9uVHlwZQIGAAAATXVza2V0</BinaryString>
+          <BinaryString name="AttributesSerialize">BQAAABQAAABRQ1RpZXJEaXNwbGF5VmVyc2lvbgUAAIA/EQAAAFdlYXBvbkRpc3BsYXlOYW1lAgsAAABUaHVuZGVyY2xhcAgAAABXZWFwb25JZAILAAAAU3Rvcm1NdXNrZXQKAAAAV2VhcG9uVGllcgUAAKBACgAAAFdlYXBvblR5cGUCBgAAAE11c2tldA==</BinaryString>
           <Ref name="PrimaryPart">435</Ref>
         </Properties>
         <Item class="Part" referent="436">
@@ -18776,7 +18776,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">ЛАВКА КЛИНКОВ</string>
+              <string name="Text">BLADE SHOP</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -19614,12 +19614,12 @@
         <Item class="ProximityPrompt" referent="605">
           <Properties>
             <string name="Name">WeaponShopPrompt</string>
-            <string name="ActionText">Посмотреть оружие</string>
+            <string name="ActionText">Browse weapons</string>
             <BinaryString name="AttributesSerialize">AQAAAAoAAABXZWFwb25LaW5kAgUAAABTYWJlcg==</BinaryString>
             <float name="HoldDuration">0.2</float>
             <token name="KeyboardKeyCode">101</token>
             <float name="MaxActivationDistance">12</float>
-            <string name="ObjectText">ЛАВКА КЛИНКОВ</string>
+            <string name="ObjectText">BLADE SHOP</string>
             <bool name="RequiresLineOfSight">false</bool>
           </Properties>
         </Item>
@@ -20128,7 +20128,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">МЕЧИ · САБЛИ · ЯТАГАНЫ</string>
+              <string name="Text">SWORDS · SABERS · YATAGANS</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -20507,7 +20507,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Ржавый меч</string>
+              <string name="Text">Rusty Sword</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -20598,7 +20598,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Железный меч</string>
+              <string name="Text">Iron Sword</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -20689,7 +20689,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Ятаган</string>
+              <string name="Text">Yatagan</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -20780,7 +20780,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Сабля корсара</string>
+              <string name="Text">Corsair Saber</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -20871,7 +20871,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Клинок прилива</string>
+              <string name="Text">Tideblade</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -23656,7 +23656,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">ЛАВКА СТРЕЛКА</string>
+              <string name="Text">GUNSMITH</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -24462,12 +24462,12 @@
         <Item class="ProximityPrompt" referent="766">
           <Properties>
             <string name="Name">WeaponShopPrompt</string>
-            <string name="ActionText">Посмотреть оружие</string>
+            <string name="ActionText">Browse weapons</string>
             <BinaryString name="AttributesSerialize">AQAAAAoAAABXZWFwb25LaW5kAgYAAABNdXNrZXQ=</BinaryString>
             <float name="HoldDuration">0.2</float>
             <token name="KeyboardKeyCode">101</token>
             <float name="MaxActivationDistance">12</float>
-            <string name="ObjectText">ЛАВКА СТРЕЛКА</string>
+            <string name="ObjectText">GUNSMITH</string>
             <bool name="RequiresLineOfSight">false</bool>
           </Properties>
         </Item>
@@ -24976,7 +24976,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">МУШКЕТЫ · КАРАБИНЫ · ШТУЦЕРЫ</string>
+              <string name="Text">MUSKETS · CARBINES · RIFLES</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -25355,7 +25355,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Ржавый самопал</string>
+              <string name="Text">Rusty Hand Cannon</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -25446,7 +25446,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Кремнёвый мушкет</string>
+              <string name="Text">Flintlock Musket</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -25537,7 +25537,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Морской карабин</string>
+              <string name="Text">Naval Carbine</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -25628,7 +25628,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Штуцер капитана</string>
+              <string name="Text">Captain's Rifle</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>
@@ -25719,7 +25719,7 @@
                 <YS>1</YS>
                 <YO>0</YO>
               </UDim2>
-              <string name="Text">Громобой</string>
+              <string name="Text">Thunderclap</string>
               <Color3 name="TextColor3">
                 <R>1</R>
                 <G>0.96862745</G>

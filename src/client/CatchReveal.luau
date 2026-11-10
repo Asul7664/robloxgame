@@ -6,8 +6,8 @@ local Sprite = require(script.Parent:WaitForChild("CatchSprite"))
 local ModelView = require(script.Parent:WaitForChild("CreatureViewport"))
 local Reveal = {}; Reveal.__index = Reveal
 local WHITE = Color3.fromRGB(247,248,242)
-local RARITY_NAMES = {"COMMON · ОБЫЧНЫЙ УЛОВ", "UNCOMMON · НЕОБЫЧНЫЙ УЛОВ", "RARE · РЕДКИЙ УЛОВ",
-    "EPIC · ЭПИЧЕСКИЙ УЛОВ", "LEGENDARY · ЛЕГЕНДАРНЫЙ УЛОВ", "MYTHICAL · МИФИЧЕСКИЙ УЛОВ"}
+local RARITY_NAMES = {"COMMON CATCH", "UNCOMMON CATCH", "RARE CATCH",
+    "EPIC CATCH", "LEGENDARY CATCH", "MYTHICAL CATCH"}
 local function make(class, properties, parent)
     local obj = Instance.new(class)
     for k,v in pairs(properties) do obj[k]=v end
@@ -61,12 +61,12 @@ function Reveal.new(gui, config, callbacks)
     self.Art=make("Frame",{Name="CatchPortrait",BackgroundTransparency=1,AnchorPoint=Vector2.new(0.5,0.5),
         Position=UDim2.fromOffset(220,185),Size=UDim2.fromOffset(302,302),Rotation=0,ZIndex=3},card)
     self.Loading=label(card,"Loading",174,12,26,WHITE,false)
-    self.Loading.Text="Готовим изображение…";self.Loading.Visible=false
+    self.Loading.Text="Loading portrait…";self.Loading.Visible=false
     self.Name=label(card,"CatchName",337,24,38,WHITE,true)
     self.Info=label(card,"CatchInfo",378,13,27,WHITE,false)
     self.Badge=label(card,"CatchBadge",405,11,20,WHITE,true)
     self.Hint=label(card,"CloseHint",428,10,14,Color3.fromRGB(173,191,197),false)
-    self.Hint.Text="ЛКМ — закрыть"
+    self.Hint.Text="LMB — close"
     local dismiss=make("TextButton",{Name="DismissPortrait",Size=UDim2.fromScale(1,1),
         BackgroundTransparency=1,Text="",AutoButtonColor=false,ZIndex=6},card)
     dismiss.Activated:Connect(function() if self:CanDismiss() then self:Hide(false) end end)
@@ -83,7 +83,7 @@ function Reveal.new(gui, config, callbacks)
         end
         self.Loading.Visible=not self.Sprite or not self.Sprite.Ready or self.Sprite.Mode=="error"
         self.Loading.Text=self.Sprite and self.Sprite.Mode=="error"
-            and "Не удалось показать изображение. Проверь Output." or "Готовим изображение…"
+            and "Could not load this portrait." or "Loading portrait…"
         -- Never trap the player in a failed/slow portrait load.
         if not self.ArtReadyAt and now-self.Started>8 then
             self.ArtReadyAt=now;self.Until=now+4.2
@@ -165,11 +165,11 @@ function Reveal:Show(record,payload,displayName)
     self.Card.GroupTransparency=1;self.PopScale.Scale=0.70
     self.Art.Position=UDim2.fromOffset(220,203);self.Art.Rotation=-8
     self.Name.Text=displayName or fish.Name
-    self.Heading.Text=(payload.Preview and "ПРЕВЬЮ · " or "")..RARITY_NAMES[fish.Rarity]
-    self.Info.Text=string.format("%.2f кг  ·  %d монет  ·  +%d опыта",record.Kg,record.Value,payload.XP or 0)
-    self.Badge.Text=payload.Preview and "ПРОСМОТР БЕЗ НАГРАД И СОХРАНЕНИЙ" or
-        (payload.LevelUp and "НОВЫЙ УРОВЕНЬ!" or (payload.New and "НОВЫЙ В КОЛЛЕКЦИИ!" or "УЛОВ ДОБАВЛЕН В РЮКЗАК"))
-    self.Hint.Text=payload.Preview and "P — следующий персонаж  ·  ЛКМ — закрыть" or "ЛКМ — закрыть"
+    self.Heading.Text=(payload.Preview and "PREVIEW · " or "")..RARITY_NAMES[fish.Rarity]
+    self.Info.Text=string.format("%.2f kg  ·  %d coins  ·  +%d XP",record.Kg,record.Value,payload.XP or 0)
+    self.Badge.Text=payload.Preview and "PREVIEW — NO REWARDS OR SAVES" or
+        (payload.LevelUp and "LEVEL UP!" or (payload.New and "NEW DISCOVERY!" or "CATCH ADDED TO YOUR BAG"))
+    self.Hint.Text=payload.Preview and "P — next creature  ·  LMB — close" or "LMB — close"
     self.Loading.Visible=not self.Sprite.Ready
     if self.Callbacks.OnOpen then self.Callbacks.OnOpen() end
     self:_tween(self.Card,0.18,Enum.EasingStyle.Quad,Enum.EasingDirection.Out,{GroupTransparency=0})

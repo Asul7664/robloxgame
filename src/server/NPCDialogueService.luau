@@ -1,10 +1,10 @@
 -- Authoritative nearby NPC conversations; no client reward/progress values are trusted.
 local Service={};Service.__index=Service
-local names={merchant="Мара",rodsmith="Лев",captain="Капитан Мирон"}
-local roles={merchant="Рыбачка и скупщица",rodsmith="Мастер удочек",captain="Капитан лодочной верфи"}
-local greetings={merchant="Привет! Море сегодня щедрое. Покажешь улов? А ещё у меня есть поручения для хорошего рыбака.",
-    rodsmith="Рад тебя видеть! Хорошая удочка — половина дела. Поможешь с испытаниями снастей?",
-    captain="Попутного ветра! Подберём лодку или отправимся исследовать острова? За морские поручения я плачу монетами."}
+local names={merchant="Mara",rodsmith="Lev",captain="Captain Miron"}
+local roles={merchant="Fisher and fish buyer",rodsmith="Rodsmith",captain="Boatyard captain"}
+local greetings={merchant="Hi there! The sea is generous today. Show me your catch! I also have a few quests for a keen angler.",
+    rodsmith="Good to see you! A good rod makes all the difference. Want to help me test some fishing gear?",
+    captain="Fair winds! Need a boat to explore the islands? I also pay coins for seafaring quests."}
 local function rootOf(player)
     local c=player.Character;local h=c and c:FindFirstChildOfClass("Humanoid")
     local r=c and c:FindFirstChild("HumanoidRootPart")
@@ -26,7 +26,7 @@ function Service:Register(id,giver,body,tradeLabel,trade)
     end
     local prompt=body:FindFirstChild("NPCDialoguePrompt")
     if not prompt then prompt=Instance.new("ProximityPrompt");prompt.Name="NPCDialoguePrompt";prompt.Parent=body end
-    prompt.ActionText="Поговорить";prompt.ObjectText=self.Entries[id].Name;prompt.KeyboardKeyCode=Enum.KeyCode.E
+    prompt.ActionText="Talk";prompt.ObjectText=self.Entries[id].Name;prompt.KeyboardKeyCode=Enum.KeyCode.E
     prompt.HoldDuration=0.15;prompt.MaxActivationDistance=12;prompt.RequiresLineOfSight=false;prompt.Enabled=true
     table.insert(self.Connections,prompt.Triggered:Connect(function(player)
         if self.Options.Allow(player,"NPCOpen",2) then self:Open(player,id) end
@@ -46,7 +46,7 @@ function Service:_render(player,session,message)
     local choices,text={},message or greetings[entry.Giver]
     if session.Page=="quests" then
         local available,ready,reward=0,0,0
-        local lines={message or "Вот наши поручения. Подробности и прогресс — в журнале «Задания»."}
+        local lines={message or "Here are my quests. Check your Quest Journal for details and progress."}
         for _,kind in ipairs({"Daily","Weekly"}) do
             local accepted,finished,total=0,0,0
             for _,q in ipairs(snapshot[kind].Tasks) do
@@ -56,16 +56,16 @@ function Service:_render(player,session,message)
                     elseif q.Accepted and q.Progress>=q.Target then ready+=1;reward+=q.Reward end
                 end
             end
-            table.insert(lines,(kind=="Daily" and "На день" or "На неделю")..": взято "..accepted.."/"..total..", сдано "..finished..".")
+            table.insert(lines,(kind=="Daily" and "Daily" or "Weekly")..": accepted "..accepted.."/"..total..", turned in "..finished..".")
         end
         reward+=(snapshot.PendingRewards and snapshot.PendingRewards[entry.Giver]) or 0
-        table.insert(lines,"Новые дневные поручения — после 00:00 UTC; недельные — в понедельник.")
-        if reward>0 then table.insert(lines,"К выдаче: "..reward.." монет.") end
+        table.insert(lines,"Daily quests refresh at 00:00 UTC. Weekly quests refresh on Monday.")
+        if reward>0 then table.insert(lines,"Ready to collect: "..reward.." coins.") end
         text=table.concat(lines,"\n")
-        choices={choice("accept","Взять новые поручения",available>0),
-            choice("claim","Сдать выполненное · +"..reward.." монет",reward>0 or ready>0),
-            choice("back","О другом"),choice("close","До встречи!")}
-    else choices={choice("trade",entry.TradeLabel),choice("quests","Поручения и награды"),choice("close","До встречи!")} end
+        choices={choice("accept","Accept new quests",available>0),
+            choice("claim","Turn in quests · +"..reward.." coins",reward>0 or ready>0),
+            choice("back","Back"),choice("close","See you!")}
+    else choices={choice("trade",entry.TradeLabel),choice("quests","Quests and rewards"),choice("close","See you!")} end
     session.Expires=options.Now()+60
     options.Send(player,"Dialogue",{Id=entry.Id,Session=session.Nonce,Name=entry.Name,Role=roles[entry.Giver],
         Text=text,Choices=choices,Giver=entry.Giver})
@@ -92,13 +92,13 @@ function Service:Request(player,id,payload)
     local data=options.Profiles.Get(player);local message
     if action=="accept" then
         local count=options.Quests.AcceptFrom(data,options.Config,entry.Giver,options.Now(),player.UserId)
-        message=count>0 and "Договорились! Поручения записаны в журнал. Возвращайся с результатами."
-            or "На этот период ты уже получил все мои поручения. Продолжай начатое!"
+        message=count>0 and "You got it! Your quests are in the journal. Come back when they are done."
+            or "You have already picked up all my quests for now. Keep at it!"
     elseif action=="claim" then
         local ok,reason,reward=options.Quests.ClaimFrom(data,options.Config,entry.Giver,options.Now(),player.UserId)
-        message=ok and "Отличная работа! Держи "..reward.." монет. Награда уже в кошельке."
-            or (reason=="balance_full" and "В кошельке нет места. Награда сохранена, заберёшь позже."
-            or "Пока нечего сдавать. Возвращайся, когда выполнишь поручение.")
+        message=ok and "Great work! Here are "..reward.." coins. Your reward is in your wallet."
+            or (reason=="balance_full" and "Your wallet is full. Your reward is safe; come back for it later."
+            or "Nothing to turn in yet. Come back when you finish a quest.")
     else return false end
     options.Sync(player);return self:_render(player,session,message)
 end

@@ -96,7 +96,7 @@ function Profiles.Load(player)
             end)
         end)
         if ok and value and value.Session and value.Session.Id == token then result = value; break end
-        reason = blocked and "Профиль ещё открыт на другом сервере. Подождите немного и войдите снова." or tostring(value)
+        reason = blocked and "Your profile is still open on another server. Wait a moment, then rejoin." or tostring(value)
         if attempt < 3 then task.wait(attempt) end
     end
     if not result then warn("[QuietCove] Profile load failed:", player.UserId, reason); return false end
@@ -136,14 +136,14 @@ function Profiles.Save(player, release)
     if success then p.LastSave = os.clock() end
     if lostOwnership then
         p.Closing = true
-        if player.Parent == Players then player:Kick("Профиль открыт в другой сессии. Войдите снова.") end
+        if player.Parent == Players then player:Kick("Your profile is open in another session. Please rejoin.") end
     end
     if release then
         if not success then warn("[QuietCove] FINAL SAVE FAILED for", player.UserId) end
         Profiles.Records[player] = nil
     elseif not success and os.clock() - p.LastSave > Config.SessionLeaseSeconds - 35 then
         p.Closing = true
-        if player.Parent == Players then player:Kick("Сохранение временно недоступно. Войдите снова, чтобы не потерять прогресс.") end
+        if player.Parent == Players then player:Kick("Saving is temporarily unavailable. Please rejoin to protect your progress.") end
     end
     return success
 end

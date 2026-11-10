@@ -15,7 +15,7 @@ for _,role in ipairs(roles) do
     local frame=body.CFrame
     check(model.Name==role and model.Body==body,"Stable authored NPC/body identity missing")
     local prompt=body:FindFirstChild(role.."Prompt")
-    check(prompt and prompt.ActionText=="Поговорить","Talk prompt missing")
+    check(prompt and prompt.ActionText=="Talk","Talk prompt missing")
     local rig=model.VisualRig
     check(rig and rig:GetAttribute("QCNPC")==true,"Rig identity missing")
     check(rig:FindFirstChildOfClass("Humanoid")~=nil,"NPC is not a Humanoid character")

@@ -3,7 +3,7 @@
 local RunService=game:GetService('RunService')
 local Studio={}
 function Studio.Build()
-    assert(RunService:IsStudio() and not RunService:IsRunning(),'Останови Play перед созданием дна в редакторе.')
+    assert(RunService:IsStudio() and not RunService:IsRunning(),'Stop Play before building the seabed in edit mode.')
     local shared=game:GetService('ReplicatedStorage'):WaitForChild('QuietCove')
     local copies=Instance.new('Folder');copies.Name='OceanEditorModules'
     local configCopy=shared:WaitForChild('Config'):Clone()
@@ -18,8 +18,8 @@ function Studio.Build()
         local workspace=game:GetService('Workspace')
         for key,value in pairs(visualTheme.Water) do workspace.Terrain[key]=value end
         local model=require(copies.OceanFloor).Apply(workspace,config,visualTheme)
-        assert(model,'Не удалось создать дно: проверь Config.Seabed.Enabled и имя QuietCoveSeabed в Workspace.')
-        print('Дно и рифы готовы: Workspace.QuietCoveSeabed. Нажми Ctrl+S для сохранения места.')
+        assert(model,'Could not build the seabed. Check Config.Seabed.Enabled and the QuietCoveSeabed name in Workspace.')
+        print('Seabed and reefs ready: Workspace.QuietCoveSeabed. Press Ctrl+S to save the place.')
         return model
     end)
     configCopy:Destroy();copies:Destroy()

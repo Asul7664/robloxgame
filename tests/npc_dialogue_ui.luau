@@ -53,10 +53,10 @@ local ui=UI.new(gui,function(...)table.insert(sent,{...})end,{
     CanOpen=function()return allowed end,OnOpen=function()opens+=1 end,OnClose=function()closes+=1 end,
 })
 local function payload(session)
-    return {Id="merchant_cove",Session=session or"server-session-1",Name="Мара",Role="Скупщик и поручения",
-        Text="Привет! Рыбакам нужна помощь. Поручения выдаю раз в день, награду забери у меня.",
-        Choices={{Id="quests",Text="Какие поручения?"},{Id="claim",Text="Сдать выполненное",Enabled=false},
-            {Id="trade",Text="Продать улов"},{Id="close",Text="До встречи"}}}
+    return {Id="merchant_cove",Session=session or"server-session-1",Name="Mara",Role="Catch Trader & Quests",
+        Text="Hello! The fishers could use your help. I offer quests once a day. Come back to me for your rewards.",
+        Choices={{Id="quests",Text="Any quests for me?"},{Id="claim",Text="Turn in completed quests",Enabled=false},
+            {Id="trade",Text="Sell my catch"},{Id="close",Text="See you later"}}}
 end
 check(not ui:IsOpen(),"conversation starts hidden")
 ui:Handle("Dialogue",{})
@@ -64,8 +64,8 @@ check(not ui:IsOpen(),"malformed payload does not open UI")
 allowed=false;ui:Handle("Dialogue",payload())
 check(not ui:IsOpen() and sent[1][3]=="close","busy gameplay refuses the server session cleanly")
 allowed=true;ui:Handle("Dialogue",payload())
-check(ui:IsOpen() and opens==1 and ui.Name.Text=="Мара","server-authored speaker opens conversation")
-check(ui.Role.Text=="Скупщик и поручения" and ui.Speech.Text:find("раз в день",1,true),"role and conversation copy visible")
+check(ui:IsOpen() and opens==1 and ui.Name.Text=="Mara","server-authored speaker opens conversation")
+check(ui.Role.Text=="Catch Trader & Quests" and ui.Speech.Text:find("once a day",1,true),"role and conversation copy visible")
 local claim=ui.Choices:FindFirstChild("Choice_claim")
 check(not claim.Active and not claim.Selectable,"unavailable reward is disabled for mouse and controller")
 claim.Activated:Fire();check(#sent==1,"disabled choice cannot request payout")
@@ -77,8 +77,8 @@ check(#sent==2,"pending reply suppresses a second choice")
 check(not ui.Choices:FindFirstChild("Choice_trade").Active,"all choices visibly pending")
 now=5;ui:Step();check(ui.Pending,"cannot immediately retry")
 now=6;ui:Step();check(not ui.Pending and ui.Choices:FindFirstChild("Choice_trade").Active,"network timeout allows retry")
-ui:Handle("Notice",{Text="Подойди ближе к Маре."})
-check(ui.Status.Text=="Подойди ближе к Маре.","server error remains visible over modal")
+ui:Handle("Notice",{Text="Move closer to Mara."})
+check(ui.Status.Text=="Move closer to Mara.","server error remains visible over modal")
 ui:Handle("Dialogue",payload("server-session-2"))
 check(opens==1 and ui.Session=="server-session-2","reply updates in place without reopening another HUD")
 ui.Choices:FindFirstChild("Choice_trade").Activated:Fire()

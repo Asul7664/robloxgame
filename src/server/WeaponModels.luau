@@ -4,16 +4,16 @@
 local Models = {}
 -- Only visual identity lives here; prices, levels and damage live in Catalog.
 Models.Tiers={
-    {Id='PracticeSaber',Kind='Saber',Tier=1,Name='Ржавый меч'},
-    {Id='Saber',Kind='Saber',Tier=2,Name='Железный меч'},
-    {Id='Cutlass',Kind='Saber',Tier=3,Name='Ятаган'},
-    {Id='CorsairSaber',Kind='Saber',Tier=4,Name='Сабля корсара'},
-    {Id='Tideblade',Kind='Saber',Tier=5,Name='Клинок прилива'},
-    {Id='OldMusket',Kind='Musket',Tier=1,Name='Ржавый самопал'},
-    {Id='Musket',Kind='Musket',Tier=2,Name='Кремнёвый мушкет'},
-    {Id='NavalMusket',Kind='Musket',Tier=3,Name='Морской карабин'},
-    {Id='CaptainMusket',Kind='Musket',Tier=4,Name='Штуцер капитана'},
-    {Id='StormMusket',Kind='Musket',Tier=5,Name='Громобой'},
+    {Id='PracticeSaber',Kind='Saber',Tier=1,Name='Rusty Sword'},
+    {Id='Saber',Kind='Saber',Tier=2,Name='Iron Sword'},
+    {Id='Cutlass',Kind='Saber',Tier=3,Name='Yatagan'},
+    {Id='CorsairSaber',Kind='Saber',Tier=4,Name='Corsair Saber'},
+    {Id='Tideblade',Kind='Saber',Tier=5,Name='Tideblade'},
+    {Id='OldMusket',Kind='Musket',Tier=1,Name='Rusty Hand Cannon'},
+    {Id='Musket',Kind='Musket',Tier=2,Name='Flintlock Musket'},
+    {Id='NavalMusket',Kind='Musket',Tier=3,Name='Naval Carbine'},
+    {Id='CaptainMusket',Kind='Musket',Tier=4,Name='Captain\'s Rifle'},
+    {Id='StormMusket',Kind='Musket',Tier=5,Name='Thunderclap'},
 }
 local specs={}
 for _,entry in ipairs(Models.Tiers) do specs[entry.Id]=entry end
@@ -98,7 +98,7 @@ function Models.Build(display,id)
     tool:SetAttribute("WeaponId",id)
     tool:SetAttribute("WeaponModelKey",Models.Key(display,id))
     tool.Grip=Models.Grip(id)
-    tool.ToolTip=specs[id].Name.." · ЛКМ — атака"
+    tool.ToolTip=specs[id].Name.." · LMB — attack"
     for _,part in ipairs(parts(display)) do
         local copy=assert(part:Clone(),"Weapon display part must be archivable")
         for _,child in ipairs(copy:GetDescendants()) do

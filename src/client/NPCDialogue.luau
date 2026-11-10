@@ -28,7 +28,7 @@ end
 function Dialogue:_choose(choice)
     if not self:IsOpen() or self.Pending or choice.Enabled==false then return end
     self.Pending=true;self.PendingAt=os.clock()
-    self.Status.Text="Слушаем ответ…"
+    self.Status.Text="Waiting for a reply…"
     for _,button in ipairs(self.Choices:GetChildren()) do
         if button:IsA("TextButton") then button.Active=false;button.AutoButtonColor=false end
     end
@@ -41,7 +41,7 @@ function Dialogue:_renderChoices()
     local previous
     for index,choice in ipairs(self.CurrentChoices) do
         local enabled=choice.Enabled~=false
-        local button=make("TextButton",{Name="Choice_"..choice.Id,Text=choice.Text or "Продолжить",
+        local button=make("TextButton",{Name="Choice_"..choice.Id,Text=choice.Text or "Continue",
             Size=UDim2.new(1,-4,0,44),BackgroundColor3=enabled and (index==1 and C.Gold or C.Panel) or C.Bg,
             TextColor3=enabled and (index==1 and C.Bg or C.Ink) or C.Muted,
             Font=Enum.Font.GothamBold,TextSize=14,TextWrapped=true,BorderSizePixel=0,
@@ -66,9 +66,9 @@ function Dialogue:Handle(kind,payload)
     end
     self.Id,self.Session=payload.Id,payload.Session
     self.Pending=false
-    self.Name.Text=tostring(payload.Name or "Житель острова")
-    self.Role.Text=tostring(payload.Role or "Разговор")
-    self.Speech.Text=tostring(payload.Text or "Привет! Чем могу помочь?")
+    self.Name.Text=tostring(payload.Name or "Islander")
+    self.Role.Text=tostring(payload.Role or "Conversation")
+    self.Speech.Text=tostring(payload.Text or "Hello! How can I help?")
     self.CurrentChoices={}
     for index,choice in ipairs(type(payload.Choices)=="table" and payload.Choices or {}) do
         if index>8 then break end
@@ -76,7 +76,7 @@ function Dialogue:Handle(kind,payload)
             table.insert(self.CurrentChoices,{Id=choice.Id,Text=choice.Text,Enabled=choice.Enabled})
         end
     end
-    self.Status.Text="Задания и награды выдаёт собеседник"
+    self.Status.Text="Talk to this character to accept quests and collect rewards"
     self:_renderChoices()
     self.Scroller.CanvasPosition=Vector2.zero
     if not open and self.Callbacks.OnOpen then self.Callbacks.OnOpen() end
@@ -84,7 +84,7 @@ function Dialogue:Handle(kind,payload)
 end
 function Dialogue:Step()
     if self:IsOpen() and self.Pending and os.clock()-self.PendingAt>=6 then
-        self.Pending=false;self.Status.Text="Ответ задержался. Можно повторить выбор."
+        self.Pending=false;self.Status.Text="No reply yet. You can try again."
         self:_renderChoices()
     end
 end

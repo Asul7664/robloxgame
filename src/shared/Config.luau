@@ -1,6 +1,6 @@
--- Quiet Cove / Тихая бухта. All balance values live here.
+-- Quiet Cove. All balance values live here.
 local Config = {}
-Config.Title = "ТИХАЯ БУХТА"
+Config.Title = "QUIET COVE"
 Config.Version = "0.3.0-islands-quests"
 Config.BagCapacity = 40
 Config.XPPerLevel = 100
@@ -49,35 +49,35 @@ Config.WaterHazard = {
     EffectSeconds = 1.3,
 }
 Config.Rarities = {
-    {Name = "Обычная", Color = {184, 184, 184}},
-    {Name = "Необычная", Color = {118, 223, 174}},
-    {Name = "Редкая", Color = {103, 185, 255}},
-    {Name = "Эпическая", Color = {199, 144, 255}},
-    {Name = "Легендарная", Color = {255, 207, 66}},
-    {Name = "Мифическая", Color = {250, 106, 222}},
+    {Name = "Common", Color = {184, 184, 184}},
+    {Name = "Uncommon", Color = {118, 223, 174}},
+    {Name = "Rare", Color = {103, 185, 255}},
+    {Name = "Epic", Color = {199, 144, 255}},
+    {Name = "Legendary", Color = {255, 207, 66}},
+    {Name = "Mythical", Color = {250, 106, 222}},
 }
 Config.Rods = {
-    {Id = "wood", Name = "Деревянная", Price = 0, Width = 0.30, Luck = 1, Speed = 1, Resilience = 1, MaxKg = 8, Quality = 1},
-    {Id = "carbon", Name = "Карбоновая", Price = 350, Width = 0.36, Luck = 1.7, Speed = 1.25, Resilience = 1.2, MaxKg = 25, Quality = 2},
-    {Id = "tide", Name = "Повелитель приливов", Price = 1400, Width = 0.43, Luck = 2.6, Speed = 1.55, Resilience = 1.5, MaxKg = 80, Quality = 3},
-    {Id = "astral", Name = "Астральная", Price = 7500, Width = 0.47, Luck = 2.6, Speed = 1.65, Resilience = 1.65, MaxKg = 110, Quality = 4},
+    {Id = "wood", Name = "Wooden Rod", Price = 0, Width = 0.30, Luck = 1, Speed = 1, Resilience = 1, MaxKg = 8, Quality = 1},
+    {Id = "carbon", Name = "Carbon Rod", Price = 350, Width = 0.36, Luck = 1.7, Speed = 1.25, Resilience = 1.2, MaxKg = 25, Quality = 2},
+    {Id = "tide", Name = "Tide Master", Price = 1400, Width = 0.43, Luck = 2.6, Speed = 1.55, Resilience = 1.5, MaxKg = 80, Quality = 3},
+    {Id = "astral", Name = "Astral Rod", Price = 7500, Width = 0.47, Luck = 2.6, Speed = 1.65, Resilience = 1.65, MaxKg = 110, Quality = 4},
 }
 Config.Fish = {
-    {Id = "capybara", Name = "Капибара", Zone = "Cove", Rarity = 1, Chance = 46, MinKg = 0.25, MaxKg = 0.9, Price = 18, Difficulty = 0.05, XP = 24, Pattern = "lazy", HookWindow = 3.2, Nick = "СПОКОЙНАЯ ЛЕГЕНДА"},
-    {Id = "skibidi", Name = "Скибиди-шпрот", Zone = "Cove", Rarity = 1, Chance = 28, MinKg = 0.35, MaxKg = 1.4, Price = 25, Difficulty = 0.08, XP = 28, Pattern = "wobble", HookWindow = 2.9, Nick = "СКОЛЬЗКИЙ И БОЛТЛИВЫЙ"},
-    {Id = "sigma", Name = "Сигма-сардина", Zone = "Cove", Rarity = 2, Chance = 15, MinKg = 0.8, MaxKg = 3.3, Price = 34, Difficulty = 0.12, XP = 34, Pattern = "drift", HookWindow = 2.7, Nick = "ЛОВИТСЯ С ЛИЦОМ АЛЬФЫ"},
-    {Id = "ballerina", Name = "Балерина Капуччина", Zone = "Cove", Rarity = 3, Chance = 6, MinKg = 1.7, MaxKg = 5.8, Price = 58, Difficulty = 0.3, XP = 49, Pattern = "ballet", HookWindow = 2.4, Nick = "КРУЖИТСЯ И ПЕТЛЯЕТ"},
-    {Id = "tralalero", Name = "Тралалелетралала", Zone = "Cove", Rarity = 4, Chance = 2, MinKg = 1.8, MaxKg = 6.5, Price = 112, Difficulty = 0.28, XP = 70, Pattern = "zigzag", HookWindow = 2.15, Nick = "ЕГО МЕНЯТЬ НЕ НАДО — ОН И ТАК РЫБА", Night = true},
-    {Id = "patapim", Name = "БР-БР Патапим", Zone = "Reef", Rarity = 2, Chance = 37, MinKg = 0.25, MaxKg = 1.2, Price = 40, Difficulty = 0.15, XP = 31, Pattern = "pulse", HookWindow = 2.85, Nick = "ПУЛЬСИРУЕТ И СКАЧЕТ"},
-    {Id = "ambalabu", Name = "Бонека Амбалабу", Zone = "Reef", Rarity = 3, Chance = 24, MinKg = 1.4, MaxKg = 6.5, Price = 61, Difficulty = 0.20, XP = 46, Pattern = "phantom", HookWindow = 2.45, Nick = "ЛЮБИТ ЛОЖНЫЕ ДВИЖЕНИЯ"},
-    {Id = "bombardiro", Name = "Бомбардиро Крокофиш", Zone = "Reef", Rarity = 3, Chance = 16, MinKg = 3.8, MaxKg = 16.5, Price = 86, Difficulty = 0.23, XP = 56, Pattern = "dart", HookWindow = 2.3, Nick = "РВЁТСЯ В РЫВКИ"},
-    {Id = "sahur", Name = "Тун Тун Сахур", Zone = "Reef", Rarity = 5, Chance = 1.5, MinKg = 8, MaxKg = 22, Price = 210, Difficulty = 0.35, XP = 115, Pattern = "berserk", HookWindow = 1.9, Nick = "ЛЕГЕНДАРКА. ОЧЕНЬ КАПРИЗНЫЙ."},
-    {Id = "gigachad", Name = "Гигачад-акула", Zone = "Reef", Rarity = 5, Chance = 0.8, MinKg = 24, MaxKg = 60, Price = 380, Difficulty = 0.32, XP = 145, Pattern = "boss", HookWindow = 1.75, Nick = "ФИНАЛЬНЫЙ УЛОВ РИФА"},
+    {Id = "capybara", Name = "Capybara", Zone = "Cove", Rarity = 1, Chance = 46, MinKg = 0.25, MaxKg = 0.9, Price = 18, Difficulty = 0.05, XP = 24, Pattern = "lazy", HookWindow = 3.2, Nick = "THE CHILL LEGEND"},
+    {Id = "skibidi", Name = "Skibidi Sprat", Zone = "Cove", Rarity = 1, Chance = 28, MinKg = 0.35, MaxKg = 1.4, Price = 25, Difficulty = 0.08, XP = 28, Pattern = "wobble", HookWindow = 2.9, Nick = "SLIPPERY AND CHATTY"},
+    {Id = "sigma", Name = "Sigma Sardine", Zone = "Cove", Rarity = 2, Chance = 15, MinKg = 0.8, MaxKg = 3.3, Price = 34, Difficulty = 0.12, XP = 34, Pattern = "drift", HookWindow = 2.7, Nick = "REEL IT IN WITH AN ALPHA STARE"},
+    {Id = "ballerina", Name = "Ballerina Cappuccina", Zone = "Cove", Rarity = 3, Chance = 6, MinKg = 1.7, MaxKg = 5.8, Price = 58, Difficulty = 0.3, XP = 49, Pattern = "ballet", HookWindow = 2.4, Nick = "SPINS AND SWERVES"},
+    {Id = "tralalero", Name = "Tralalero Tralala", Zone = "Cove", Rarity = 4, Chance = 2, MinKg = 1.8, MaxKg = 6.5, Price = 112, Difficulty = 0.28, XP = 70, Pattern = "zigzag", HookWindow = 2.15, Nick = "ALREADY A FISH, NO CHANGES NEEDED", Night = true},
+    {Id = "patapim", Name = "Brr Brr Patapim", Zone = "Reef", Rarity = 2, Chance = 37, MinKg = 0.25, MaxKg = 1.2, Price = 40, Difficulty = 0.15, XP = 31, Pattern = "pulse", HookWindow = 2.85, Nick = "PULSES AND BOUNCES"},
+    {Id = "ambalabu", Name = "Boneca Ambalabu", Zone = "Reef", Rarity = 3, Chance = 24, MinKg = 1.4, MaxKg = 6.5, Price = 61, Difficulty = 0.20, XP = 46, Pattern = "phantom", HookWindow = 2.45, Nick = "LOVES TO FAKE YOU OUT"},
+    {Id = "bombardiro", Name = "Bombardiro Crocodilo", Zone = "Reef", Rarity = 3, Chance = 16, MinKg = 3.8, MaxKg = 16.5, Price = 86, Difficulty = 0.23, XP = 56, Pattern = "dart", HookWindow = 2.3, Nick = "BURSTS INTO SUDDEN DASHES"},
+    {Id = "sahur", Name = "Tung Tung Sahur", Zone = "Reef", Rarity = 5, Chance = 1.5, MinKg = 8, MaxKg = 22, Price = 210, Difficulty = 0.35, XP = 115, Pattern = "berserk", HookWindow = 1.9, Nick = "LEGENDARY. EXTREMELY FUSSY."},
+    {Id = "gigachad", Name = "GigaChad Shark", Zone = "Reef", Rarity = 5, Chance = 0.8, MinKg = 24, MaxKg = 60, Price = 380, Difficulty = 0.32, XP = 145, Pattern = "boss", HookWindow = 1.75, Nick = "THE REEF'S ULTIMATE CATCH"},
 }
 -- Verity uses its own small weight on Storm; no other existing species weights changed.
-table.insert(Config.Fish, {Id="verity", Name="Верити", Zone="Storm", Rarity=6, Chance=0.12,
+table.insert(Config.Fish, {Id="verity", Name="Verity", Zone="Storm", Rarity=6, Chance=0.12,
     MinKg=32, MaxKg=60, Price=420, Difficulty=0.52, XP=170, Pattern="verity", HookWindow=2.2,
-    MinRodQuality=3, Night=true, Nick="MYTHICAL · ГЛУБИННЫЙ МИРАЖ"})
+    MinRodQuality=3, Night=true, Nick="MYTHICAL · MIRAGE OF THE DEEP"})
 Config.ById = {}
 for _, fish in ipairs(Config.Fish) do Config.ById[fish.Id] = fish end
 function Config.Level(xp) return 1 + math.floor(xp / Config.XPPerLevel) end
@@ -88,22 +88,22 @@ function Config.Value(fish, kg, mutation)
 end
 -- Every destination has its own catch pool. Weights are normalized after rod/night filters.
 Config.Islands = {
-    {Id="Cove", Name="Тихая бухта", X=0, Z=0, Radius=64, Level=1, Color={109,199,183},
-        DockX=0, DockZ=70, Target="Старт, торговцы и лодочная верфь", Theme="home"},
-    {Id="Reef", Name="Коралловый риф", X=450, Z=-650, Radius=26, Level=2, Color={113,203,219},
-        DockX=450, DockZ=-609, Target="Бобрито, Триппи Троппи и Бомбардиро", Theme="reef",
+    {Id="Cove", Name="Quiet Cove", X=0, Z=0, Radius=64, Level=1, Color={109,199,183},
+        DockX=0, DockZ=70, Target="Starting island, traders and boatyard", Theme="home"},
+    {Id="Reef", Name="Coral Reef", X=450, Z=-650, Radius=26, Level=2, Color={113,203,219},
+        DockX=450, DockZ=-609, Target="Bobrito Bandito, Trippi Troppi and Bombardiro Crocodilo", Theme="reef",
         Weights={sigma=8,patapim=3,ambalabu=2,bombardiro=28,sahur=0.8,gigachad=0.35}},
-    {Id="Moss", Name="Мшистый остров", X=-1450, Z=800, Radius=62, Level=2, Color={105,204,128},
-        Target="БР-БР Патапим и Бонека Амбалабу", Theme="moss",
+    {Id="Moss", Name="Patapim Grove", X=-1450, Z=800, Radius=62, Level=2, Color={105,204,128},
+        Target="Brr Brr Patapim and Boneca Ambalabu", Theme="moss",
         Weights={capybara=10,sigma=3,patapim=55,ambalabu=42,ballerina=2}},
-    {Id="Dunes", Name="Пески Сахура", X=-1350, Z=-1450, Radius=70, Level=3, Color={248,201,102},
-        Target="Тун Тун Сахур, Лирили и Фриго Камело", Theme="sand",
+    {Id="Dunes", Name="Sahur Sands", X=-1350, Z=-1450, Radius=70, Level=3, Color={248,201,102},
+        Target="Tung Tung Sahur, Lirili Larila and Frigo Camelo", Theme="sand",
         Weights={skibidi=8,sigma=10,bombardiro=18,sahur=16}},
-    {Id="Bloom", Name="Лагуна Капуччино", X=1450, Z=800, Radius=64, Level=4, Color={238,173,193},
-        Target="Балерина; ночью — Тралалелетралала", Theme="bloom",
+    {Id="Bloom", Name="Bloom Island", X=1450, Z=800, Radius=64, Level=4, Color={238,173,193},
+        Target="Ballerina Cappuccina; at night: Tralalero Tralala", Theme="bloom",
         Weights={capybara=6,sigma=8,ballerina=42,tralalero=14}},
-    {Id="Storm", Name="Штормовые скалы", X=1500, Z=-1700, Radius=66, Level=7, Color={160,172,240},
-        Target="Гигачад-акула; ночью — Верити и Ла Вакка", Theme="storm",
+    {Id="Storm", Name="Storm Island", X=1500, Z=-1700, Radius=66, Level=7, Color={160,172,240},
+        Target="GigaChad Shark; at night: Verity and La Vacca Saturno Saturnita", Theme="storm",
         Weights={sigma=6,bombardiro=24,sahur=3,tralalero=6,gigachad=16,verity=0.12}},
 }
 Config.IslandById = {}
@@ -113,14 +113,14 @@ for _,island in ipairs(Config.Islands) do
     Config.IslandById[island.Id]=island
 end
 Config.Boats = {
-    {Id="skiff",Name="Рыбацкая шлюпка",Price=150,Level=1,Speed=24,Acceleration=18,Turn=1.45,
-        Color={139,93,54},Accent={228,186,120},Description="Деревянная лодка с вёслами. Первый выход в море."},
-    {Id="motor",Name="Моторка «Искра»",Price=1600,Level=3,Speed=42,Acceleration=22,Turn=1.65,
-        Color={67,145,157},Accent={238,235,218},Description="Бирюзовый корпус, мотор и ветровое стекло."},
-    {Id="cutter",Name="Катер «Буревестник»",Price=6500,Level=6,Speed=62,Acceleration=26,Turn=1.45,
-        Color={53,68,92},Accent={248,185,85},Description="Тёмный скоростной катер с золотистой отделкой."},
-    {Id="catamaran",Name="Катамаран «Аврора»",Price=20000,Level=10,Speed=82,Acceleration=30,Turn=1.25,
-        Color={220,231,235},Accent={101,226,217},Description="Два корпуса, просторная палуба и светящиеся полосы."},
+    {Id="skiff",Name="Fishing Skiff",Price=150,Level=1,Speed=24,Acceleration=18,Turn=1.45,
+        Color={139,93,54},Accent={228,186,120},Description="A wooden rowboat for your first trip out to sea."},
+    {Id="motor",Name="Spark Motorboat",Price=1600,Level=3,Speed=42,Acceleration=22,Turn=1.65,
+        Color={67,145,157},Accent={238,235,218},Description="A turquoise hull with an engine and windshield."},
+    {Id="cutter",Name="Storm Petrel Speedboat",Price=6500,Level=6,Speed=62,Acceleration=26,Turn=1.45,
+        Color={53,68,92},Accent={248,185,85},Description="A sleek, dark speedboat with golden trim."},
+    {Id="catamaran",Name="Aurora Catamaran",Price=20000,Level=10,Speed=82,Acceleration=30,Turn=1.25,
+        Color={220,231,235},Accent={101,226,217},Description="Twin hulls, a spacious deck and glowing accent strips."},
 }
 Config.BoatById={}
 for _,boat in ipairs(Config.Boats) do Config.BoatById[boat.Id]=boat end
@@ -130,10 +130,10 @@ Config.Seabed={Enabled=true,CellSize=256,DetailCellSize=64,DetailRadius=200,
     MinDepth=10,MaxDepth=26,ReefPatchesPerIsland=18}
 Config.CatchVisuals={HaloSize=338,HaloOpacity=0.70,PortraitSizes={capybara=260,patapim=260}}
 Config.RodLooks={
-    wood="Тёплое дерево, латунная катушка",
-    carbon="Серый графит, тонкий гранёный бланк, острый кончик",
-    tide="Морской синий, бирюзовые кристаллы и раздвоенная вершина",
-    astral="Светлое серебро, фиолетовые кристаллы и звёздное навершие",
+    wood="Warm wood with a brass reel",
+    carbon="Gray graphite, a slim faceted shaft and a sharp tip",
+    tide="Ocean blue with turquoise crystals and a forked tip",
+    astral="Bright silver, purple crystals and a star-shaped tip",
 }
 function Config.ZoneWeight(fish,zone)
     local island=Config.IslandById[zone]

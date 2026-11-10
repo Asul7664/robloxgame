@@ -8,7 +8,7 @@ local actions={Catch=true,World=true,Portrait=true,All=true,Stop=true,Rod=true}
 local mutations={normal=true,gold=true,glow=true}
 
 local function studio()
-    assert(RunService:IsStudio(),"Просмотр доступен только в Roblox Studio.")
+    assert(RunService:IsStudio(),"Previews are only available in Roblox Studio.")
 end
 local function config()return require(shared:WaitForChild("Config"))end
 
@@ -37,29 +37,29 @@ end
 
 local function dispatch(action,args,playerName)
     studio()
-    assert(RunService:IsRunning(),"Сначала нажми Play. Команды показывают анимацию в запущенной игре.")
+    assert(RunService:IsRunning(),"Press Play first. Preview commands show animations while the game is running.")
     if RunService:IsClient()then
-        local localPlayer=assert(Players.LocalPlayer,"Клиент ещё загружается")
+        local localPlayer=assert(Players.LocalPlayer,"The client is still loading")
         local scripts=localPlayer:WaitForChild("PlayerScripts")
         local endpoint=scripts:WaitForChild("QuietCoveStudioPreview",10)
-        assert(endpoint,"Клиент Quiet Cove не загрузился. Проверь ошибки в Output и повтори Play.")
+        assert(endpoint,"The Quiet Cove client did not load. Check Output for errors and restart Play.")
         return endpoint:Invoke(action,table.unpack(args,1,args.n))
     end
     local list=Players:GetPlayers()
     local target
     if playerName then target=Players:FindFirstChild(playerName)
     elseif #list==1 then target=list[1]
-    else error("Укажи имя игрока последним аргументом команды; в тесте несколько игроков.")end
-    assert(target,"В тесте ещё нет игрока. Нажми Play и дождись появления персонажа.")
+    else error("Add the player name as the last command argument when testing with multiple players.")end
+    assert(target,"No player has joined the test yet. Press Play and wait for the character to spawn.")
     shared:WaitForChild("StudioPreviewCommand"):FireClient(target,action,table.unpack(args,1,args.n))
     return true
 end
 
 local function species(id,mutation)
     studio()
-    assert(type(id)=="string" and config().ById[id],"Неизвестный ID рыбы. Список: :List()")
+    assert(type(id)=="string" and config().ById[id],"Unknown fish ID. Use :List() to see available IDs.")
     mutation=mutation or "normal"
-    assert(mutations[mutation],"Мутация: normal, gold или glow")
+    assert(mutations[mutation],"Mutation must be normal, gold or glow")
     return mutation
 end
 function Preview:List()
@@ -82,8 +82,8 @@ function Preview:Portrait(id,mutation,playerName)
 end
 function Preview:All(mode,mutation,playerName)
     mode=mode or "catch";mutation=mutation or "normal"
-    assert(mode=="catch" or mode=="world" or mode=="portrait","Режим: catch, world или portrait")
-    assert(mutations[mutation],"Мутация: normal, gold или glow")
+    assert(mode=="catch" or mode=="world" or mode=="portrait","Mode must be catch, world or portrait")
+    assert(mutations[mutation],"Mutation must be normal, gold or glow")
     return dispatch("All",table.pack(mode,mutation),playerName)
 end
 function Preview:Rod(stage,seconds,playerName)

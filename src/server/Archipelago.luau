@@ -58,15 +58,15 @@ local function dock(folder,d)
         part(m,"Pile",x+dx,1,z+9,1.3,15,1.3,{99,77,53},Enum.Material.Wood)
         part(m,"Bollard",x+dx,8.2,z+9,1.5,1.4,1.5,{68,78,83},Enum.Material.Metal)
     end
-    local cap=npc(m,"Captain",x-7,z+2,{49,99,124},d.Id=="Cove" and "КАПИТАН МИРОН · ЛОДКИ" or "ПРИЧАЛ · ВЫЗОВ ЛОДКИ","Лодки / вызвать")
+    local cap=npc(m,"Captain",x-7,z+2,{49,99,124},d.Id=="Cove" and "CAPTAIN MIRON · BOATS" or "DOCK · SUMMON BOAT","Browse / summon boats")
     local shop=part(m,"Canopy",x-7,15,z+2,11,0.4,8,d.Color)
     for _,dx in ipairs({-12,-2})do part(m,"ShopPole",x+dx,10.7,z+3,0.5,8.3,0.5,{105,85,58},Enum.Material.Wood)end
     local s=part(m,"DockSign",x+8,9,z+1,0.6,3,0.6,{123,98,61},Enum.Material.Wood)
-    label(s,d.Name.."\nM — карта · E у капитана",5,320)
+    label(s,d.Name.."\nM — map · E at the captain",5,320)
     -- Steps make manual swimming access possible even with a low dock approach.
     for i=0,5 do part(m,"WaterStep",x+12,0.25+i*1.2,z+23-i*2.4,7,1.2,3,{150,112,76},Enum.Material.WoodPlanks)end
     if d.Id~="Cove" and d.Id~="Reef" then
-        npc(m,"Buyer",x+7,z-13,{186,131,70},"СКУПЩИК · ПРОДАЖА УЛОВА","Продать весь улов")
+        npc(m,"Buyer",x+7,z-13,{186,131,70},"CATCH TRADER","Sell all catches")
     end
 end
 local function island(folder,d)
@@ -80,9 +80,9 @@ local function island(folder,d)
     part(m,"FishingPier",d.X,7,d.Z-d.Radius-12,14,1,32,{151,114,78},Enum.Material.WoodPlanks)
     part(m,"FishingDeck",d.X,7,d.Z-d.Radius-28,27,1,14,{164,124,86},Enum.Material.WoodPlanks)
     local marker=part(m,"FishingMarker",d.X-10,9,d.Z-d.Radius-27,0.7,4,0.7,{102,78,46},Enum.Material.Wood)
-    label(marker,"РЫБАЛКА · УРОВЕНЬ "..d.Level.."\n"..d.Target,4.5,350)
+    label(marker,"FISHING · LEVEL "..d.Level.."\n"..d.Target,4.5,350)
     local beacon=part(m,"IslandBeacon",d.X,9,d.Z+18,4,0.3,4,d.Color,Enum.Material.Neon);beacon.CanCollide=false
-    label(beacon,d.Name.."\nУровень "..d.Level,18,320)
+    label(beacon,d.Name.."\nLevel "..d.Level,18,320)
     for i=1,8 do
         local a=i*2.37;local r=d.Radius*0.64
         local x,z=d.X+math.sin(a)*r,d.Z+math.cos(a)*r
@@ -156,19 +156,20 @@ end
 function A.Build()
     local existing=Workspace:FindFirstChild("QuietCoveArchipelago")
     if existing then
+        caption(existing:FindFirstChild("HomeHarborSign"),"BOATYARD → SOUTH\nM — island map")
         for _,d in ipairs(Config.Islands)do
             if d.Theme~="home" and d.Theme~="reef" then
                 local m=existing:FindFirstChild(d.Id)
                 if m then
                     relocate(m,m:FindFirstChild("IslandStone"),d.X,d.Z)
-                    caption(m:FindFirstChild("FishingMarker"),"РЫБАЛКА · УРОВЕНЬ "..d.Level.."\n"..d.Target)
-                    caption(m:FindFirstChild("IslandBeacon"),d.Name.."\nУровень "..d.Level)
+                    caption(m:FindFirstChild("FishingMarker"),"FISHING · LEVEL "..d.Level.."\n"..d.Target)
+                    caption(m:FindFirstChild("IslandBeacon"),d.Name.."\nLevel "..d.Level)
                 else island(existing,d)end
             end
             local berth=existing:FindFirstChild("Dock_"..d.Id)
             if berth then
                 relocate(berth,berth:FindFirstChild("Boardwalk"),d.DockX,d.DockZ-9)
-                caption(berth:FindFirstChild("DockSign"),d.Name.."\nM — карта · E у капитана")
+                caption(berth:FindFirstChild("DockSign"),d.Name.."\nM — map · E at the captain")
             else dock(existing,d)end
         end
         Visuals.ApplyArchipelago(existing)
@@ -183,7 +184,7 @@ function A.Build()
     -- Connect home to the new south-facing harbour without altering original parts.
     part(folder,"HarborPath",0,7.25,38,11,0.15,56,{218,201,155},Enum.Material.Sand)
     local sign=part(folder,"HomeHarborSign",11,9,-8,0.6,4,0.6,{127,101,64},Enum.Material.Wood)
-    label(sign,"ЛОДОЧНАЯ ВЕРФЬ → ЮГ\nM — карта островов",4.5,300)
+    label(sign,"BOATYARD → SOUTH\nM — island map",4.5,300)
     Visuals.ApplyArchipelago(folder)
     upgradeNPCs(folder)
     return folder

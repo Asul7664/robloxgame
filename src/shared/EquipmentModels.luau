@@ -20,8 +20,8 @@ local function finish(root,parent,preview)
     end
 end
 function Models.Rod(id,preview)
-    local tool=Instance.new("Tool");tool.Name="Удочка";tool.CanBeDropped=false
-    tool.ToolTip="ЛКМ — рыбалка · ПРОБЕЛ — прыжок"
+    local tool=Instance.new("Tool");tool.Name="Fishing Rod";tool.CanBeDropped=false
+    tool.ToolTip="LMB — fish · SPACE — jump"
     tool:SetAttribute("QuietCoveRod",true);tool:SetAttribute("RodStyle",id)
     local wood=id=="wood";local carbon=id=="carbon";local astral=id=="astral"
     local base=wood and {111,82,55} or (carbon and {76,81,91} or {29,69,102})

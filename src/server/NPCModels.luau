@@ -5,10 +5,10 @@ local VERSION = 3
 local rgb = Color3.fromRGB
 local UP = Vector3.new(0, 1, 0)
 local ROLES = {
-    Merchant={Giver="merchant",Name="Мара",Job="Улов и поручения",Shirt=rgb(239,184,90),Skin=rgb(232,187,147)},
-    Rodsmith={Giver="rodsmith",Name="Лев",Job="Удочки и мастерская",Shirt=rgb(69,169,185),Skin=rgb(218,171,129)},
-    Captain={Giver="captain",Name="Капитан Мирон",Job="Лодки и экспедиции",Shirt=rgb(54,101,152),Skin=rgb(199,146,112)},
-    Buyer={Giver="merchant",Name="Рыбак артели",Job="Улов и поручения",Shirt=rgb(221,169,91),Skin=rgb(232,187,147)},
+    Merchant={Giver="merchant",Name="Mara",Job="Catch Trader",Shirt=rgb(239,184,90),Skin=rgb(232,187,147)},
+    Rodsmith={Giver="rodsmith",Name="Lev",Job="Rodsmith",Shirt=rgb(69,169,185),Skin=rgb(218,171,129)},
+    Captain={Giver="captain",Name="Captain Miron",Job="Captain",Shirt=rgb(54,101,152),Skin=rgb(199,146,112)},
+    Buyer={Giver="merchant",Name="Fisher",Job="Catch Trader",Shirt=rgb(221,169,91),Skin=rgb(232,187,147)},
 }
 local INK, CREAM = rgb(37,51,73),rgb(255,246,222)
 local OLD = {Head=true,Hat=true,HatBand=true,Arm=true,Leg=true,Eye=true}
@@ -64,7 +64,7 @@ local function interaction(model,body,info)
     model:SetAttribute("NPCGiver",info.Giver); model:SetAttribute("NPCName",info.Name)
     body:SetAttribute("NPCGiver",info.Giver); body:SetAttribute("NPCName",info.Name)
     for _,child in ipairs(body:GetChildren()) do
-        if child:IsA("ProximityPrompt") then child.ActionText="Поговорить"; child.ObjectText=info.Name end
+        if child:IsA("ProximityPrompt") then child.ActionText="Talk"; child.ObjectText=info.Name end
     end
     label(body,info)
 end
@@ -207,7 +207,7 @@ function NPCModels.Create(parent,name,x,z,shirt,title,action)
         CFrame.new(x,(name=="Captain" or name=="Buyer") and 9.3 or 9.2,z),rgb(shirt[1],shirt[2],shirt[3]))
     body.Anchored=true
     local prompt=Instance.new("ProximityPrompt")
-    prompt.Name=name.."Prompt"; prompt.ActionText="Поговорить"; prompt.ObjectText=title
+    prompt.Name=name.."Prompt"; prompt.ActionText="Talk"; prompt.ObjectText=title
     prompt.KeyboardKeyCode=Enum.KeyCode.E; prompt.HoldDuration=0.15; prompt.MaxActivationDistance=12
     prompt.RequiresLineOfSight=false; prompt.Parent=body
     NPCModels.Upgrade(model,name)

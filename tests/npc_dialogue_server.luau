@@ -28,10 +28,10 @@ do
     check(env.World.Merchant.MerchantPrompt.Enabled==false,"Old sell action is replaced by conversation")
     check(env.World.Shop.RodsmithPrompt.Enabled==false,"Old rod shop action is replaced by conversation")
     check(env.World.Docks.Cove.Captain.CaptainPrompt.Enabled==false,"Old captain action is replaced by conversation")
-    check(env.World.Merchant.NPCDialoguePrompt.ActionText=="Поговорить","Prompt clearly offers a conversation")
+    check(env.World.Merchant.NPCDialoguePrompt.ActionText=="Talk","Prompt clearly offers a conversation")
     data.Bag={{Species="capybara",Kg=1,Mutation="normal",Value=42}}
     local dialogue=env:Talk(p,env.World.Merchant)
-    check(dialogue.Name=="Мара" and dialogue.Giver=="merchant","Merchant identity is supplied by the server")
+    check(dialogue.Name=="Mara" and dialogue.Giver=="merchant","Merchant identity is supplied by the server")
     check(type(dialogue.Session)=="string" and #dialogue.Session>0,"Conversation has a server-created nonce")
     request(env,p,dialogue,"trade")
     check(data.Coins==42 and #data.Bag==0,"Merchant trade runs the existing sell function")
@@ -50,7 +50,7 @@ end
 do
     local env,p,data=make(702)
     local dialogue=env:Talk(p,env.World.Merchant,"quests")
-    check(dialogue.Text:find("На день",1,true) and dialogue.Text:find("На неделю",1,true),"Quest conversation explains both periods")
+    check(dialogue.Text:find("Daily",1,true) and dialogue.Text:find("Weekly",1,true),"Quest conversation explains both periods")
     request(env,p,dialogue,"accept")
     check(task(data,"Daily","catch_total").Accepted and task(data,"Weekly","species_1").Accepted,"Merchant accepts both periods of her work")
     check(not task(data,"Daily","fishing_time").Accepted,"Merchant cannot accept the rodsmith's work")

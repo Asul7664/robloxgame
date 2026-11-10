@@ -106,7 +106,7 @@ local function getSahur()
         sahur = SahurService.new(function(player, record, token)
             local data = Profiles.Get(player)
             if not data or not CatchLedger.Reserve(data,Config,record,token) then
-                notice(player,"Не удалось добавить Сахура: проверь место в рюкзаке.");return
+                notice(player,"Could not add Sahur. Make room in your backpack.");return
             end
             Quests.RecordCatch(data,Config,record,"Dunes",workspace:GetServerTimeNow(),player.UserId)
             local award = CatchLedger.Commit(data,Config,token)
@@ -161,7 +161,7 @@ local function finish(player, reason)
             local fish=Config.ById[award.Record.Species]
             if fish.Rarity>=4 then
                 for _,other in ipairs(Players:GetPlayers()) do
-                    if other~=player then notice(other,player.DisplayName.." поймал: "..fish.Name.."!") end
+                    if other~=player then notice(other,player.DisplayName.." caught "..fish.Name.."!") end
                 end
             end
         end
@@ -173,17 +173,17 @@ if RunService:IsStudio() then
     local shortcut=Instance.new("BindableFunction")
     shortcut.Name="StudioSahur";shortcut.Parent=ServerStorage
     shortcut.OnInvoke=function(player)
-        if not player or player.Parent~=Players then return false,"Игрок ещё не появился." end
+        if not player or player.Parent~=Players then return false,"The player has not joined yet." end
         local root,humanoid=rootOf(player)
         local data=Profiles.Get(player)
         local zone=world.Spots.Dunes
-        if not root or not data then return false,"Дождись загрузки персонажа и профиля." end
-        if not ServerStorage:FindFirstChild("SahurBoss") then return false,"Сначала установи модель командой SahurStudioInstall.Selected()." end
-        if not zone then return false,"Остров Пески Сахура ещё не создан." end
-        if humanoid.SeatPart then return false,"Сначала выйди из лодки." end
-        if dodges:IsActive(player) then return false,"Дождись окончания уворота." end
-        if sahur and sahur:IsActive(player) then return false,"Бой с Сахуром уже идёт." end
-        if #data.Bag>=Config.BagCapacity then return false,"Освободи место в рюкзаке." end
+        if not root or not data then return false,"Wait for your character and profile to load." end
+        if not ServerStorage:FindFirstChild("SahurBoss") then return false,"First install the model with SahurStudioInstall.Selected()." end
+        if not zone then return false,"Sahur Sands has not been created yet." end
+        if humanoid.SeatPart then return false,"Leave the boat first." end
+        if dodges:IsActive(player) then return false,"Wait for your dodge to finish." end
+        if sahur and sahur:IsActive(player) then return false,"You are already fighting Sahur." end
+        if #data.Bag>=Config.BagCapacity then return false,"Make room in your backpack." end
         finish(player)
         local position=zone.Center+Vector3.new(0,2,0)
         root.CFrame=CFrame.lookAt(position,position+Vector3.new(0,0,-10))
@@ -224,7 +224,7 @@ local function releaseCast(player, s)
     local power = math.clamp((os.clock() - s.Started) / Config.ChargeSeconds, 0, 1)
     local target = Vector3.new(s.Zone.Center.X + rng:NextNumber(-4, 4), 0.25, s.Zone.Center.Z - 18 - power * 10)
     s.Fish = chooseFish(s.ZoneId, s.Rod, power)
-    if not s.Fish then finish(player, "Здесь пока нет рыбы для этой удочки."); return end
+    if not s.Fish then finish(player, "There are no fish here that this rod can catch."); return end
     local swing, flight, arc = CastMath.Timing(power, Config.Casting)
     local tip=s.Tool.Handle:FindFirstChild("Tip")
     local origin,launchDirection,launchVelocity=CastMath.Release(root.CFrame,tip and tip.Position or Vector3.new(0,3,0),power,Config.Casting)
@@ -245,24 +245,24 @@ local function releaseCast(player, s)
 end
 local function beginCast(player)
     local function reject(text) send(player, "Rejected", {Text = text}) end
-    if sahur and sahur:IsActive(player) then reject("Сначала победи Сахура или покинь бой."); return end
-    if dodges:IsActive(player) then reject("Дождись окончания уворота."); return end
+    if sahur and sahur:IsActive(player) then reject("Defeat Sahur or leave the fight first."); return end
+    if dodges:IsActive(player) then reject("Wait for your dodge to finish."); return end
     if sessions[player] then return end
     local data = Profiles.Get(player)
-    if not data then reject("Профиль ещё загружается."); return end
-    if os.clock() < (cooldowns[player] or 0) then reject("Подожди секунду перед новым забросом."); return end
+    if not data then reject("Your profile is still loading."); return end
+    if os.clock() < (cooldowns[player] or 0) then reject("Wait a moment before casting again."); return end
     local root, humanoid = rootOf(player)
     local tool = equipped(player)
-    if not root or not tool then reject("Возьми удочку в руки: клавиша 1 или значок в рюкзаке Roblox."); return end
+    if not root or not tool then reject("Equip your fishing rod: press 1 or select it in your Roblox backpack."); return end
     if humanoid:GetState() == Enum.HumanoidStateType.Swimming then
-        reject("Сначала выберись на пирс. ПРОБЕЛ — прыжок из воды."); return
+        reject("Climb onto the pier first. Press SPACE to jump out of the water."); return
     end
-    if humanoid.SeatPart then reject("Сначала сойди с лодки на причал: E рядом с берегом."); return end
+    if humanoid.SeatPart then reject("Step onto the dock first: press E near the shore."); return end
     local zoneId, zone = zoneAt(root)
-    if not zone then reject("Подойди к концу деревянного пирса, к табличке «РЫБАЛКА»."); return end
+    if not zone then reject("Go to the end of the wooden pier, by the FISHING sign."); return end
     local requiredLevel = zone.Level or 1
-    if not data.TestMode and Config.Level(data.XP) < requiredLevel then reject(zone.Name .. ": нужен уровень " .. requiredLevel .. "."); return end
-    if #data.Bag >= Config.BagCapacity then reject("Рюкзак заполнен. Продай улов Маре у начала пирса."); return end
+    if not data.TestMode and Config.Level(data.XP) < requiredLevel then reject(zone.Name .. ": requires level " .. requiredLevel .. "."); return end
+    if #data.Bag >= Config.BagCapacity then reject("Your backpack is full. Sell your catch to Mara at the start of the pier."); return end
     local s = {Id = HttpService:GenerateGUID(false), Started = os.clock(), Tool = tool,
         Humanoid = humanoid, WalkSpeed = humanoid.WalkSpeed, JumpPower = humanoid.JumpPower,
         JumpHeight = humanoid.JumpHeight, AutoRotate = humanoid.AutoRotate, Origin = root.Position,
@@ -275,7 +275,7 @@ end
 local function catchFish(player, s)
     if s.Stage~="Reeling" or s.PendingCatch then return end
     local data=Profiles.Get(player);local root=rootOf(player)
-    if not data or not root or #data.Bag>=Config.BagCapacity then finish(player,"Улов не удалось добавить.");return end
+    if not data or not root or #data.Bag>=Config.BagCapacity then finish(player,"Could not add your catch.");return end
     local fish=s.Fish
     local kg=math.floor(rng:NextNumber(fish.MinKg,math.min(fish.MaxKg,s.Rod.MaxKg))*100+0.5)/100
     local roll=rng:NextNumber()
@@ -286,11 +286,11 @@ local function catchFish(player, s)
         -- No persisted catch reservation exists until the encounter is won.
         finish(player)
         if not getSahur():Start(player,s.Id,record,s.Zone,Config.IslandById.Dunes) then
-            notice(player,"Не удалось начать бой с Сахуром. Проверь модель ServerStorage.SahurBoss.")
+            notice(player,"Could not start the Sahur fight. Check the ServerStorage.SahurBoss model.")
         end
         return
     end
-    if not CatchLedger.Reserve(data,Config,record,s.Id) then finish(player,"Не удалось зарезервировать улов.");return end
+    if not CatchLedger.Reserve(data,Config,record,s.Id) then finish(player,"Could not secure your catch.");return end
     s.PendingCatch=true
     -- The catch is earned now; Landing is presentation only. This guarded,
     -- non-yielding transaction saves the reservation and quest progress together.
@@ -319,41 +319,41 @@ local function sell(player)
     if not validShop then return end
     local data = Profiles.Get(player)
     if not data then return end
-    if sessions[player] then notice(player, "Сначала закончи рыбалку."); return end
-    if #data.Bag == 0 then notice(player, "Рюкзак пока пуст. Рыба ждёт у конца пирса!"); return end
+    if sessions[player] then notice(player, "Finish fishing first."); return end
+    if #data.Bag == 0 then notice(player, "Your backpack is empty. Try fishing at the end of the pier!"); return end
     local total, count = 0, #data.Bag
     for _, record in ipairs(data.Bag) do total = total + record.Value end
     data.Bag = {}; data.Coins = data.Coins + total
     CatchLedger.Commit(data,Config) -- recover an exceptional full-bag reservation after a sale
-    sync(player); notice(player, string.format("Продано: %d рыб. Получено: +%d монет.", count, total))
+    sync(player); notice(player, string.format("Sold %d fish for +%d coins.", count, total))
 end
 local function buy(player, rodIndex)
     if type(rodIndex) ~= "number" or rodIndex % 1 ~= 0 then return end
     local data = Profiles.Get(player)
-    if not data or not nearby(player, world.Shop.Position, 18) then notice(player, "Покупка доступна рядом с мастером Львом."); return end
-    if sessions[player] then notice(player, "Сначала закончи рыбалку."); return end
+    if not data or not nearby(player, world.Shop.Position, 18) then notice(player, "Visit Lev to buy a fishing rod."); return end
+    if sessions[player] then notice(player, "Finish fishing first."); return end
     if not Config.Rods[rodIndex] then return end
     if not data.TestMode and rodIndex ~= data.Rod + 1 then return end
     local rod = Config.Rods[rodIndex]
-    if not data.TestMode and data.Coins < rod.Price then notice(player, "Не хватает " .. (rod.Price - data.Coins) .. " монет."); return end
+    if not data.TestMode and data.Coins < rod.Price then notice(player, "You need " .. (rod.Price - data.Coins) .. " more coins."); return end
     if not data.TestMode then data.Coins = data.Coins - rod.Price end
     data.Rod = rodIndex
     if player.Character then grantRod(player,player.Character) end
-    sync(player); send(player, "Shop", {}); notice(player, "Новая удочка: " .. rod.Name .. ". Уже используется!")
+    sync(player); send(player, "Shop", {}); notice(player, "New rod: " .. rod.Name .. ". Equipped and ready!")
 end
 local function travel(player, toReef)
     if dodges:IsActive(player) then return end
     local origin = toReef and world.Ferry or world.ReturnFerry
     local data = Profiles.Get(player)
     if not data or not allow(player, "Travel", 1) or not nearby(player, origin.Position, 18) then return end
-    if sessions[player] then notice(player, "Сначала закончи рыбалку."); return end
-    if toReef and not data.TestMode and Config.Level(data.XP) < 2 then notice(player, "Нужен 2-й уровень: лови рыбу, чтобы получать опыт."); return end
+    if sessions[player] then notice(player, "Finish fishing first."); return end
+    if toReef and not data.TestMode and Config.Level(data.XP) < 2 then notice(player, "Reach level 2 first. Catch fish to earn XP."); return end
     local root, humanoid = rootOf(player)
-    if humanoid and humanoid.SeatPart then notice(player, "Сначала сойди с лодки."); return end
+    if humanoid and humanoid.SeatPart then notice(player, "Leave the boat first."); return end
     if root then
         local dest = toReef and world.ReefSpawn or world.Spawn
         root.CFrame = CFrame.lookAt(dest, dest + Vector3.new(0, 0, -10))
-        notice(player, toReef and "Коралловый риф. Подойди к концу пирса." or "С возвращением в Тихую бухту!")
+        notice(player, toReef and "Welcome to Coral Reef. Head to the end of the pier." or "Welcome back to Quiet Cove!")
     end
 end
 world.Ferry.Travel.Triggered:Connect(function(p) travel(p, true) end)
@@ -363,13 +363,13 @@ dialogues=NPCDialogueService.new({Config=Config,Quests=Quests,Profiles=Profiles,
     Now=function()return workspace:GetServerTimeNow()end,Token=function()return HttpService:GenerateGUID(false)end,
     Busy=function(player)return sessions[player]~=nil or dodges:IsActive(player)
         or (sahur and sahur:IsActive(player)) or false end})
-dialogues:Register("merchant","merchant",world.Merchant,"Продать улов",sell)
-dialogues:Register("rodsmith","rodsmith",world.Shop,"Посмотреть удочки",function(player)send(player,"Shop",{})end)
+dialogues:Register("merchant","merchant",world.Merchant,"Sell my catch",sell)
+dialogues:Register("rodsmith","rodsmith",world.Shop,"Browse fishing rods",function(player)send(player,"Shop",{})end)
 for index,buyer in ipairs(world.Buyers) do
-    if buyer~=world.Merchant then dialogues:Register("buyer_"..index,"merchant",buyer,"Продать улов",sell) end
+    if buyer~=world.Merchant then dialogues:Register("buyer_"..index,"merchant",buyer,"Sell my catch",sell) end
 end
 for id,dock in pairs(world.Docks or {}) do
-    dialogues:Register("captain_"..id,"captain",dock.Captain,"Лодки: купить или вызвать",function(player)
+    dialogues:Register("captain_"..id,"captain",dock.Captain,"Boats: buy or launch",function(player)
         send(player,"BoatShop",{Dock=id})
     end)
 end
@@ -390,7 +390,7 @@ Action.OnServerEvent:Connect(function(player, kind, id, value)
     if kind == "QuestClaim" then
         -- Old clients cannot bypass the NPC's proximity/session checks.
         syncQuests(player)
-        notice(player,"Забери награду в разговоре с NPC, который выдал поручение.")
+        notice(player,"Talk to the NPC who gave you the quest to collect your reward.")
         return
     end
     if kind == "Begin" then beginCast(player); return end
@@ -403,7 +403,7 @@ Action.OnServerEvent:Connect(function(player, kind, id, value)
     if not s or type(id) ~= "string" or id ~= s.Id then return end
     if kind == "Cancel" then
         if s.Stage=="Landing" then return end -- already won; finish the short presentation
-        finish(player, "Заброс отменён."); return end
+        finish(player, "Cast cancelled."); return end
     if kind == "Release" then releaseCast(player, s); return end
     if kind == "Shake" and s.Stage == "Waiting" and os.clock() - s.LastShake >= 0.45 then
         s.LastShake = os.clock(); s.BiteAt = math.max(os.clock() + 0.45, s.CastAt + 1.5, s.BiteAt - 0.7)
@@ -436,9 +436,9 @@ RunService.Heartbeat:Connect(function(dt)
         for player, s in pairs(sessions) do
             local root = rootOf(player)
             if not root or not Profiles.Get(player) or equipped(player) ~= s.Tool or (root.Position - s.Origin).Magnitude > 10 then
-                finish(player, "Рыбалка прервана.")
+                finish(player, "Fishing interrupted.")
             elseif s.Humanoid:GetState() == Enum.HumanoidStateType.Swimming then
-                finish(player, "Рыбалка прервана: ты в воде. ПРОБЕЛ — выпрыгнуть.")
+                finish(player, "Fishing interrupted: you are in the water. Press SPACE to jump out.")
             elseif s.Stage == "Landing" then
                 if now>=s.LandingUntil then finish(player) end
             elseif s.Stage == "Charging" and now - s.Started >= 4 then
@@ -450,12 +450,12 @@ RunService.Heartbeat:Connect(function(dt)
                 s.HookUntil = now + hookWindow
                 stage(player, s, "Bite", {Deadline = workspace:GetServerTimeNow() + hookWindow, Duration = hookWindow})
             elseif s.Stage == "Bite" and now > s.HookUntil then
-                finish(player, "Не успел подсечь. Попробуй ещё раз!")
+                finish(player, "You missed the bite. Try again!")
             elseif s.Stage == "Reeling" then
                 local held = s.Held and now - s.LastInput < 1
                 local result = Reel.step(s.Reel, held, 1 / 60)
                 if result == "caught" then catchFish(player, s)
-                elseif result == "lost" then finish(player, "Шкала упала до 0% — рыба сорвалась. Удерживай метку в голубой полоске.")
+                elseif result == "lost" then finish(player, "Progress reached 0% and the fish escaped. Keep the marker inside the blue bar.")
                 elseif now >= s.SendAt then
                     s.SendAt = now + 0.08
                     send(player, "Reel", {Id = s.Id, Bar = s.Reel.bar, Fish = s.Reel.fish,
@@ -516,7 +516,7 @@ local function playerAdded(player)
         end)
     end)
     if not Profiles.Load(player) then
-        if player.Parent == Players then player:Kick("Не удалось безопасно загрузить профиль. Подождите немного и войдите снова.") end
+        if player.Parent == Players then player:Kick("Your profile could not be loaded safely. Wait a moment, then rejoin.") end
         return
     end
     if player.Parent ~= Players then Profiles.Save(player, true); return end
@@ -524,7 +524,7 @@ local function playerAdded(player)
     sync(player)
     local loaded = Profiles.Get(player)
     if loaded and loaded.TestMode then
-        notice(player, "ASUL7664 · ТЕСТЕР: ∞ монет, ∞ опыта. Все уровни доступны. Покупки и улов этой тестовой сессии не меняют основной профиль.")
+        notice(player, "ASUL7664 · TESTER: unlimited coins and XP. All levels are unlocked. Purchases and catches in this test session do not affect your main profile.")
     end
 end
 Players.PlayerAdded:Connect(playerAdded)
@@ -565,7 +565,7 @@ RunService.Heartbeat:Connect(function()
                 local dx,dz=root.Position.X-island.X,root.Position.Z-island.Z
                 if not data.Visited[island.Id] and dx*dx+dz*dz<(island.Radius+40)^2 and math.abs(root.Position.Y)<70 then
                     data.Visited[island.Id]=true;sync(player)
-                    notice(player,"Открыт остров: "..island.Name..". "..island.Target..". Рыбалка с уровня "..island.Level..".")
+                    notice(player,"Island discovered: "..island.Name..". "..island.Target..". Fishing unlocks at level "..island.Level..".")
                 end
             end
         end

@@ -19,7 +19,7 @@
         <R22>1</R22>
       </CoordinateFrame>
       <bool name="RequiresHandle">true</bool>
-      <string name="ToolTip">Сабля · ЛКМ — удар</string>
+      <string name="ToolTip">Iron Sword · LMB — slash</string>
     </Properties>
     <Item class="Part" referent="1">
       <Properties>

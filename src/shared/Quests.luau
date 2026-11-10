@@ -6,7 +6,7 @@ local MAX_TIME, MAX_COINS = 7258118400, 1000000000
 local ORDER = {"catch_total", "species_1", "species_2", "island_catch", "fishing_time"}
 local KINDS = {catch_total="catch", species_1="species", species_2="species", island_catch="island", fishing_time="activity"}
 local GIVERS = {catch_total="merchant", species_1="merchant", species_2="rodsmith", fishing_time="rodsmith", island_catch="captain"}
-local GIVER_NAMES = {merchant="Мара", rodsmith="Лев", captain="Капитан Мирон"}
+local GIVER_NAMES = {merchant="Mara", rodsmith="Lev", captain="Captain Miron"}
 
 function Quests.GiverFor(task)
     local id = type(task) == "table" and task.Id or task
@@ -381,10 +381,10 @@ function Quests.ClaimFrom(data, config, giver, now, userId)
     return true, "claimed", paid, count
 end
 local function titleFor(task, config)
-    if task.Kind == "catch" then return "Поймай " .. task.Target .. " существ" end
-    if task.Kind == "species" then return "Поймай: " .. config.ById[task.Species].Name end
-    if task.Kind == "island" then return "Улов на острове «" .. config.IslandById[task.Zone].Name .. "»" end
-    return "Активная рыбалка: " .. math.floor(task.Target / 60) .. " минут"
+    if task.Kind == "catch" then return "Catch " .. task.Target .. " brainrots" end
+    if task.Kind == "species" then return "Catch " .. config.ById[task.Species].Name end
+    if task.Kind == "island" then return "Fish at " .. config.IslandById[task.Zone].Name end
+    return "Fish actively for " .. math.floor(task.Target / 60) .. " minutes"
 end
 function Quests.Snapshot(data, config, now, userId)
     now = timestamp(now)

@@ -74,7 +74,7 @@ function Shop:Grant(player,character)
     end
     for id,tool in pairs(found) do
         tool.Name=self.Catalog.ById[id].Name
-        tool.ToolTip=self.Catalog.ById[id].Name..' · ЛКМ — атака'
+        tool.ToolTip=self.Catalog.ById[id].Name..' · Left click to attack'
     end
     return found
 end
@@ -89,17 +89,17 @@ function Shop:Buy(player,id)
     local pack=player:FindFirstChild("Backpack")
     local source=self:_source(id)
     if not pack or not source then
-        self.Notice(player,"Оружие пока недоступно. Монеты не списаны.")
+        self.Notice(player,"This weapon is unavailable right now. You have not been charged.")
         return false
     end
     local owned=data.OwnedWeapons or {}
     local purchased=owned[id]~=true
     if purchased and not data.TestMode and self.Level(data.XP)<weapon.Level then
-        self.Notice(player,'Нужен уровень '..weapon.Level..' для оружия «'..weapon.Name..'».')
+        self.Notice(player,'Reach level '..weapon.Level..' to buy '..weapon.Name..'.')
         return false
     end
     if purchased and not data.TestMode and data.Coins<weapon.Price then
-        self.Notice(player,"Не хватает "..(weapon.Price-data.Coins).." монет.")
+        self.Notice(player,"You need "..(weapon.Price-data.Coins).." more coins.")
         return false
     end
     -- No yield between checking ownership, charging and setting ownership.
@@ -112,8 +112,8 @@ function Shop:Buy(player,id)
     local tools=self:Grant(player,c)
     if tools and tools[id] then h:EquipTool(tools[id]) end
     self.Sync(player)
-    self.Notice(player,purchased and ("Куплено: "..weapon.Name..". ЛКМ — атака.")
-        or (weapon.Name.." в руках. Повторно платить не нужно."))
+    self.Notice(player,purchased and ("Purchased: "..weapon.Name..". Left click to attack.")
+        or (weapon.Name.." equipped. You already own it, so there is no charge."))
     return true
 end
 return Shop

@@ -98,7 +98,7 @@ local old=env:Node('Model','SahurBoss',env.Services.ServerStorage)
 local assets=env:Node('Folder','CreatureAssets',shared)
 local oldCatch=env:Node('Model','sahur',assets)
 local verified,report=installer.Verify()
-check(not verified and report:find('наша Blender%-модель не установлена')~=nil,
+check(not verified and report:find('our Blender model is not installed',1,true)~=nil,
     'Old imported templates cannot pass the original model diagnostic')
 root:Destroy();mesh.Size=V.new(5,12,2)
 model.GetScale=function()return 1 end
@@ -119,7 +119,7 @@ check(model.Parent==old.Parent,'Source import is archived rather than left as du
 check(installed:FindFirstChildOfClass('Humanoid').RequiresNeck==false,'Custom skin does not depend on an R15 neck motor')
 check(Rig.Capture(installed)~=nil,'Installed model passes the actual adapter')
 verified,report=installer.Verify()
-check(verified and report:find('оба установленных шаблона')~=nil,'Verifier checks both active templates after installation')
+check(verified and report:find('both installed templates',1,true)~=nil,'Verifier checks both active templates after installation')
 check(installed:GetAttribute('QCSahurSource')=='OriginalSahur.blend'
     and assets.sahur:GetAttribute('QCSahurSource')=='OriginalSahur.blend','Both installed templates retain source provenance')
 local installedTip=installed:FindFirstChild('ClubTip',true)
@@ -136,7 +136,7 @@ local catchHand=catch:FindFirstChild('Hand.R',true)
 local handParent=catchHand.Parent
 catchHand.Parent=catch:FindFirstChild('Body',true)
 verified,report=installer.Verify()
-check(not verified and report:find('неверная цепочка костей')~=nil,'Verifier validates bone ancestry rather than names alone')
+check(not verified and report:find('invalid bone chain',1,true)~=nil,'Verifier validates bone ancestry rather than names alone')
 catchHand.Parent=handParent
 check(installer.Verify(),'Restored templates pass read-only verification')
 local before=installed

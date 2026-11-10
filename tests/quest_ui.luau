@@ -53,43 +53,43 @@ local ui = UI.new(gui, {}, function(kind, id) table.insert(calls, {kind, id}) en
 })
 local function snapshot(claimed)
     return {ServerNow = 1000 + now,PendingRewards={}, Daily = {Key = 'd:1', ResetAt = 1060, Tasks = {
-        {Id = 'd:1:a', Title = 'Поймай 10 Патапимов', Progress = 9, Target = 10, Reward = 600, Claimed = false,Accepted=true,Giver='merchant',GiverName='Мара'},
-        {Id = 'd:1:b', Title = 'Поймай 20 рыб', Progress = 20, Target = 20, Reward = 300, Claimed = claimed or false,Accepted=true,Giver='merchant',GiverName='Мара'},
-        {Id = 'd:1:fishing_time', Kind = 'activity', Unit = 'seconds', Title = 'Рыбачь активно 20 минут', Progress = 73, Target = 1200, Reward = 900, Claimed = false,Accepted=false,Giver='rodsmith',GiverName='Лев'},
+        {Id = 'd:1:a', Title = 'Catch 10 Brr Brr Patapim', Progress = 9, Target = 10, Reward = 600, Claimed = false,Accepted=true,Giver='merchant',GiverName='Mara'},
+        {Id = 'd:1:b', Title = 'Catch 20 creatures', Progress = 20, Target = 20, Reward = 300, Claimed = claimed or false,Accepted=true,Giver='merchant',GiverName='Mara'},
+        {Id = 'd:1:fishing_time', Kind = 'activity', Unit = 'seconds', Title = 'Fish actively for 20 minutes', Progress = 73, Target = 1200, Reward = 900, Claimed = false,Accepted=false,Giver='rodsmith',GiverName='Lev'},
     }}, Weekly = {Key = 'w:1', ResetAt = 1000 + 604800, Tasks = {
-        {Id = 'w:1:a', Title = 'Поймай 300 рыб', Progress = 300, Target = 300, Reward = 6000, Claimed = false,Accepted=true,Giver='captain',GiverName='Капитан Мирон'},
+        {Id = 'w:1:a', Title = 'Catch 300 creatures', Progress = 300, Target = 300, Reward = 6000, Claimed = false,Accepted=true,Giver='captain',GiverName='Captain Miron'},
     }}}
 end
 ui:Update(snapshot())
-check(ui.Button.Text == 'ЗАДАНИЯ · 2', 'badge includes ready daily+weekly')
+check(ui.Button.Text == 'QUESTS · 2', 'badge includes ready daily+weekly')
 allowed = false; ui:Toggle(); check(not ui:IsOpen() and opens == 0, 'cannot open while fishing')
 allowed = true; ui.Button.Activated:Fire(); check(ui:IsOpen() and opens == 1, 'button opens window')
 local a = ui.List:FindFirstChild('Quest_d:1:a')
 local b = ui.List:FindFirstChild('Quest_d:1:b')
-check(a:FindFirstChild('QuestStatus').Text == 'В ПРОЦЕССЕ', 'accepted task tracks progress')
-check(b:FindFirstChild('QuestStatus').Text == 'СДАТЬ У МАРЫ', 'completed journal directs player to giver')
+check(a:FindFirstChild('QuestStatus').Text == 'IN PROGRESS', 'accepted task tracks progress')
+check(b:FindFirstChild('QuestStatus').Text == 'TURN IN TO MARA', 'completed journal directs player to giver')
 check(b:FindFirstChild('Claim')==nil and a:FindFirstChild('Claim')==nil, 'journal has no payout buttons')
-check(b:FindFirstChild('Giver').Text=='Поручение: Мара','giver displayed on completed quest')
+check(b:FindFirstChild('Giver').Text=='Quest giver: Mara','giver displayed on completed quest')
 now += 9; ui:Step(); check(#calls==0,'read-only journal never invokes legacy payout callback')
-ui:Update(snapshot(true)); check(ui.List:FindFirstChild('Quest_d:1:b'):FindFirstChild('QuestStatus').Text == 'НАГРАДА ПОЛУЧЕНА', 'server acknowledges NPC reward')
-check(ui.Button.Text == 'ЗАДАНИЯ · 1', 'claimed leaves ready badge')
+ui:Update(snapshot(true)); check(ui.List:FindFirstChild('Quest_d:1:b'):FindFirstChild('QuestStatus').Text == 'REWARD CLAIMED', 'server acknowledges NPC reward')
+check(ui.Button.Text == 'QUESTS · 1', 'claimed leaves ready badge')
 local times = ui.List:FindFirstChild('Quest_d:1:fishing_time')
 local timeLabel
 for _, child in ipairs(times:GetChildren()) do if child.ClassName == 'TextLabel' and child.Text == '1:13 / 20:00' then timeLabel = child end end
 check(timeLabel ~= nil, 'seconds shown as minutes:seconds')
-check(times:FindFirstChild('QuestStatus').Text=='ПОЛУЧИТЬ У ЛЬВА','unaccepted assignment points to rodsmith')
+check(times:FindFirstChild('QuestStatus').Text=='ACCEPT FROM LEV','unaccepted assignment points to rodsmith')
 check(string.find(ui.Countdown.Text, '00:00 UTC', 1, true) ~= nil, 'actual reset clock visible')
 ui.Tabs.Weekly.Activated:Fire(); check(ui.Period == 'Weekly' and ui.List:FindFirstChild('Quest_w:1:a'), 'weekly tab shows different list')
-check(string.find(ui.Countdown.Text, 'понедельникам', 1, true) ~= nil, 'weekly Monday reset visible')
-check(ui.List:FindFirstChild('Quest_w:1:a'):FindFirstChild('QuestStatus').Text=='СДАТЬ У КАПИТАНА','weekly assignment points to captain')
+check(string.find(ui.Countdown.Text, 'Monday', 1, true) ~= nil, 'weekly Monday reset visible')
+check(ui.List:FindFirstChild('Quest_w:1:a'):FindFirstChild('QuestStatus').Text=='TURN IN TO CAPTAIN MIRON','weekly assignment points to captain')
 ui:Update(snapshot(true)); ui.Tabs.Daily.Activated:Fire()
 now = 61; ui:Step()
-check(string.find(ui.Countdown.Text, 'Обновление заданий', 1, true) ~= nil, 'zero boundary visible')
+check(string.find(ui.Countdown.Text, 'Refreshing quests', 1, true) ~= nil, 'zero boundary visible')
 check(#calls==0 and ui._claim==nil,'expired period cannot trigger a local payout')
-local fresh = snapshot(); fresh.Daily.Key = 'd:2'; fresh.Daily.ResetAt = 2000; fresh.Daily.Tasks = {{Id='d:2:a',Title='Новое задание',Target=30,Progress=0,Reward=900,Claimed=false}}
+local fresh = snapshot(); fresh.Daily.Key = 'd:2'; fresh.Daily.ResetAt = 2000; fresh.Daily.Tasks = {{Id='d:2:a',Title='New quest',Target=30,Progress=0,Reward=900,Claimed=false}}
 ui:Update(fresh); check(ui.List:FindFirstChild('Quest_d:2:a') ~= nil and ui.List:FindFirstChild('Quest_d:1:a') == nil, 'rollover replaces tasks')
 fresh.PendingRewards={merchant=300,captain=70};ui:Update(fresh)
-check(ui.List:FindFirstChild('OutstandingRewards').Text:find('Мара: +300 монет',1,true)~=nil,'expired completed rewards remain visible')
+check(ui.List:FindFirstChild('OutstandingRewards').Text:find('Mara: +300 coins',1,true)~=nil,'expired completed rewards remain visible')
 local preserved = R.Vector2.new(0, 37); ui.List.CanvasPosition = preserved; ui:Update(fresh)
 check(ui.List.CanvasPosition == preserved, 'incoming progress preserves scrolling')
 ui:Close(); check(not ui:IsOpen() and closes == 1, 'close callback restores other HUD')

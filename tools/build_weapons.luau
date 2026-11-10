@@ -81,7 +81,7 @@ end
 
 local function saber()
 	local item = tool("Saber")
-	item.ToolTip = "Сабля · ЛКМ — удар"
+	item.ToolTip = "Iron Sword · LMB — slash"
 	part(item, "Handle", Vector3.new(0.20, 0.72, 0.23), CFrame.new(), palette.leather, Enum.Material.Wood)
 	for index = 0, 5 do
 		local wrap = part(item, "LeatherWrap" .. index, Vector3.new(0.235, 0.055, 0.265),
@@ -134,7 +134,7 @@ end
 
 local function musket()
 	local item = tool("Musket")
-	item.ToolTip = "Мушкет · ЛКМ — выстрел · перезарядка 1.7 с"
+	item.ToolTip = "Flintlock Musket · LMB — fire · 1.7s reload"
 	part(item, "Handle", Vector3.new(0.25, 0.50, 0.33), CFrame.new(), palette.walnut, Enum.Material.Wood)
 	part(item, "StockNeck", Vector3.new(0.29, 0.57, 0.32),
 		CFrame.new(0, -0.30, -0.035) * CFrame.Angles(-0.12, 0, 0), palette.walnut, Enum.Material.Wood)

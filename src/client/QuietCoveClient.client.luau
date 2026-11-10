@@ -45,12 +45,12 @@ local function text(parent, content, size, position, fontSize, color)
     return create("TextLabel", {Text = content, Size = size, Position = position,
         BackgroundTransparency = 1, Font = Enum.Font.Gotham, TextSize = fontSize or 16,
         TextColor3 = color or C.Ink, TextXAlignment = Enum.TextXAlignment.Left,
-        TextYAlignment = Enum.TextYAlignment.Center, TextWrapped = true}, parent)
+        TextYAlignment = Enum.TextYAlignment.Center, TextWrapped = true, AutoLocalize = true}, parent)
 end
 local function button(parent, content, size, position, bg)
     local b = create("TextButton", {Text = content, Size = size, Position = position,
         BackgroundColor3 = bg or C.Aqua, TextColor3 = C.Bg, BorderSizePixel = 0,
-        Font = Enum.Font.GothamBold, TextSize = 15, TextWrapped = true, AutoButtonColor = true}, parent)
+        Font = Enum.Font.GothamBold, TextSize = 15, TextWrapped = true, AutoButtonColor = true, AutoLocalize = true}, parent)
     rounded(b, 10); return b
 end
 local gui = create("ScreenGui", {Name = "QuietCoveUI", ResetOnSpawn = false, IgnoreGuiInset = false,
@@ -62,8 +62,8 @@ local heading = text(header, Config.Title, UDim2.new(1, -115, 0, 28), UDim2.from
 heading.Font = Enum.Font.GothamBold
 heading.Size = UDim2.new(1,-245,0,28);heading.TextSize=20;heading.TextWrapped=false
 heading.TextTruncate=Enum.TextTruncate.AtEnd
-local statsLabel = text(header, "Загрузка профиля…", UDim2.new(1, -118, 0, 43), UDim2.fromOffset(14, 35), 12, C.Muted)
-local bagButton = button(header, "УЛОВ / КОЛЛЕКЦИЯ", UDim2.fromOffset(116, 40), UDim2.new(1, -126, 0, 10), C.Gold)
+local statsLabel = text(header, "Loading profile…", UDim2.new(1, -118, 0, 43), UDim2.fromOffset(14, 35), 12, C.Muted)
+local bagButton = button(header, "CATCH / BESTIARY", UDim2.fromOffset(116, 40), UDim2.new(1, -126, 0, 10), C.Gold)
 bagButton.TextSize = 12
 local timeLabel = text(header, "", UDim2.fromOffset(112, 24), UDim2.new(1, -120, 0, 53), 11, C.Muted)
 timeLabel.TextXAlignment = Enum.TextXAlignment.Center
@@ -96,7 +96,7 @@ local revealSparkleLeft = text(reveal, "✦", UDim2.fromOffset(40, 40), UDim2.ne
 revealSparkleLeft.ZIndex = 34; revealSparkleLeft.TextXAlignment = Enum.TextXAlignment.Center
 local revealSparkleRight = text(reveal, "✦", UDim2.fromOffset(40, 40), UDim2.new(0.5, 80, 0.5, -80), 22, C.Ink)
 revealSparkleRight.ZIndex = 34; revealSparkleRight.TextXAlignment = Enum.TextXAlignment.Center
-local revealTitle = text(reveal, "ПОЙМАНО", UDim2.new(1, 0, 0, 28), UDim2.fromOffset(0, 162), 15, C.Muted)
+local revealTitle = text(reveal, "CAUGHT", UDim2.new(1, 0, 0, 28), UDim2.fromOffset(0, 162), 15, C.Muted)
 revealTitle.TextXAlignment = Enum.TextXAlignment.Center; revealTitle.ZIndex = 34; revealTitle.Font = Enum.Font.GothamBold
 local revealName = text(reveal, "", UDim2.new(1, -28, 0, 62), UDim2.fromOffset(14, 184), 28, C.Ink)
 revealName.TextXAlignment = Enum.TextXAlignment.Center; revealName.ZIndex = 34; revealName.Font = Enum.Font.GothamBold
@@ -135,11 +135,11 @@ local function showCatchReveal(record, payload)
     revealCircleInner.BackgroundColor3 = blend(base, Color3.fromRGB(255, 255, 255), 0.72)
     revealSparkleLeft.TextColor3 = base
     revealSparkleRight.TextColor3 = blend(base, Color3.fromRGB(255, 255, 255), 0.18)
-    revealTitle.Text = payload.New and "НОВАЯ ДОБЫЧА" or "ПОЙМАНО"
+    revealTitle.Text = payload.New and "NEW DISCOVERY" or "CAUGHT"
     revealName.Text = fishName(record)
     revealNick.Text = fish.Nick or rarity.Name
-    revealMeta.Text = string.format("%s · %.2f кг · %d монет · +%d опыта", rarity.Name, record.Kg, record.Value, payload.XP)
-    revealBadge.Text = payload.LevelUp and "УРОВЕНЬ ПОВЫШЕН!" or (payload.New and "ДОБАВЛЕНО В КОЛЛЕКЦИЮ" or "УДАЧНЫЙ УЛОВ")
+    revealMeta.Text = string.format("%s · %.2f kg · %d coins · +%d XP", rarity.Name, record.Kg, record.Value, payload.XP)
+    revealBadge.Text = payload.LevelUp and "LEVEL UP!" or (payload.New and "ADDED TO BESTIARY" or "NICE CATCH")
     revealBadge.TextColor3 = base
     revealScale.Scale = 0.76
     reveal.Visible = true
@@ -153,9 +153,9 @@ local panel = create("Frame", {Name = "FishingPanel", AnchorPoint = Vector2.new(
 rounded(panel, 16)
 create("UISizeConstraint", {MaxSize = Vector2.new(680, 222)}, panel)
 local panelScale = create("UIScale", {Scale = 1}, panel)
-local title = text(panel, "ПЕРВЫЙ ЗАБРОС", UDim2.new(1, -28, 0, 27), UDim2.fromOffset(14, 9), 18)
+local title = text(panel, "YOUR FIRST CAST", UDim2.new(1, -28, 0, 27), UDim2.fromOffset(14, 9), 18)
 title.Font = Enum.Font.GothamBold
-local help = text(panel, "Подойди к концу пирса. Зажми и отпусти ЛКМ.", UDim2.new(1, -28, 0, 37), UDim2.fromOffset(14, 39), 12, C.Muted)
+local help = text(panel, "Go to the end of the pier. Hold and release LMB.", UDim2.new(1, -28, 0, 37), UDim2.fromOffset(14, 39), 12, C.Muted)
 local track = create("Frame", {Name = "ReelTrack", Size = UDim2.new(1, -28, 0, 31),
     Position = UDim2.fromOffset(14, 82), BackgroundColor3 = C.Panel, BorderSizePixel = 0, ClipsDescendants = true}, panel)
 rounded(track, 6)
@@ -167,29 +167,29 @@ local bar = create("Frame", {AnchorPoint = Vector2.new(0.5, 0), Position = UDim2
 rounded(bar, 5)
 local fishMarker = create("Frame", {AnchorPoint = Vector2.new(0.5, 0), Size = UDim2.new(0, 6, 1, 0),
     Position = UDim2.fromScale(0.5, 0), BackgroundColor3 = C.Gold, BorderSizePixel = 0, Visible = false, ZIndex = 3}, track)
-local trackText = text(track, "Хорошая снасть — начало большой истории", UDim2.fromScale(1, 1), UDim2.new(), 12, C.Muted)
+local trackText = text(track, "Your next great catch starts here", UDim2.fromScale(1, 1), UDim2.new(), 12, C.Muted)
 trackText.TextXAlignment = Enum.TextXAlignment.Center; trackText.ZIndex = 4
 local progressBg = create("Frame", {Size = UDim2.new(1, -28, 0, 8), Position = UDim2.fromOffset(14, 122),
     BackgroundColor3 = C.Panel, BorderSizePixel = 0}, panel)
 rounded(progressBg, 4)
 local progress = create("Frame", {Size = UDim2.fromScale(0, 1), BackgroundColor3 = C.Aqua, BorderSizePixel = 0}, progressBg)
 rounded(progress, 4)
-local actionButton = button(panel, "ЗАЖМИ ДЛЯ ЗАБРОСА", UDim2.new(0.74, -16, 0, 53), UDim2.fromOffset(14, 143))
-local cancelButton = button(panel, "ОТМЕНА", UDim2.new(0.26, -12, 0, 53), UDim2.new(0.74, 3, 0, 143), C.Panel)
+local actionButton = button(panel, "HOLD TO CAST", UDim2.new(0.74, -16, 0, 53), UDim2.fromOffset(14, 143))
+local cancelButton = button(panel, "CANCEL", UDim2.new(0.26, -12, 0, 53), UDim2.new(0.74, 3, 0, 143), C.Panel)
 cancelButton.TextColor3 = C.Muted; cancelButton.TextSize = 11
-local footer = text(panel, "ЛКМ — рыбалка · ПРОБЕЛ — прыжок · Q — отмена · E — торговцы", UDim2.new(1, -20, 0, 17), UDim2.fromOffset(10, 199), 10, C.Muted)
+local footer = text(panel, "LMB — fish · SPACE — jump · Q — cancel · E — NPCs", UDim2.new(1, -20, 0, 17), UDim2.fromOffset(10, 199), 10, C.Muted)
 footer.TextXAlignment = Enum.TextXAlignment.Center
 local modal = create("Frame", {Name = "InventoryAndShop", AnchorPoint = Vector2.new(0.5, 0.5),
     Size = UDim2.new(0.94, 0, 0.65, 0), Position = UDim2.fromScale(0.5, 0.46),
     BackgroundColor3 = C.Bg, BorderSizePixel = 0, Visible = false, Active = true, ZIndex = 20}, gui)
 rounded(modal, 16)
 create("UISizeConstraint", {MaxSize = Vector2.new(660, 510)}, modal)
-local modalTitle = text(modal, "УЛОВ", UDim2.new(1, -80, 0, 42), UDim2.fromOffset(14, 5), 20)
+local modalTitle = text(modal, "CATCH", UDim2.new(1, -80, 0, 42), UDim2.fromOffset(14, 5), 20)
 modalTitle.Font = Enum.Font.GothamBold
 local closeButton = button(modal, "×", UDim2.fromOffset(40, 34), UDim2.new(1, -50, 0, 10), C.Panel)
 closeButton.TextColor3 = C.Ink; closeButton.TextSize = 25
-local bagTab = button(modal, "УЛОВ", UDim2.new(0.5, -17, 0, 30), UDim2.fromOffset(12, 51), C.Aqua)
-local bookTab = button(modal, "КОЛЛЕКЦИЯ", UDim2.new(0.5, -17, 0, 30), UDim2.new(0.5, 5, 0, 51), C.Panel)
+local bagTab = button(modal, "CATCH", UDim2.new(0.5, -17, 0, 30), UDim2.fromOffset(12, 51), C.Aqua)
+local bookTab = button(modal, "BESTIARY", UDim2.new(0.5, -17, 0, 30), UDim2.new(0.5, 5, 0, 51), C.Panel)
 bookTab.TextColor3 = C.Ink
 local scroll = create("ScrollingFrame", {Size = UDim2.new(1, -24, 1, -101), Position = UDim2.fromOffset(12, 91),
     BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4,
@@ -209,7 +209,7 @@ fishColor = function(fish)
 end
 fishName = function(record)
     local fish = Config.ById[record.Species]
-    local prefix = record.Mutation == "gold" and "Золотая · " or (record.Mutation == "glow" and "Сияющая · " or "")
+    local prefix = record.Mutation == "gold" and "Golden · " or (record.Mutation == "glow" and "Glowing · " or "")
     return prefix .. fish.Name
 end
 catchReveal = CatchReveal.new(gui, Config, {
@@ -244,14 +244,14 @@ local function renderModal()
             BackgroundColor3=C.Panel, BorderSizePixel=0}, scroll)
         rounded(r,10)
         thumbnails:Add(r,fish,known)
-        local nameLabel=text(r, known and (record and fishName(record) or fish.Name) or "??? · ещё не поймано",
+        local nameLabel=text(r, known and (record and fishName(record) or fish.Name) or "??? · not discovered yet",
             UDim2.new(1,-112,0,24),UDim2.fromOffset(100,10),15,known and C.Ink or C.Muted)
         nameLabel.Name="FishName";nameLabel.Font=Enum.Font.GothamBold
         nameLabel.TextWrapped=false;nameLabel.TextTruncate=Enum.TextTruncate.AtEnd
-        text(r, Config.Rarities[fish.Rarity].Name .. (fish.Night and " · только ночью" or ""),
+        text(r, Config.Rarities[fish.Rarity].Name .. (fish.Night and " · night only" or ""),
             UDim2.new(1,-112,0,20),UDim2.fromOffset(100,34),12,color)
         if record then
-            text(r,string.format("%.2f кг   ·   %d монет",record.Kg,record.Value),
+            text(r,string.format("%.2f kg   ·   %d coins",record.Kg,record.Value),
                 UDim2.new(1,-112,0,23),UDim2.fromOffset(100,60),13,C.Ink)
         else
             text(r,Config.HabitatText(fish),UDim2.new(1,-112,0,42),UDim2.fromOffset(100,56),12,C.Muted)
@@ -260,8 +260,8 @@ local function renderModal()
     end
     if shownMode == "bag" then
         local sum = 0; for _, record in ipairs(data.Bag) do sum = sum + record.Value end
-        modalTitle.Text = string.format("УЛОВ %d/%d · %d монет", #data.Bag, Config.BagCapacity, sum)
-        if #data.Bag == 0 then row("Рюкзак пуст. Поймай первый мем-улов у конца пирса!", C.Muted, 80) end
+        modalTitle.Text = string.format("CATCH %d/%d · %d coins", #data.Bag, Config.BagCapacity, sum)
+        if #data.Bag == 0 then row("Your bag is empty. Catch your first brainrot at the end of the pier!", C.Muted, 80) end
         for i = #data.Bag, 1, -1 do
             local record = data.Bag[i]; local fish = Config.ById[record.Species]
             if fish then
@@ -269,16 +269,16 @@ local function renderModal()
             else
                 -- Historical bag values remain sellable; a retired species
                 -- no longer has an active definition or a fish thumbnail.
-                row(string.format("Улов из прошлой версии\n%.2f кг · %d монет",record.Kg,record.Value),C.Muted,80)
+                row(string.format("Unlisted catch\n%.2f kg · %d coins",record.Kg,record.Value),C.Muted,80)
             end
         end
-        row("Продажа: подойди к Маре у начала пирса и нажми E. Продаётся весь улов; записи в коллекции остаются.", C.Muted, 78)
+        row("To sell, visit Mara near the start of the pier and press E. Your whole catch is sold; bestiary discoveries stay unlocked.", C.Muted, 78)
     elseif shownMode == "book" then
         local count = 0
         for id,known in pairs(data.Bestiary) do
             if known==true and Config.ById[id] then count=count+1 end
         end
-        modalTitle.Text = string.format("КОЛЛЕКЦИЯ МЕМРЫБ · %d/%d", count, #Config.Fish)
+        modalTitle.Text = string.format("BRAINROT BESTIARY · %d/%d", count, #Config.Fish)
         for _, fish in ipairs(Config.Fish) do
             local known = data.Bestiary[fish.Id]
             fishRow(fish,nil,known==true)
@@ -286,8 +286,8 @@ local function renderModal()
     elseif shownMode == "weapons" then
         local level = Config.Level(data.XP)
         local family = weaponShopFamily == "Musket" and "Musket" or "Saber"
-        modalTitle.Text = (family == "Saber" and "ЛАВКА МЕЧЕЙ" or "ЛАВКА РУЖЕЙ") .. " · "
-            .. (data.TestMode and "ТЕСТЕР" or "УР. " .. level .. " · " .. data.Coins .. " монет")
+        modalTitle.Text = (family == "Saber" and "SWORD SHOP" or "GUN SHOP") .. " · "
+            .. (data.TestMode and "TESTER" or "LV " .. level .. " · " .. data.Coins .. " coins")
         modalTitle.TextSize = 18
         local ownedWeapons = data.OwnedWeapons or {}
         local equippedWeapons = data.EquippedWeapons or {}
@@ -297,7 +297,7 @@ local function renderModal()
             local count = 0
             for _, weapon in ipairs(WeaponCatalog.List) do if weapon.Kind == family then count += 1 end end
             order += 1
-            local heading = row((family == "Saber" and "МЕЧИ" or "ПУШКИ") .. " · " .. count .. " СТУПЕНЕЙ", accent, 40)
+            local heading = row((family == "Saber" and "SWORDS" or "GUNS") .. " · " .. count .. " TIERS", accent, 40)
             heading.Name = "WeaponFamily_" .. family; heading.LayoutOrder = order
             for _, weapon in ipairs(WeaponCatalog.List) do
                 if weapon.Kind ~= family then continue end
@@ -313,21 +313,21 @@ local function renderModal()
                 local nameLabel = text(r, weapon.Name, UDim2.new(1, -24, 0, 40),
                     UDim2.fromOffset(12, 7), 15, accent)
                 nameLabel.Name = "WeaponName"; nameLabel.Font = Enum.Font.GothamBold
-                local requirement = "Уровень " .. weapon.Level .. " · ступень " .. weapon.Tier .. "/" .. count
-                if selected then requirement ..= "\nВ НАБОРЕ" end
+                local requirement = "Level " .. weapon.Level .. " · tier " .. weapon.Tier .. "/" .. count
+                if selected then requirement ..= "\nIN LOADOUT" end
                 local requirementLabel = text(r, requirement, UDim2.new(1, -124, 0, 36),
                     UDim2.fromOffset(12, 48), 11, levelAllowed and (selected and accent or C.Muted) or C.Gold)
                 requirementLabel.Name = "WeaponRequirement"
                 local stats = family == "Saber"
-                    and string.format("Урон: %d · комбо: %d", weapon.Damage, weapon.ComboDamage)
-                    or string.format("Урон: %d\nПерезарядка: %.1f с\nДальность: %d", weapon.Damage, weapon.Reload, weapon.Range)
+                    and string.format("Damage: %d · combo: %d", weapon.Damage, weapon.ComboDamage)
+                    or string.format("Damage: %d\nReload: %.1f s\nRange: %d", weapon.Damage, weapon.Reload, weapon.Range)
                 local statsLabel = text(r, stats, UDim2.new(1, -124, 0, 46), UDim2.fromOffset(12, 86), 11, C.Ink)
                 statsLabel.Name = "WeaponStats"
                 text(r, weapon.Description, UDim2.new(1, -24, 0, 38), UDim2.fromOffset(12, 138), 11, C.Muted)
-                local caption = owned and "ВЗЯТЬ" or (weapon.Price == 0 and "БЕСПЛАТНО\nВЗЯТЬ" or weapon.Price .. "\nКУПИТЬ")
-                if data.TestMode and not owned then caption = "ТЕСТЕР\nВЗЯТЬ" end
-                if not levelAllowed then caption = "С УРОВНЯ\n" .. weapon.Level
-                elseif not affordable then caption = weapon.Price .. " монет\nНЕ ХВАТАЕТ" end
+                local caption = owned and "EQUIP" or (weapon.Price == 0 and "FREE\nEQUIP" or weapon.Price .. "\nBUY")
+                if data.TestMode and not owned then caption = "TESTER\nEQUIP" end
+                if not levelAllowed then caption = "REQUIRES\nLV " .. weapon.Level
+                elseif not affordable then caption = weapon.Price .. " coins\nNOT ENOUGH" end
                 local b = button(r, caption, UDim2.fromOffset(92, 62), UDim2.new(1, -102, 0, 54),
                     available and accent or C.Bg)
                 b.Name = "WeaponBuy_" .. weapon.Id
@@ -338,35 +338,35 @@ local function renderModal()
                 end
             end
         end
-        local note = row("«ВЗЯТЬ» выбирает оружие этой лавки и возвращает его в руки. Все покупки сохраняются; старые варианты остаются доступны. Повышай уровень на рыбалке, чтобы открыть следующие ступени.", C.Muted, 100)
+        local note = row("EQUIP selects a weapon from this shop and puts it in your hands. Purchases are permanent, including earlier tiers. Level up by fishing to unlock better gear.", C.Muted, 100)
         note.Name = "WeaponProgressionNote"; note.LayoutOrder = order + 1
     else
-        modalTitle.Text = "МАСТЕР УДОЧЕК · " .. (data.TestMode and "∞ монет · ТЕСТЕР" or data.Coins .. " монет")
+        modalTitle.Text = "ROD SHOP · " .. (data.TestMode and "∞ coins · TESTER" or data.Coins .. " coins")
         for index, rod in ipairs(Config.Rods) do
             local r = create("Frame", {Size = UDim2.new(1, -8, 0, 105), BackgroundColor3 = C.Panel, BorderSizePixel = 0}, scroll)
             rounded(r, 8)
             ModelPreview.Create(r,"rod",rod,UDim2.fromOffset(83,96),UDim2.fromOffset(0,3))
-            text(r, rod.Name .. "\nКонтроль: " .. math.floor(rod.Width * 100) .. "% · удача ×" .. rod.Luck .. "\nМакс. вес: " .. rod.MaxKg .. " кг\n" .. Config.RodLooks[rod.Id], UDim2.new(1, -209, 1, -12), UDim2.fromOffset(90, 6), 12)
+            text(r, rod.Name .. "\nControl: " .. math.floor(rod.Width * 100) .. "% · luck ×" .. rod.Luck .. "\nMax weight: " .. rod.MaxKg .. " kg\n" .. Config.RodLooks[rod.Id], UDim2.new(1, -209, 1, -12), UDim2.fromOffset(90, 6), 12)
             local owned = index <= data.Rod
-            local caption = index == data.Rod and "В РУКАХ" or (owned and "КУПЛЕНО" or (index == data.Rod + 1 and rod.Price .. "\nКУПИТЬ" or "СНАЧАЛА\nПРЕДЫДУЩУЮ"))
+            local caption = index == data.Rod and "EQUIPPED" or (owned and "OWNED" or (index == data.Rod + 1 and rod.Price .. "\nBUY" or "BUY PREVIOUS\nTIER FIRST"))
             local b = button(r, caption, UDim2.fromOffset(92, 62), UDim2.new(1, -102, 0.5, -31), owned and C.Panel or C.Gold)
             b.TextSize = 12; if owned then b.TextColor3 = C.Muted end
             if data.TestMode and index ~= data.Rod then
-                b.Text="ТЕСТЕР\nВЗЯТЬ";b.BackgroundColor3=C.Gold;b.TextColor3=C.Bg
+                b.Text="TESTER\nEQUIP";b.BackgroundColor3=C.Gold;b.TextColor3=C.Bg
             end
             if (data.TestMode and index ~= data.Rod) or index == data.Rod + 1 then
                 b.Activated:Connect(function() Action:FireServer("Buy", "", index) end)
             end
         end
-        row("Каждая следующая удочка быстрее привлекает улов и облегчает вываживание. Монеты зарабатываются продажей улова.", C.Muted, 85)
+        row("Better rods attract catches faster and make reeling easier. Earn coins by selling your catch.", C.Muted, 85)
     end
 end
 local function updateStats()
     if not data then return end
-    statsLabel.Text = string.format("%d монет · Уровень %d · Улов %d/%d\n%s · %s", data.Coins, Config.Level(data.XP), #data.Bag, Config.BagCapacity,
-        Config.Rods[data.Rod].Name, memoryOnly and "ТЕСТ: без сохранений" or "Сохранения включены")
+    statsLabel.Text = string.format("%d coins · Level %d · Catch %d/%d\n%s · %s", data.Coins, Config.Level(data.XP), #data.Bag, Config.BagCapacity,
+        Config.Rods[data.Rod].Name, memoryOnly and "SESSION ONLY" or "Progress saved")
     if data.TestMode then
-        statsLabel.Text="∞ монет · ∞ опыта · ВСЕ УРОВНИ\n"..Config.Rods[data.Rod].Name.." · ТЕСТЕР ASUL7664"
+        statsLabel.Text="∞ coins · ∞ XP · ALL LEVELS\n"..Config.Rods[data.Rod].Name.." · TESTER ASUL7664"
     end
     if modal.Visible then renderModal() end
 end
@@ -378,34 +378,34 @@ local function updateStage()
     progress.Size = UDim2.fromScale(stageName == "Reeling" and latest.Progress or 0, 1)
     actionButton.BackgroundColor3 = stageName == "Bite" and C.Gold or C.Aqua
     if stageName == "Idle" then
-        title.Text = "ВРЕМЯ РЫБАЛКИ"
-        help.Text = "Встань в конце пирса. Зажми и отпусти ЛКМ. ПРОБЕЛ — прыжок."
-        actionButton.Text = "ЗАЖМИ ДЛЯ ЗАБРОСА"; trackText.Text = "Чем полнее шкала, тем сильнее заброс"
+        title.Text = "TIME TO FISH"
+        help.Text = "Stand at the end of the pier. Hold and release LMB. SPACE — jump."
+        actionButton.Text = "HOLD TO CAST"; trackText.Text = "A fuller bar casts farther"
     elseif stageName == "Request" then
-        title.Text = "ГОТОВЛЮ ЗАБРОС…"; actionButton.Text = "ДЕРЖИ КНОПКУ"; trackText.Text = "Проверяем место для рыбалки"
+        title.Text = "GETTING READY…"; actionButton.Text = "KEEP HOLDING"; trackText.Text = "Checking your fishing spot"
     elseif stageName == "Charging" then
-        title.Text = "ЗАМАХ"; help.Text = "Дождись заполнения шкалы и отпусти кнопку."
-        actionButton.Text = "ОТПУСТИ ДЛЯ ЗАБРОСА"; charge.BackgroundColor3 = C.Gold
+        title.Text = "WINDUP"; help.Text = "Let the power bar fill, then release."
+        actionButton.Text = "RELEASE TO CAST"; charge.BackgroundColor3 = C.Gold
     elseif stageName == "Casting" then
-        title.Text="ЗАБРОС!";help.Text="Поплавок летит к воде. Поклёвка начнётся после всплеска."
-        actionButton.Text="ЛЕСКА В ПОЛЁТЕ…";trackText.Text="Замах → полёт → всплеск"
+        title.Text="CAST!";help.Text="Your bobber is flying. Watch for a bite after it splashes down."
+        actionButton.Text="CASTING…";trackText.Text="Windup → cast → splash"
     elseif stageName == "Landing" then
-        title.Text="УЛОВ НА КРЮЧКЕ!";help.Text="Вытаскиваем существо из воды…"
-        actionButton.Text="ВЫТАСКИВАЕМ…";trackText.Text=""
+        title.Text="HOOKED!";help.Text="Bringing your catch out of the water…"
+        actionButton.Text="LANDING…";trackText.Text=""
     elseif stageName == "Waiting" then
-        title.Text = "ЖДЁМ ПОКЛЁВКУ"; help.Text = "Нажимай кнопку, чтобы подманить рыбу. Или просто подожди."
-        actionButton.Text = "ПОДМАНИТЬ РЫБУ"; trackText.Text = "Поплавок на воде…"
+        title.Text = "WAITING FOR A BITE"; help.Text = "Tap to attract a catch, or wait for a bite."
+        actionButton.Text = "ATTRACT A CATCH"; trackText.Text = "Your bobber is in the water…"
     elseif stageName == "Bite" then
-        title.Text = "КЛЮЁТ!"; help.Text = "Нажми ЛКМ, пока не закончилась шкала подсечки!"
-        actionButton.Text = "ПОДСЕЧЬ!"; charge.BackgroundColor3 = C.Red
+        title.Text = "BITE!"; help.Text = "Press LMB before the hook timer runs out!"
+        actionButton.Text = "HOOK!"; charge.BackgroundColor3 = C.Red
     elseif stageName == "Reeling" then
-        title.Text = "ВЫВАЖИВАНИЕ"; help.Text = "Удерживай метку в голубой полоске. ЛКМ →, отпустить ←. Время не ограничено."
-        actionButton.Text = "ДЕРЖИ: →   ОТПУСТИ: ←"
+        title.Text = "REELING"; help.Text = "Keep the marker inside the blue bar. Hold LMB →, release ←. No time limit."
+        actionButton.Text = "HOLD: →   RELEASE: ←"
     end
 end
 local function openModal(mode)
     if dodge and dodge:IsBusy() then return end
-    if stageName ~= "Idle" then notify("Сначала закончи или отмени рыбалку."); return end
+    if stageName ~= "Idle" then notify("Finish or cancel fishing first."); return end
     catchReveal:Hide(true)
     if voyage then voyage:Close() end
     if quests then quests:Close() end
@@ -421,23 +421,23 @@ voyage = VoyageUI.new(gui,Config,Action,{
     Notice=function()return toast.Visible end,
 })
 quests = QuestUI.new(gui, Config, function(periodKind, taskId)
-    notify("Возьми и сдай поручения у NPC. Журнал показывает твой прогресс.")
+    notify("Visit an NPC to accept quests and collect rewards. Your journal tracks progress.")
 end, {
     CanOpen = function()
         if dodge and dodge:IsBusy() then return false end
         if stageName ~= "Idle" or landingPlaying() or catchReveal:IsVisible() then
-            notify("Сначала закончи рыбалку и закрой карточку улова."); return false
+            notify("Finish fishing and close the catch card first."); return false
         end
-        if voyage:IsDriving() then notify("Сначала сойди с лодки."); return false end
+        if voyage:IsDriving() then notify("Leave the boat first."); return false end
         return true
     end,
     OnOpen = function() voyage:Close(); if dialogue then dialogue:Close()end; modal.Visible = false; panel.Visible = false end,
     OnClose = function() panel.Visible = not modal.Visible and not catchReveal:IsVisible() and not voyage:IsOpen() end,
     FindGiver = function(giver)
-        local locations={merchant="Мара ждёт у золотистого навеса в бухте; скупщики на островах тоже принимают её поручения.",
-            rodsmith="Мастер Лев ждёт у бирюзового навеса на стартовом острове.",
-            captain="Подойди к капитану на любом лодочном причале. В бухте верфь находится на юге."}
-        notify(locations[giver] or "Подойди к NPC, указанному в поручении.",C.Gold,8)
+        local locations={merchant="Mara is under the golden canopy in the cove. Island buyers also handle her quests.",
+            rodsmith="Lev is under the turquoise canopy on the starting island.",
+            captain="Captain Miron is at the cove shipyard to the south. Other dock captains also handle these quests."}
+        notify(locations[giver] or "Visit the NPC named in your quest.",C.Gold,8)
     end,
 })
 dialogue=NPCDialogue.new(gui,function(id,session,choice)
@@ -486,7 +486,7 @@ local function press(input)
     if talking() or modal.Visible or quests:IsOpen() or (voyage and (voyage:IsOpen() or voyage:IsDriving())) or activeInput or UIS:GetFocusedTextBox() then return end
     activeInput = input; holding = true
     if stageName == "Idle" then
-        if not data then notify("Профиль ещё загружается."); return end
+        if not data then notify("Your profile is still loading."); return end
         pendingRelease = false; stageName = "Request"; requestAt = os.clock(); updateStage()
         Action:FireServer("Begin")
     elseif stageName == "Waiting" then Action:FireServer("Shake", sessionId)
@@ -561,7 +561,7 @@ UIS.InputBegan:Connect(function(input, processed)
             catchReveal:Hide(true)
             worldPreviewIndex=worldPreviewIndex % #Config.Fish+1
             local f=Config.Fish[worldPreviewIndex]
-            if landingEffects:Preview(f.Id) then notify("3D-превью: "..f.Name.." · без награды",C.Gold,2)end
+            if landingEffects:Preview(f.Id) then notify("3D preview: "..f.Name.." · no reward",C.Gold,2)end
         end
     elseif input.UserInputType == Enum.UserInputType.MouseButton1 then press(input)
     elseif input.KeyCode == Enum.KeyCode.B then if modal.Visible then closeModal() else openModal("bag") end
@@ -601,7 +601,7 @@ Update.OnClientEvent:Connect(function(kind, payload)
     elseif kind == "WeaponShop" then
         weaponShopFamily = type(payload) == "table" and payload.Family == "Musket" and "Musket" or "Saber"
         openModal("weapons")
-    elseif kind == "Shake" then trackText.Text = "Рыба подплывает ближе…"
+    elseif kind == "Shake" then trackText.Text = "A catch is moving closer…"
     elseif kind == "Stage" then
         stageName = payload.Stage; sessionId = stageName ~= "Idle" and payload.Id or nil
         if stageName == "Charging" then
@@ -623,10 +623,10 @@ Update.OnClientEvent:Connect(function(kind, payload)
         if not payload.Record or not Config.ById[payload.Record.Species] then return end
         if landingPlaying()then pendingCaught=payload;return end
         local r = payload.Record; local fish = Config.ById[r.Species]
-        local suffix = payload.LevelUp and " · НОВЫЙ УРОВЕНЬ!" or (payload.New and " · Новая запись в коллекции!" or "")
+        local suffix = payload.LevelUp and " · LEVEL UP!" or (payload.New and " · New bestiary discovery!" or "")
         local hasPortrait = showCatchReveal(r, payload)
         if not hasPortrait then
-            notify(string.format("ПОЙМАНО: %s\n%.2f кг · %d монет · +%d опыта%s", fishName(r), r.Kg, r.Value, payload.XP, suffix), fishColor(fish), 5)
+            notify(string.format("CAUGHT: %s\n%.2f kg · %d coins · +%d XP%s", fishName(r), r.Kg, r.Value, payload.XP, suffix), fishColor(fish), 5)
         end
     end
 end)
@@ -655,15 +655,15 @@ RunService.RenderStepped:Connect(function(dt)
     if reveal.Visible and os.clock() > revealUntil then revealUntil = math.huge; hideReveal(false) end
     thumbnails:Update()
     local hour = Lighting.ClockTime
-    timeLabel.Text = string.format("%02d:%02d · %s", math.floor(hour), math.floor(hour % 1 * 60), (hour >= 18 or hour < 6) and "НОЧЬ" or "ДЕНЬ")
+    timeLabel.Text = string.format("%02d:%02d · %s", math.floor(hour), math.floor(hour % 1 * 60), (hour >= 18 or hour < 6) and "NIGHT" or "DAY")
     if stageName == "Request" and os.clock() - requestAt > 5 then
-        stageName = "Idle"; pendingRelease = false; updateStage(); notify("Нет ответа от сервера. Попробуй ещё раз.")
+        stageName = "Idle"; pendingRelease = false; updateStage(); notify("The server did not respond. Please try again.")
     elseif stageName == "Charging" then
         local power = math.clamp((workspace:GetServerTimeNow() - chargeStarted) / Config.ChargeSeconds, 0, 1)
-        charge.Size = UDim2.fromScale(power, 1); trackText.Text = "СИЛА ЗАБРОСА · " .. math.floor(power * 100) .. "%"
+        charge.Size = UDim2.fromScale(power, 1); trackText.Text = "CAST POWER · " .. math.floor(power * 100) .. "%"
     elseif stageName == "Bite" then
         local left = math.max(0, hookDeadline - workspace:GetServerTimeNow())
-        charge.Size = UDim2.fromScale(left / hookWindow, 1); trackText.Text = string.format("ПОДСЕКАЙ! %.1f с", left)
+        charge.Size = UDim2.fromScale(left / hookWindow, 1); trackText.Text = string.format("HOOK NOW! %.1f s", left)
     elseif stageName == "Reeling" then
         local alpha = 1 - math.exp(-22 * dt)
         displayBar = displayBar + (latest.Bar - displayBar) * alpha
@@ -672,7 +672,7 @@ RunService.RenderStepped:Connect(function(dt)
         bar.BackgroundColor3 = latest.Inside and C.Aqua or C.Red
         fishMarker.Position = UDim2.fromScale(displayFish, 0)
         progress.Size = UDim2.fromScale(latest.Progress, 1)
-        title.Text = "ВЫВАЖИВАНИЕ · " .. math.floor(latest.Progress * 100) .. "%" .. ((latest.Cue and latest.Cue~="")and " · "..latest.Cue or "")
+        title.Text = "REELING · " .. math.floor(latest.Progress * 100) .. "%" .. ((latest.Cue and latest.Cue~="")and " · "..latest.Cue or "")
         if os.clock() >= resendAt then resendAt = os.clock() + 0.18; Action:FireServer("Input", sessionId, holding) end
     end
 end)
@@ -681,4 +681,4 @@ Action:FireServer("Ready")
 task.spawn(function()
     while not data and gui.Parent do task.wait(2); Action:FireServer("Ready") end
 end)
-notify("Добро пожаловать! Рыбалка — на северном пирсе. Лодочная верфь — на юге. M — карта.", C.Gold, 8)
+notify("Welcome! Fish at the north pier. Find the shipyard to the south. M — map.", C.Gold, 8)

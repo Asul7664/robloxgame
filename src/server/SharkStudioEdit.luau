@@ -14,45 +14,45 @@ local function factory()
     return value
 end
 local function guard()
-    assert(RunService:IsStudio() and not RunService:IsRunning(),'Останови Play: акулу нужно редактировать в режиме редактора.')
+    assert(RunService:IsStudio() and not RunService:IsRunning(),'Stop Play before editing the shark in edit mode.')
 end
 function Editor.Edit()
     guard()
     local preview=Workspace:FindFirstChild('SharkPreview')
     if preview then
         assert(preview:IsA('Model') and preview:GetAttribute('QCSharkVisual')==true,
-            'Имя SharkPreview уже занято другой моделью. Переименуй её перед открытием акулы.')
+            'Another model is named SharkPreview. Rename it before opening the shark.')
     else
         preview=factory().Create(Workspace,CFrame.new(0,12,-10),Storage:FindFirstChild('OceanSharkTemplate'))
         preview.Name='SharkPreview'
     end
     preview:SetAttribute('QCSharkEditorPreview',true)
     game:GetService('Selection'):Set({preview})
-    print('Акула открыта: Workspace.SharkPreview. Редактируй детали; затем выполни SharkStudioEdit.Save() и сохрани место.')
+    print('Shark opened: Workspace.SharkPreview. Edit its parts, run SharkStudioEdit.Save(), then save the place.')
     return preview
 end
 function Editor.Save()
     guard()
     local preview=Workspace:FindFirstChild('SharkPreview')
     assert(preview and preview:IsA('Model') and preview:GetAttribute('QCSharkEditorPreview')==true,
-        'Сначала открой акулу командой SharkStudioEdit.Edit().')
+        'Open the shark with SharkStudioEdit.Edit() first.')
     -- Stage/validate the clone before replacing the previous working template.
     local model=factory().Create(nil,CFrame.new(),preview)
     model.Name='OceanSharkTemplate'
     local old=Storage:FindFirstChild('OceanSharkTemplate')
     if old then old:Destroy() end
     model.Parent=Storage
-    print('Сохранено в ServerStorage.OceanSharkTemplate. Атаки используют эту модель. Нажми Ctrl+S для сохранения места.')
+    print('Saved to ServerStorage.OceanSharkTemplate. Attacks use this model. Press Ctrl+S to save the place.')
     return model
 end
 function Editor.Rebuild()
     guard()
     local oldPreview=Workspace:FindFirstChild('SharkPreview')
     assert(not oldPreview or (oldPreview:IsA('Model') and oldPreview:GetAttribute('QCSharkVisual')==true),
-        'Имя SharkPreview занято другой моделью. Переименуй её перед пересборкой акулы.')
+        'Another model is named SharkPreview. Rename it before rebuilding the shark.')
     local oldTemplate=Storage:FindFirstChild('OceanSharkTemplate')
     local backups=Storage:FindFirstChild('OceanSharkBackups')
-    assert(not backups or backups:IsA('Folder'),'Имя OceanSharkBackups занято другим объектом.')
+    assert(not backups or backups:IsA('Folder'),'Another object is named OceanSharkBackups.')
     local frame=oldPreview and oldPreview:GetPivot() or CFrame.new(0,12,-10)
     local preview,template
     -- Do not replace either working model until both new copies exist.
@@ -77,7 +77,7 @@ function Editor.Rebuild()
     preview.Name='SharkPreview';preview:SetAttribute('QCSharkEditorPreview',true);preview.Parent=Workspace
     template.Name='OceanSharkTemplate';template.Parent=Storage
     game:GetService('Selection'):Set({preview})
-    print('Акула пересобрана и сохранена как шаблон атак. Прежние модели находятся в ServerStorage.OceanSharkBackups. Нажми Ctrl+S.')
+    print('Shark rebuilt and saved as the attack template. Previous models are in ServerStorage.OceanSharkBackups. Press Ctrl+S to save.')
     return preview,template
 end
 return Editor

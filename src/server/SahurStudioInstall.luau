@@ -112,28 +112,28 @@ function Install.Verify()
     local assets=shared and shared:FindFirstChild('CreatureAssets')
     local module=shared and shared:FindFirstChild('SahurOriginalRig')
     if not module then
-        local message='Проверка Сахура: не найден SahurOriginalRig. Дождись синхронизации Rojo.'
+        local message='Sahur check: SahurOriginalRig is missing. Wait for Rojo to sync.'
         print(message);return false,message
     end
     local adapter=require(module)
     local problems={}
     local function check(model,path)
         if not model or not model:IsA('Model') then
-            table.insert(problems,path..': модель отсутствует.');return
+            table.insert(problems,path..': model is missing.');return
         end
         if model:GetAttribute('QCSahurOriginal')~=true then
-            table.insert(problems,path..': наша Blender-модель не установлена.');return
+            table.insert(problems,path..': our Blender model is not installed.');return
         end
         local root=model:FindFirstChild('HumanoidRootPart')
         if not root or not root:IsA('BasePart') or not model:FindFirstChildOfClass('Humanoid') then
-            table.insert(problems,path..': повреждены HumanoidRootPart / Humanoid.');return
+            table.insert(problems,path..': invalid HumanoidRootPart / Humanoid.');return
         end
         local meshes=0
         for _,item in model:GetDescendants() do if item:IsA('MeshPart') then meshes+=1 end end
-        if meshes~=1 then table.insert(problems,path..': ожидается один skinned mesh нашей модели.');return end
+        if meshes~=1 then table.insert(problems,path..': expected one skinned mesh for our model.');return end
         local ok,rig=pcall(adapter.Capture,model)
         if not ok or not rig then
-            table.insert(problems,path..': повреждён скелет нашей модели.');return
+            table.insert(problems,path..': the model skeleton is invalid.');return
         end
         local parents={Body='Root',Club='Hand.R',ClubTip='Club',Facing='Root'}
         for _,side in {'R','L'} do
@@ -145,15 +145,15 @@ function Install.Verify()
             local bone=rig.Bones[name] and rig.Bones[name].Bone
             local expected=rig.Bones[parent] and rig.Bones[parent].Bone
             if not bone or not expected or bone.Parent~=expected then
-                table.insert(problems,path..': неверная цепочка костей '..name..' → '..parent..'.');return
+                table.insert(problems,path..': invalid bone chain '..name..' → '..parent..'.');return
             end
         end
     end
     check(storage:FindFirstChild('SahurBoss'),'ServerStorage.SahurBoss')
     check(assets and assets:FindFirstChild('sahur'),'CreatureAssets.sahur')
     local ok=#problems==0
-    local message=ok and 'Сахур: оба установленных шаблона используют нашу Blender-модель; скелет и цепочка дубинки проверены.'
-        or ('Проверка Сахура не пройдена:\n'..table.concat(problems,'\n')..'\nИмпортируй OriginalSahur.fbx и выполни SahurStudioInstall.OriginalSelected() вне Play.')
+    local message=ok and 'Sahur: both installed templates use our Blender model. Skeleton and club chain verified.'
+        or ('Sahur check failed:\n'..table.concat(problems,'\n')..'\nImport OriginalSahur.fbx and run SahurStudioInstall.OriginalSelected() outside Play.')
     print(message)
     return ok,message
 end

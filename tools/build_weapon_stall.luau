@@ -120,7 +120,7 @@ local function buildShop(kind,center,name,title,subtitle,accent)
     local sub=p('CounterSign',V.new(7.5,.74,.08),V.new(0,1.08,-4.45),navy)
     label(sub,'TradeName',subtitle,cream)
     local prompt=Instance.new('ProximityPrompt');prompt.Name='WeaponShopPrompt'
-    prompt.ActionText='Посмотреть оружие';prompt.ObjectText=title
+    prompt.ActionText='Browse weapons';prompt.ObjectText=title
     prompt.KeyboardKeyCode=Enum.KeyCode.E;prompt.MaxActivationDistance=12
     prompt.HoldDuration=.2;prompt.RequiresLineOfSight=false;prompt:SetAttribute('WeaponKind',kind);prompt.Parent=counter
     -- A restrained pair of workshop details, kept beneath the display window.
@@ -136,8 +136,8 @@ local function buildShop(kind,center,name,title,subtitle,accent)
     return shop
 end
 local shops={
-    Saber=buildShop('Saber',V.new(24,7.3,-8),'SwordShop','ЛАВКА КЛИНКОВ','МЕЧИ · САБЛИ · ЯТАГАНЫ',swordGold),
-    Musket=buildShop('Musket',V.new(24,7.3,8),'GunShop','ЛАВКА СТРЕЛКА','МУШКЕТЫ · КАРАБИНЫ · ШТУЦЕРЫ',gunBlue),
+    Saber=buildShop('Saber',V.new(24,7.3,-8),'SwordShop','BLADE SHOP','SWORDS · SABERS · YATAGANS',swordGold),
+    Musket=buildShop('Musket',V.new(24,7.3,8),'GunShop','GUNSMITH','MUSKETS · CARBINES · RIFLES',gunBlue),
 }
 local originals={}
 for _,kind in ipairs({'Saber','Musket'}) do
