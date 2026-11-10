@@ -267,12 +267,48 @@ local function legacyNPC(object)
     local known={Body=true,Head=true,Hat=true,HatBand=true,Arm=true,Leg=true,Eye=true}
     return scoped and known[object.Name]==true
 end
+local nativeMap={IslandRock=true,IslandSand=true,IslandGrass=true,Path=true,PierPlank=true,PierSupport=true,
+    FishingPlatform=true,FishingSign=true,CoveSpawn=true,ShopCounter=true,AwningPole=true,Awning=true,
+    PalmTrunk=true,PalmLeaf=true,Lighthouse=true,Beacon=true,LighthouseRoof=true,FerryGangway=true,
+    Ferry=true,BoatHull=true,BoatDeck=true,ReefRock=true,ReefSand=true,ReefPier=true,ReturnFerry=true,
+    ReefSign=true,Coral=true,BeachStep=true}
+local nativeDock={Boardwalk=true,Jetty=true,Pile=true,Bollard=true,Canopy=true,ShopPole=true,
+    DockSign=true,WaterStep=true,BuyerDeck=true}
+local nativeIsland={IslandStone=true,Shore=true,Plateau=true,IslandPath=true,FishingPier=true,FishingDeck=true,
+    FishingMarker=true,IslandBeacon=true,TreeTrunk=true,PalmLeaf=true,LeafCanopy=true,Branch=true,
+    BasaltSpire=true,TempleTier=true,Obelisk=true,SunCap=true,Oasis=true,MushroomStem=true,MushroomCap=true,
+    GroveArchTop=true,GroveArch=true,CupPlinth=true,CappuccinoCup=true,CoffeeSurface=true,LatteFoam=true,
+    CupHandleTop=true,CupHandleSide=true,CupHandleBottom=true,StormCrystal=true}
+local function recoveredNative(object)
+    local parent=object.Parent
+    if parent==map then return nativeMap[object.Name]==true end
+    if parent==folder then return object.Name=="HarborPath"or object.Name=="HomeHarborSign" end
+    if parent and parent.Parent==folder then
+        return (parent.Name:match("^Dock_") and nativeDock[object.Name]==true)
+            or (config.IslandById[parent.Name]~=nil and nativeIsland[object.Name]==true)
+    end
+    return false
+end
+local solidNative={IslandRock=true,IslandSand=true,IslandGrass=true,Path=true,PierPlank=true,
+    FishingPlatform=true,ReefRock=true,ReefSand=true,ReefPier=true,Boardwalk=true,Jetty=true,BuyerDeck=true,
+    IslandStone=true,Shore=true,Plateau=true,IslandPath=true,FishingPier=true,FishingDeck=true,HarborPath=true}
+local function canonicalBody(object)
+    if object.Name~="Body"or not legacyNPC(object)then return nil end
+    local model=object.Parent
+    if model.Parent==map then return V.new(model.Name=="Merchant"and -20 or 20,9.2,-25)end
+    local d=config.IslandById[model.Parent.Name:sub(6)]
+    return model.Name=="Captain"and V.new(d.DockX-7,9.3,d.DockZ+2)or V.new(d.DockX+7,9.3,d.DockZ-13)
+end
 for _,object in ipairs(workspace:GetDescendants())do
     if object:IsA("BasePart")and not original[object]then
-        check(isScenery(object)or isNPCRig(object)or isOcean(object),"Migration added geometry outside owned scenery/NPC/ocean")
+        local native=recoveredNative(object)
+        check(native or isScenery(object)or isNPCRig(object)or isOcean(object),"Migration added geometry outside native world/scenery/NPC/ocean")
         if object:GetAttribute('QCSeabed')==true then
             check(object.CanCollide and object.CanQuery and not object.CanTouch,'Sand floor lost its solid surface')
             check(object.Position.Y<config.Ocean.SurfaceY-9,'New sand obstructs boat navigation')
+        elseif native then
+            check(object.Anchored,"Recovered native geometry is not anchored")
+            if solidNative[object.Name]then check(object.CanCollide and object.CanQuery,"Recovered land or deck is not solid")end
         else
             check(not object.CanCollide and not object.CanQuery and not object.CanTouch,"Decoration intercepts physics or shots")
         end
@@ -280,7 +316,7 @@ for _,object in ipairs(workspace:GetDescendants())do
 end
 for object,frame in pairs(original)do
     check(object.Parent~=nil,"Migration removed an existing part")
-    near(object.Position,frame.Position+expected[object],"Incorrect saved-part relocation: "..object.Name)
+    near(object.Position,canonicalBody(object)or(frame.Position+expected[object]),"Incorrect saved-part relocation: "..object.Name)
     near(object.CFrame.LookVector,frame.LookVector,"Relocation rotated user geometry")
     near(object.CFrame.UpVector,frame.UpVector,"Relocation rolled or tilted user geometry")
     near(object.Size,originalPhysics[object].Size,"Art pass resized existing geometry")

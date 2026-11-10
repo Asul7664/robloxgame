@@ -3,184 +3,622 @@
   "tree": {
     "$className": "Workspace",
     "$ignoreUnknownInstances": true,
-    "QuietCoveMap": {
-      "$className": "Model",
-      "$ignoreUnknownInstances": true,
-      "Merchant": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "Body": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Mara\nCatch Trader"
-              }
-            }
-          },
-          "MerchantPrompt": {
-            "$className": "ProximityPrompt",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "ActionText": "Talk",
-              "ObjectText": "Mara"
-            }
-          }
-        }
-      },
-      "Rodsmith": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "Body": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Lev\nRodsmith"
-              }
-            }
-          },
-          "RodsmithPrompt": {
-            "$className": "ProximityPrompt",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "ActionText": "Talk",
-              "ObjectText": "Lev"
-            }
-          }
-        }
-      },
-      "Ferry": {
-        "$className": "Part",
-        "$ignoreUnknownInstances": true,
-        "Travel": {
-          "$className": "ProximityPrompt",
-          "$ignoreUnknownInstances": true,
-          "$properties": {
-            "ActionText": "Travel to Coral Reef",
-            "ObjectText": "Ferry · Level 2"
-          }
-        },
-        "Label": {
-          "$className": "BillboardGui",
-          "$ignoreUnknownInstances": true,
-          "TextLabel": {
-            "$className": "TextLabel",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "Text": "REEF FERRY\nLevel 2 required"
-            }
-          }
-        }
-      },
-      "ReturnFerry": {
-        "$className": "Part",
-        "$ignoreUnknownInstances": true,
-        "Travel": {
-          "$className": "ProximityPrompt",
-          "$ignoreUnknownInstances": true,
-          "$properties": {
-            "ActionText": "Return to Quiet Cove",
-            "ObjectText": "Return ferry"
-          }
-        },
-        "Label": {
-          "$className": "BillboardGui",
-          "$ignoreUnknownInstances": true,
-          "TextLabel": {
-            "$className": "TextLabel",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "Text": "QUIET COVE\nReturn to the traders"
-            }
-          }
-        }
-      },
-      "ReefSign": {
-        "$className": "Part",
-        "$ignoreUnknownInstances": true,
-        "Label": {
-          "$className": "BillboardGui",
-          "$ignoreUnknownInstances": true,
-          "TextLabel": {
-            "$className": "TextLabel",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "Text": "CORAL REEF\nBobrito Bandito, Trippi Troppi and Bombardiro Crocodilo"
-            }
-          }
-        }
-      },
-      "FishingSign": {
-        "$className": "Part",
-        "$ignoreUnknownInstances": true,
-        "Label": {
-          "$className": "BillboardGui",
-          "$ignoreUnknownInstances": true,
-          "TextLabel": {
-            "$className": "TextLabel",
-            "$ignoreUnknownInstances": true,
-            "$properties": {
-              "Text": "FISHING\nHold and release LMB"
-            }
-          }
-        }
-      }
-    },
     "QuietCoveArchipelago": {
       "$className": "Model",
       "$ignoreUnknownInstances": true,
+      "Bloom": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "FishingMarker": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1440,
+              9,
+              709,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.7,
+              4,
+              0.7
+            ],
+            "TopSurface": "Smooth"
+          },
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    350
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                4.5,
+                0
+              ]
+            },
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "FISHING · LEVEL 4\nBallerina Cappuccina; at night: Tralalero Tralala",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
+              }
+            }
+          }
+        },
+        "IslandBeacon": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1450,
+              9,
+              818,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.9333333333333333,
+              0.6784313725490196,
+              0.7568627450980392
+            ],
+            "Material": "Neon",
+            "Size": [
+              4,
+              0.3,
+              4
+            ],
+            "TopSurface": "Smooth"
+          },
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                18,
+                0
+              ]
+            },
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Bloom Island\nLevel 4",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
+              }
+            }
+          }
+        }
+      },
+      "Dock_Bloom": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Buyer": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/BuyerBloom.rbxmx"
+        },
+        "Captain": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainBloom.rbxmx"
+        },
+        "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1458,
+              9,
+              887,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Bloom Island\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
+              }
+            }
+          }
+        }
+      },
       "Dock_Cove": {
         "$className": "Model",
         "$ignoreUnknownInstances": true,
         "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainCove.rbxmx"
         },
         "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              8,
+              9,
+              71,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Quiet Cove\nM — map · E at the captain"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Quiet Cove\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
+              }
+            }
+          }
+        }
+      },
+      "Dock_Dunes": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Buyer": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/BuyerDunes.rbxmx"
+        },
+        "Captain": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainDunes.rbxmx"
+        },
+        "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1342,
+              9,
+              -1357,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Sahur Sands\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
+              }
+            }
+          }
+        }
+      },
+      "Dock_Moss": {
+        "$className": "Model",
+        "$ignoreUnknownInstances": true,
+        "Buyer": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/BuyerMoss.rbxmx"
+        },
+        "Captain": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainMoss.rbxmx"
+        },
+        "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
+          "$className": "Part",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1442,
+              9,
+              885,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
+          "Label": {
+            "$className": "BillboardGui",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
+            "TextLabel": {
+              "$className": "TextLabel",
+              "$ignoreUnknownInstances": true,
+              "$properties": {
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Patapim Grove\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
@@ -190,262 +628,100 @@
         "$className": "Model",
         "$ignoreUnknownInstances": true,
         "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainReef.rbxmx"
         },
         "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              458,
+              9,
+              -608,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Coral Reef\nM — map · E at the captain"
-              }
-            }
-          }
-        }
-      },
-      "Dock_Moss": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
-        },
-        "Buyer": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Fisher\nCatch Trader"
-                }
-              }
-            },
-            "BuyerPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Fisher"
-              }
-            }
-          }
-        },
-        "DockSign": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Patapim Grove\nM — map · E at the captain"
-              }
-            }
-          }
-        }
-      },
-      "Dock_Dunes": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
-        },
-        "Buyer": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Fisher\nCatch Trader"
-                }
-              }
-            },
-            "BuyerPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Fisher"
-              }
-            }
-          }
-        },
-        "DockSign": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Sahur Sands\nM — map · E at the captain"
-              }
-            }
-          }
-        }
-      },
-      "Dock_Bloom": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
-        },
-        "Buyer": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Fisher\nCatch Trader"
-                }
-              }
-            },
-            "BuyerPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Fisher"
-              }
-            }
-          }
-        },
-        "DockSign": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Bloom Island\nM — map · E at the captain"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Coral Reef\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
@@ -454,105 +730,105 @@
       "Dock_Storm": {
         "$className": "Model",
         "$ignoreUnknownInstances": true,
-        "Captain": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Captain Miron\nCaptain"
-                }
-              }
-            },
-            "CaptainPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Captain Miron"
-              }
-            }
-          }
-        },
         "Buyer": {
-          "$className": "Model",
-          "$ignoreUnknownInstances": true,
-          "Body": {
-            "$className": "Part",
-            "$ignoreUnknownInstances": true,
-            "Label": {
-              "$className": "BillboardGui",
-              "$ignoreUnknownInstances": true,
-              "TextLabel": {
-                "$className": "TextLabel",
-                "$ignoreUnknownInstances": true,
-                "$properties": {
-                  "Text": "Fisher\nCatch Trader"
-                }
-              }
-            },
-            "BuyerPrompt": {
-              "$className": "ProximityPrompt",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "ActionText": "Talk",
-                "ObjectText": "Fisher"
-              }
-            }
-          }
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/BuyerStorm.rbxmx"
+        },
+        "Captain": {
+          "$ignoreUnknownInstances": false,
+          "$path": "assets/npcs/CaptainStorm.rbxmx"
         },
         "DockSign": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1508,
+              9,
+              -1611,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.6,
+              3,
+              0.6
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Storm Island\nM — map · E at the captain"
-              }
-            }
-          }
-        }
-      },
-      "Moss": {
-        "$className": "Model",
-        "$ignoreUnknownInstances": true,
-        "FishingMarker": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "FISHING · LEVEL 2\nBrr Brr Patapim and Boneca Ambalabu"
-              }
-            }
-          }
-        },
-        "IslandBeacon": {
-          "$className": "Part",
-          "$ignoreUnknownInstances": true,
-          "Label": {
-            "$className": "BillboardGui",
-            "$ignoreUnknownInstances": true,
-            "TextLabel": {
-              "$className": "TextLabel",
-              "$ignoreUnknownInstances": true,
-              "$properties": {
-                "Text": "Patapim Grove\nLevel 2"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Storm Island\nM — map · E at the captain",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
@@ -562,65 +838,480 @@
         "$className": "Model",
         "$ignoreUnknownInstances": true,
         "FishingMarker": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1360,
+              9,
+              -1547,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.7,
+              4,
+              0.7
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    350
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                4.5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "FISHING · LEVEL 3\nTung Tung Sahur, Lirili Larila and Frigo Camelo"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "FISHING · LEVEL 3\nTung Tung Sahur, Lirili Larila and Frigo Camelo",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
         },
         "IslandBeacon": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1350,
+              9,
+              -1432,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.9725490196078431,
+              0.788235294117647,
+              0.4
+            ],
+            "Material": "Neon",
+            "Size": [
+              4,
+              0.3,
+              4
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                18,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Sahur Sands\nLevel 3"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Sahur Sands\nLevel 3",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
         }
       },
-      "Bloom": {
+      "HomeHarborSign": {
+        "$attributes": {
+          "QCWorldPositionPinned": true
+        },
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Anchored": true,
+          "BottomSurface": "Smooth",
+          "CFrame": [
+            11,
+            9,
+            -8,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "CanCollide": false,
+          "CanQuery": false,
+          "CanTouch": false,
+          "Color": [
+            0.42745098039215684,
+            0.30196078431372547,
+            0.2235294117647059
+          ],
+          "Material": "Wood",
+          "Size": [
+            0.6,
+            4,
+            0.6
+          ],
+          "TopSurface": "Smooth"
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "AlwaysOnTop": false,
+            "MaxDistance": 120,
+            "Size": {
+              "UDim2": [
+                [
+                  0,
+                  300
+                ],
+                [
+                  0,
+                  64
+                ]
+              ]
+            },
+            "StudsOffset": [
+              0,
+              4.5,
+              0
+            ]
+          },
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AutoLocalize": true,
+              "BackgroundTransparency": 1,
+              "Font": "GothamBold",
+              "Size": {
+                "UDim2": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              "Text": "BOATYARD → SOUTH\nM — island map",
+              "TextColor3": [
+                1,
+                0.9686274509803922,
+                0.8745098039215686
+              ],
+              "TextSize": 19,
+              "TextStrokeTransparency": 0.25,
+              "TextWrapped": true
+            }
+          }
+        }
+      },
+      "Moss": {
         "$className": "Model",
         "$ignoreUnknownInstances": true,
         "FishingMarker": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1460,
+              9,
+              711,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.7,
+              4,
+              0.7
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    350
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                4.5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "FISHING · LEVEL 4\nBallerina Cappuccina; at night: Tralalero Tralala"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "FISHING · LEVEL 2\nBrr Brr Patapim and Boneca Ambalabu",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
         },
         "IslandBeacon": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              -1450,
+              9,
+              818,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.4117647058823529,
+              0.8,
+              0.5019607843137255
+            ],
+            "Material": "Neon",
+            "Size": [
+              4,
+              0.3,
+              4
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                18,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Bloom Island\nLevel 4"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Patapim Grove\nLevel 2",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
@@ -630,50 +1321,611 @@
         "$className": "Model",
         "$ignoreUnknownInstances": true,
         "FishingMarker": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1490,
+              9,
+              -1793,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.42745098039215684,
+              0.30196078431372547,
+              0.2235294117647059
+            ],
+            "Material": "Wood",
+            "Size": [
+              0.7,
+              4,
+              0.7
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    350
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                4.5,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "FISHING · LEVEL 7\nGigaChad Shark; at night: Verity and La Vacca Saturno Saturnita"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "FISHING · LEVEL 7\nGigaChad Shark; at night: Verity and La Vacca Saturno Saturnita",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
         },
         "IslandBeacon": {
+          "$attributes": {
+            "QCWorldPositionPinned": true
+          },
           "$className": "Part",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "Anchored": true,
+            "BottomSurface": "Smooth",
+            "CFrame": [
+              1500,
+              9,
+              -1682,
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            "CanCollide": false,
+            "CanQuery": false,
+            "CanTouch": false,
+            "Color": [
+              0.6274509803921569,
+              0.6745098039215687,
+              0.9411764705882353
+            ],
+            "Material": "Neon",
+            "Size": [
+              4,
+              0.3,
+              4
+            ],
+            "TopSurface": "Smooth"
+          },
           "Label": {
             "$className": "BillboardGui",
             "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AlwaysOnTop": false,
+              "MaxDistance": 120,
+              "Size": {
+                "UDim2": [
+                  [
+                    0,
+                    320
+                  ],
+                  [
+                    0,
+                    64
+                  ]
+                ]
+              },
+              "StudsOffset": [
+                0,
+                18,
+                0
+              ]
+            },
             "TextLabel": {
               "$className": "TextLabel",
               "$ignoreUnknownInstances": true,
               "$properties": {
-                "Text": "Storm Island\nLevel 7"
+                "AutoLocalize": true,
+                "BackgroundTransparency": 1,
+                "Font": "GothamBold",
+                "Size": {
+                  "UDim2": [
+                    [
+                      1,
+                      0
+                    ],
+                    [
+                      1,
+                      0
+                    ]
+                  ]
+                },
+                "Text": "Storm Island\nLevel 7",
+                "TextColor3": [
+                  1,
+                  0.9686274509803922,
+                  0.8745098039215686
+                ],
+                "TextSize": 19,
+                "TextStrokeTransparency": 0.25,
+                "TextWrapped": true
               }
             }
           }
         }
-      },
-      "HomeHarborSign": {
+      }
+    },
+    "QuietCoveMap": {
+      "$className": "Model",
+      "$ignoreUnknownInstances": true,
+      "Ferry": {
+        "$attributes": {
+          "QCWorldPositionPinned": true
+        },
         "$className": "Part",
         "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Anchored": true,
+          "BottomSurface": "Smooth",
+          "CFrame": [
+            17,
+            9,
+            -78,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "CanCollide": false,
+          "CanQuery": false,
+          "CanTouch": false,
+          "Color": [
+            0.10588235294117647,
+            0.19607843137254902,
+            0.3058823529411765
+          ],
+          "Material": "Wood",
+          "Size": [
+            1,
+            5,
+            1
+          ],
+          "TopSurface": "Smooth"
+        },
         "Label": {
           "$className": "BillboardGui",
           "$ignoreUnknownInstances": true,
+          "$properties": {
+            "AlwaysOnTop": false,
+            "MaxDistance": 120,
+            "Size": {
+              "UDim2": [
+                [
+                  0,
+                  300
+                ],
+                [
+                  0,
+                  64
+                ]
+              ]
+            },
+            "StudsOffset": [
+              0,
+              4,
+              0
+            ]
+          },
           "TextLabel": {
             "$className": "TextLabel",
             "$ignoreUnknownInstances": true,
             "$properties": {
-              "Text": "BOATYARD → SOUTH\nM — island map"
+              "AutoLocalize": true,
+              "BackgroundTransparency": 1,
+              "Font": "GothamBold",
+              "Size": {
+                "UDim2": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              "Text": "REEF FERRY\nLevel 2 required",
+              "TextColor3": [
+                1,
+                0.9686274509803922,
+                0.8745098039215686
+              ],
+              "TextSize": 19,
+              "TextStrokeTransparency": 0.25,
+              "TextWrapped": true
+            }
+          }
+        },
+        "Travel": {
+          "$className": "ProximityPrompt",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "ActionText": "Travel to Coral Reef",
+            "HoldDuration": 0.2,
+            "KeyboardKeyCode": "E",
+            "MaxActivationDistance": 12,
+            "ObjectText": "Ferry · Level 2",
+            "RequiresLineOfSight": false
+          }
+        }
+      },
+      "FishingSign": {
+        "$attributes": {
+          "QCWorldPositionPinned": true
+        },
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Anchored": true,
+          "BottomSurface": "Smooth",
+          "CFrame": [
+            -10,
+            9,
+            -101,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "CanCollide": false,
+          "CanQuery": false,
+          "CanTouch": false,
+          "Color": [
+            0.42745098039215684,
+            0.30196078431372547,
+            0.2235294117647059
+          ],
+          "Material": "Wood",
+          "Size": [
+            1,
+            4,
+            1
+          ],
+          "TopSurface": "Smooth"
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "AlwaysOnTop": false,
+            "MaxDistance": 120,
+            "Size": {
+              "UDim2": [
+                [
+                  0,
+                  300
+                ],
+                [
+                  0,
+                  64
+                ]
+              ]
+            },
+            "StudsOffset": [
+              0,
+              3,
+              0
+            ]
+          },
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AutoLocalize": true,
+              "BackgroundTransparency": 1,
+              "Font": "GothamBold",
+              "Size": {
+                "UDim2": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              "Text": "FISHING\nHold and release LMB",
+              "TextColor3": [
+                1,
+                0.9686274509803922,
+                0.8745098039215686
+              ],
+              "TextSize": 19,
+              "TextStrokeTransparency": 0.25,
+              "TextWrapped": true
             }
           }
         }
+      },
+      "Merchant": {
+        "$ignoreUnknownInstances": false,
+        "$path": "assets/npcs/Mara.rbxmx"
+      },
+      "ReefSign": {
+        "$attributes": {
+          "QCWorldPositionPinned": true
+        },
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Anchored": true,
+          "BottomSurface": "Smooth",
+          "CFrame": [
+            443,
+            9,
+            -687,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "CanCollide": false,
+          "CanQuery": false,
+          "CanTouch": false,
+          "Color": [
+            0.42745098039215684,
+            0.30196078431372547,
+            0.2235294117647059
+          ],
+          "Material": "Wood",
+          "Size": [
+            1,
+            4,
+            1
+          ],
+          "TopSurface": "Smooth"
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "AlwaysOnTop": false,
+            "MaxDistance": 120,
+            "Size": {
+              "UDim2": [
+                [
+                  0,
+                  300
+                ],
+                [
+                  0,
+                  64
+                ]
+              ]
+            },
+            "StudsOffset": [
+              0,
+              3.5,
+              0
+            ]
+          },
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AutoLocalize": true,
+              "BackgroundTransparency": 1,
+              "Font": "GothamBold",
+              "Size": {
+                "UDim2": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              "Text": "CORAL REEF\nBobrito Bandito, Trippi Troppi and Bombardiro Crocodilo",
+              "TextColor3": [
+                1,
+                0.9686274509803922,
+                0.8745098039215686
+              ],
+              "TextSize": 19,
+              "TextStrokeTransparency": 0.25,
+              "TextWrapped": true
+            }
+          }
+        }
+      },
+      "ReturnFerry": {
+        "$attributes": {
+          "QCWorldPositionPinned": true
+        },
+        "$className": "Part",
+        "$ignoreUnknownInstances": true,
+        "$properties": {
+          "Anchored": true,
+          "BottomSurface": "Smooth",
+          "CFrame": [
+            456,
+            9,
+            -665,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "CanCollide": false,
+          "CanQuery": false,
+          "CanTouch": false,
+          "Color": [
+            0.10588235294117647,
+            0.19607843137254902,
+            0.3058823529411765
+          ],
+          "Material": "Wood",
+          "Size": [
+            1,
+            5,
+            1
+          ],
+          "TopSurface": "Smooth"
+        },
+        "Label": {
+          "$className": "BillboardGui",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "AlwaysOnTop": false,
+            "MaxDistance": 120,
+            "Size": {
+              "UDim2": [
+                [
+                  0,
+                  300
+                ],
+                [
+                  0,
+                  64
+                ]
+              ]
+            },
+            "StudsOffset": [
+              0,
+              4,
+              0
+            ]
+          },
+          "TextLabel": {
+            "$className": "TextLabel",
+            "$ignoreUnknownInstances": true,
+            "$properties": {
+              "AutoLocalize": true,
+              "BackgroundTransparency": 1,
+              "Font": "GothamBold",
+              "Size": {
+                "UDim2": [
+                  [
+                    1,
+                    0
+                  ],
+                  [
+                    1,
+                    0
+                  ]
+                ]
+              },
+              "Text": "QUIET COVE\nReturn to the traders",
+              "TextColor3": [
+                1,
+                0.9686274509803922,
+                0.8745098039215686
+              ],
+              "TextSize": 19,
+              "TextStrokeTransparency": 0.25,
+              "TextWrapped": true
+            }
+          }
+        },
+        "Travel": {
+          "$className": "ProximityPrompt",
+          "$ignoreUnknownInstances": true,
+          "$properties": {
+            "ActionText": "Return to Quiet Cove",
+            "HoldDuration": 0.2,
+            "KeyboardKeyCode": "E",
+            "MaxActivationDistance": 12,
+            "ObjectText": "Return ferry",
+            "RequiresLineOfSight": false
+          }
+        }
+      },
+      "Rodsmith": {
+        "$ignoreUnknownInstances": false,
+        "$path": "assets/npcs/Lev.rbxmx"
       }
     }
   }

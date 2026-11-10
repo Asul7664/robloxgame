@@ -4,6 +4,7 @@ local Workspace=game:GetService("Workspace")
 local Config=require(game:GetService("ReplicatedStorage"):WaitForChild("QuietCove"):WaitForChild("Config"))
 local Visuals=require(script.Parent:WaitForChild("WorldVisuals"))
 local NPCModels=require(script.Parent:WaitForChild("NPCModels"))
+local World=require(script.Parent:WaitForChild("World"))
 local A={}
 local function part(parent,name,x,y,z,sx,sy,sz,color,material,class)
     local p=Instance.new(class or "Part");p.Name=name;p.Size=Vector3.new(sx,sy,sz);p.CFrame=CFrame.new(x,y,z)
@@ -66,6 +67,8 @@ local function dock(folder,d)
     -- Steps make manual swimming access possible even with a low dock approach.
     for i=0,5 do part(m,"WaterStep",x+12,0.25+i*1.2,z+23-i*2.4,7,1.2,3,{150,112,76},Enum.Material.WoodPlanks)end
     if d.Id~="Cove" and d.Id~="Reef" then
+        -- The buyer stands beside the narrow approach, on a connected deck.
+        part(m,"BuyerDeck",x+7,7,z-13,12,1,10,{164,122,78},Enum.Material.WoodPlanks)
         npc(m,"Buyer",x+7,z-13,{186,131,70},"CATCH TRADER","Sell all catches")
     end
 end
@@ -135,8 +138,8 @@ local function upgradeNPCs(folder)
         if dock then
             local captain=dock:FindFirstChild("Captain")
             local buyer=dock:FindFirstChild("Buyer")
-            if captain then NPCModels.Upgrade(captain,"Captain") end
-            if buyer then NPCModels.Upgrade(buyer,"Buyer") end
+            if captain then NPCModels.Upgrade(captain,"Captain",nil,CFrame.new(d.DockX-7,9.3,d.DockZ+2)) end
+            if buyer then NPCModels.Upgrade(buyer,"Buyer",nil,CFrame.new(d.DockX+7,9.3,d.DockZ-13)) end
         end
     end
 end
@@ -146,37 +149,28 @@ local function caption(parent,text)
     if label then label.Text=text end
 end
 local function relocate(model,anchor,x,z)
-    if not anchor then return end
+    if not anchor or not anchor:IsA("BasePart") then return end
     local delta=Vector3.new(x-anchor.Position.X,0,z-anchor.Position.Z)
     if delta.Magnitude>0.001 then
-        -- PivotTo preserves every part's relative pose, including user additions.
-        model:PivotTo(CFrame.new(delta)*model:GetPivot())
+        local pinned=false
+        for _,object in ipairs(model:GetDescendants()) do
+            if object:IsA("BasePart") and World.PositionPinned(object,model) then pinned=true;break end
+        end
+        if not pinned then
+            -- Preserve the saved pivot and every authored part's relative pose.
+            model:PivotTo(CFrame.new(delta)*model:GetPivot())
+        else
+            -- Source-mapped labels and baked characters have already moved.
+            for _,object in ipairs(model:GetDescendants()) do
+                if object:IsA("BasePart") and not World.PositionPinned(object,model) then
+                    object.CFrame=object.CFrame+delta
+                end
+            end
+        end
     end
 end
-function A.Build()
-    local existing=Workspace:FindFirstChild("QuietCoveArchipelago")
-    if existing then
-        caption(existing:FindFirstChild("HomeHarborSign"),"BOATYARD → SOUTH\nM — island map")
-        for _,d in ipairs(Config.Islands)do
-            if d.Theme~="home" and d.Theme~="reef" then
-                local m=existing:FindFirstChild(d.Id)
-                if m then
-                    relocate(m,m:FindFirstChild("IslandStone"),d.X,d.Z)
-                    caption(m:FindFirstChild("FishingMarker"),"FISHING · LEVEL "..d.Level.."\n"..d.Target)
-                    caption(m:FindFirstChild("IslandBeacon"),d.Name.."\nLevel "..d.Level)
-                else island(existing,d)end
-            end
-            local berth=existing:FindFirstChild("Dock_"..d.Id)
-            if berth then
-                relocate(berth,berth:FindFirstChild("Boardwalk"),d.DockX,d.DockZ-9)
-                caption(berth:FindFirstChild("DockSign"),d.Name.."\nM — map · E at the captain")
-            else dock(existing,d)end
-        end
-        Visuals.ApplyArchipelago(existing)
-        upgradeNPCs(existing)
-        return existing
-    end
-    local folder=Instance.new("Model");folder.Name="QuietCoveArchipelago";folder.Parent=Workspace
+local function baseline()
+    local folder=Instance.new("Model");folder.Name="QuietCoveArchipelago"
     for _,d in ipairs(Config.Islands)do
         if d.Theme~="home" and d.Theme~="reef" then island(folder,d)end
         dock(folder,d)
@@ -185,7 +179,36 @@ function A.Build()
     part(folder,"HarborPath",0,7.25,38,11,0.15,56,{218,201,155},Enum.Material.Sand)
     local sign=part(folder,"HomeHarborSign",11,9,-8,0.6,4,0.6,{127,101,64},Enum.Material.Wood)
     label(sign,"BOATYARD → SOUTH\nM — island map",4.5,300)
+    return folder
+end
+function A.Build()
+    local folder=Workspace:FindFirstChild("QuietCoveArchipelago")
+    if folder then
+        -- Migrate saved native geometry before filling missing current nodes.
+        for _,d in ipairs(Config.Islands) do
+            local m=folder:FindFirstChild(d.Id)
+            if m and d.Theme~="home" and d.Theme~="reef" then
+                relocate(m,m:FindFirstChild("IslandStone"),d.X,d.Z)
+            end
+            local berth=folder:FindFirstChild("Dock_"..d.Id)
+            if berth then relocate(berth,berth:FindFirstChild("Boardwalk"),d.DockX,d.DockZ-9) end
+        end
+        local generated=baseline()
+        World.FillMissing(folder,generated)
+        generated:Destroy()
+    else folder=baseline();folder.Parent=Workspace end
+    caption(folder:FindFirstChild("HomeHarborSign"),"BOATYARD → SOUTH\nM — island map")
+    for _,d in ipairs(Config.Islands) do
+        local m=folder:FindFirstChild(d.Id)
+        if m and d.Theme~="home" and d.Theme~="reef" then
+            caption(m:FindFirstChild("FishingMarker"),"FISHING · LEVEL "..d.Level.."\n"..d.Target)
+            caption(m:FindFirstChild("IslandBeacon"),d.Name.."\nLevel "..d.Level)
+        end
+        local berth=folder:FindFirstChild("Dock_"..d.Id)
+        caption(berth and berth:FindFirstChild("DockSign"),d.Name.."\nM — map · E at the captain")
+    end
     Visuals.ApplyArchipelago(folder)
+    -- Canonical body anchors are applied after any old saved dock relocation.
     upgradeNPCs(folder)
     return folder
 end

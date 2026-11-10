@@ -1,0 +1,1652 @@
+<roblox version="4">
+  <Item class="Model" referent="0">
+    <Properties>
+      <string name="Name">Buyer</string>
+      <BinaryString name="AttributesSerialize">AwAAAAgAAABOUENHaXZlcgIIAAAAbWVyY2hhbnQHAAAATlBDTmFtZQIGAAAARmlzaGVyFQAAAFFDV29ybGRQb3NpdGlvblBpbm5lZAMB</BinaryString>
+      <Ref name="PrimaryPart">1</Ref>
+    </Properties>
+    <Item class="Part" referent="1">
+      <Properties>
+        <string name="Name">Body</string>
+        <bool name="Anchored">true</bool>
+        <BinaryString name="AttributesSerialize">BwAAAAgAAABOUENHaXZlcgIIAAAAbWVyY2hhbnQHAAAATlBDTmFtZQIGAAAARmlzaGVyEgAAAFFDT3JpZ2luYWxBbmNob3JlZAMBFAAAAFFDT3JpZ2luYWxDYW5Db2xsaWRlAwASAAAAUUNPcmlnaW5hbENhblF1ZXJ5AwASAAAAUUNPcmlnaW5hbENhblRvdWNoAwAWAAAAUUNPcmlnaW5hbFRyYW5zcGFyZW5jeQUAAAAA</BinaryString>
+        <token name="BottomSurface">0</token>
+        <CoordinateFrame name="CFrame">
+          <X>-1343</X>
+          <Y>9.300003</Y>
+          <Z>-1371</Z>
+          <R00>1</R00>
+          <R01>0</R01>
+          <R02>0</R02>
+          <R10>0</R10>
+          <R11>1</R11>
+          <R12>0</R12>
+          <R20>0</R20>
+          <R21>0</R21>
+          <R22>1</R22>
+        </CoordinateFrame>
+        <bool name="CanCollide">false</bool>
+        <bool name="CanQuery">false</bool>
+        <bool name="CanTouch">false</bool>
+        <Color3uint8 name="Color3uint8">7908000</Color3uint8>
+        <bool name="Massless">true</bool>
+        <token name="Material">272</token>
+        <Vector3 name="size">
+          <X>2.5</X>
+          <Y>2.800003</Y>
+          <Z>1.3999939</Z>
+        </Vector3>
+        <token name="TopSurface">0</token>
+        <float name="Transparency">1</float>
+      </Properties>
+      <Item class="ProximityPrompt" referent="2">
+        <Properties>
+          <string name="Name">BuyerPrompt</string>
+          <string name="ActionText">Talk</string>
+          <float name="HoldDuration">0.15</float>
+          <token name="KeyboardKeyCode">101</token>
+          <float name="MaxActivationDistance">12</float>
+          <string name="ObjectText">Fisher</string>
+          <bool name="RequiresLineOfSight">false</bool>
+        </Properties>
+      </Item>
+      <Item class="BillboardGui" referent="3">
+        <Properties>
+          <string name="Name">Label</string>
+          <bool name="AlwaysOnTop">false</bool>
+          <float name="MaxDistance">48</float>
+          <UDim2 name="Size">
+            <XS>0</XS>
+            <XO>230</XO>
+            <YS>0</YS>
+            <YO>50</YO>
+          </UDim2>
+          <Vector3 name="StudsOffset">
+            <X>0</X>
+            <Y>4.300003</Y>
+            <Z>0</Z>
+          </Vector3>
+        </Properties>
+        <Item class="TextLabel" referent="4">
+          <Properties>
+            <string name="Name">TextLabel</string>
+            <float name="BackgroundTransparency">1</float>
+            <Font name="FontFace">
+              <Family>
+                <url>rbxasset://fonts/families/GothamSSm.json</url>
+              </Family>
+              <Weight>700</Weight>
+              <Style>Normal</Style>
+            </Font>
+            <UDim2 name="Size">
+              <XS>1</XS>
+              <XO>0</XO>
+              <YS>1</YS>
+              <YO>0</YO>
+            </UDim2>
+            <string name="Text">Fisher
+Catch Trader</string>
+            <Color3 name="TextColor3">
+              <R>1</R>
+              <G>0.9647059</G>
+              <B>0.87058824</B>
+            </Color3>
+            <float name="TextSize">15</float>
+            <Color3 name="TextStrokeColor3">
+              <R>0.14509805</R>
+              <G>0.2</G>
+              <B>0.28627452</B>
+            </Color3>
+            <float name="TextStrokeTransparency">0.25</float>
+            <bool name="TextWrapped">true</bool>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+    <Item class="Model" referent="5">
+      <Properties>
+        <string name="Name">VisualRig</string>
+        <BinaryString name="AttributesSerialize">AwAAAAcAAABOUENSb2xlAgUAAABCdXllcgUAAABRQ05QQwMBDAAAAFFDTlBDVmVyc2lvbgUAAIBA</BinaryString>
+        <Ref name="PrimaryPart">6</Ref>
+      </Properties>
+      <Item class="Part" referent="6">
+        <Properties>
+          <string name="Name">HumanoidRootPart</string>
+          <bool name="Anchored">true</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>10.5</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">false</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>2</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+          <float name="Transparency">1</float>
+        </Properties>
+        <Item class="Motor6D" referent="7">
+          <Properties>
+            <string name="Name">RootJoint</string>
+            <CoordinateFrame name="C0">
+              <X>0</X>
+              <Y>0</Y>
+              <Z>0</Z>
+              <R00>-1</R00>
+              <R01>0</R01>
+              <R02>0</R02>
+              <R10>0</R10>
+              <R11>0</R11>
+              <R12>1</R12>
+              <R20>0</R20>
+              <R21>1</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>0</X>
+              <Y>0</Y>
+              <Z>0</Z>
+              <R00>-1</R00>
+              <R01>0</R01>
+              <R02>0</R02>
+              <R10>0</R10>
+              <R11>0</R11>
+              <R12>1</R12>
+              <R20>0</R20>
+              <R21>1</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">6</Ref>
+            <Ref name="Part1">8</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="8">
+        <Properties>
+          <string name="Name">Torso</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>10.5</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">14526811</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>2</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="Motor6D" referent="9">
+          <Properties>
+            <string name="Name">Neck</string>
+            <CoordinateFrame name="C0">
+              <X>0</X>
+              <Y>1</Y>
+              <Z>0</Z>
+              <R00>-1</R00>
+              <R01>0</R01>
+              <R02>0</R02>
+              <R10>0</R10>
+              <R11>0</R11>
+              <R12>1</R12>
+              <R20>0</R20>
+              <R21>1</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>0</X>
+              <Y>-0.7749939</Y>
+              <Z>0</Z>
+              <R00>-1</R00>
+              <R01>0</R01>
+              <R02>0</R02>
+              <R10>0</R10>
+              <R11>0</R11>
+              <R12>1</R12>
+              <R20>0</R20>
+              <R21>1</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">8</Ref>
+            <Ref name="Part1">10</Ref>
+          </Properties>
+        </Item>
+        <Item class="Motor6D" referent="11">
+          <Properties>
+            <string name="Name">Left Shoulder</string>
+            <CoordinateFrame name="C0">
+              <X>-1</X>
+              <Y>0.5</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0.06976318</R01>
+              <R02>-0.9975586</R02>
+              <R10>0.0871582</R10>
+              <R11>0.9937744</R11>
+              <R12>0.069488525</R12>
+              <R20>0.99620056</R20>
+              <R21>-0.08694458</R21>
+              <R22>-0.006072998</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>0.5</X>
+              <Y>0.5</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0</R01>
+              <R02>-1</R02>
+              <R10>0</R10>
+              <R11>1</R11>
+              <R12>0</R12>
+              <R20>1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">8</Ref>
+            <Ref name="Part1">12</Ref>
+          </Properties>
+        </Item>
+        <Item class="Motor6D" referent="13">
+          <Properties>
+            <string name="Name">Right Shoulder</string>
+            <CoordinateFrame name="C0">
+              <X>1</X>
+              <Y>0.5</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>-0.06976318</R01>
+              <R02>0.9975586</R02>
+              <R10>-0.12187195</R10>
+              <R11>0.99012756</R11>
+              <R12>0.069229126</R12>
+              <R20>-0.9925537</R20>
+              <R21>-0.12156677</R21>
+              <R22>-0.0084991455</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>-0.5</X>
+              <Y>0.5</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0</R01>
+              <R02>1</R02>
+              <R10>0</R10>
+              <R11>1</R11>
+              <R12>0</R12>
+              <R20>-1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">8</Ref>
+            <Ref name="Part1">14</Ref>
+          </Properties>
+        </Item>
+        <Item class="Motor6D" referent="15">
+          <Properties>
+            <string name="Name">Left Hip</string>
+            <CoordinateFrame name="C0">
+              <X>-1</X>
+              <Y>-1</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0.017456055</R01>
+              <R02>-0.9998474</R02>
+              <R10>0</R10>
+              <R11>0.9998474</R11>
+              <R12>0.017456055</R12>
+              <R20>1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>-0.5</X>
+              <Y>1</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0</R01>
+              <R02>-1</R02>
+              <R10>0</R10>
+              <R11>1</R11>
+              <R12>0</R12>
+              <R20>1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">8</Ref>
+            <Ref name="Part1">16</Ref>
+          </Properties>
+        </Item>
+        <Item class="Motor6D" referent="17">
+          <Properties>
+            <string name="Name">Right Hip</string>
+            <CoordinateFrame name="C0">
+              <X>1</X>
+              <Y>-1</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>-0.017456055</R01>
+              <R02>0.9998474</R02>
+              <R10>-0</R10>
+              <R11>0.9998474</R11>
+              <R12>0.017456055</R12>
+              <R20>-1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <CoordinateFrame name="C1">
+              <X>0.5</X>
+              <Y>1</Y>
+              <Z>0</Z>
+              <R00>-0</R00>
+              <R01>0</R01>
+              <R02>1</R02>
+              <R10>0</R10>
+              <R11>1</R11>
+              <R12>0</R12>
+              <R20>-1</R20>
+              <R21>0</R21>
+              <R22>-0</R22>
+            </CoordinateFrame>
+            <Ref name="Part0">8</Ref>
+            <Ref name="Part1">18</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="10">
+        <Properties>
+          <string name="Name">Head</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>12.274994</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">15252371</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>1.75</X>
+            <Y>1.550003</Y>
+            <Z>1.5</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="19">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="20">
+        <Properties>
+          <string name="Name">FaceEye</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.4482</X>
+            <Y>12.404999</Y>
+            <Z>-1370.3601</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.16000366</X>
+            <Y>0.22000122</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="21">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="22">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">20</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="23">
+        <Properties>
+          <string name="Name">FaceBrow</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.3771</X>
+            <Y>12.6349945</Y>
+            <Z>-1370.4012</Z>
+            <R00>-0.4987793</R00>
+            <R01>0.034973145</R01>
+            <R02>0.86602783</R02>
+            <R10>0.06994629</R10>
+            <R11>0.9975586</R11>
+            <R12>0</R12>
+            <R20>-0.86390686</R20>
+            <R21>0.060577393</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">5520429</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.25</X>
+            <Y>0.054992676</Y>
+            <Z>0.070007324</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="24">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="25">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">23</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="26">
+        <Properties>
+          <string name="Name">FaceEye</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.7782</X>
+            <Y>12.404999</Y>
+            <Z>-1370.9318</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.16000366</X>
+            <Y>0.22000122</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="27">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="28">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">26</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="29">
+        <Properties>
+          <string name="Name">FaceBrow</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.707</X>
+            <Y>12.6349945</Y>
+            <Z>-1370.9728</Z>
+            <R00>-0.4987793</R00>
+            <R01>-0.034973145</R01>
+            <R02>0.86602783</R02>
+            <R10>-0.06994629</R10>
+            <R11>0.9975586</R11>
+            <R12>0</R12>
+            <R20>-0.86390686</R20>
+            <R21>-0.060577393</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">5520429</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.25</X>
+            <Y>0.054992676</Y>
+            <Z>0.070007324</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="30">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="31">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">29</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="32">
+        <Properties>
+          <string name="Name">FaceSmile</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.4906</X>
+            <Y>12.014999</Y>
+            <Z>-1370.4454</Z>
+            <R00>-0.44117737</R00>
+            <R01>-0.23529053</R01>
+            <R02>0.86602783</R02>
+            <R10>-0.47058105</R10>
+            <R11>0.88235474</R11>
+            <R12>0</R12>
+            <R20>-0.7641449</R20>
+            <R21>-0.407547</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.21499634</X>
+            <Y>0.06500244</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="33">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="34">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">32</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="35">
+        <Properties>
+          <string name="Name">FaceSmile</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.573</X>
+            <Y>11.962494</Y>
+            <Z>-1370.5768</Z>
+            <R00>-0.4940033</R00>
+            <R01>-0.077194214</R01>
+            <R02>0.86602783</R02>
+            <R10>-0.15437317</R10>
+            <R11>0.9880066</R11>
+            <R12>0</R12>
+            <R20>-0.85565186</R20>
+            <R21>-0.13369751</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.2069397</X>
+            <Y>0.06500244</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="36">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="37">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">35</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="38">
+        <Properties>
+          <string name="Name">FaceSmile</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.6531</X>
+            <Y>11.962494</Y>
+            <Z>-1370.7153</Z>
+            <R00>-0.4940033</R00>
+            <R01>0.077194214</R01>
+            <R02>0.86602783</R02>
+            <R10>0.15437317</R10>
+            <R11>0.9880066</R11>
+            <R12>0</R12>
+            <R20>-0.85565186</R20>
+            <R21>0.13369751</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.2069397</X>
+            <Y>0.06500244</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="39">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="40">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">38</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="41">
+        <Properties>
+          <string name="Name">FaceSmile</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.7256</X>
+            <Y>12.014999</Y>
+            <Z>-1370.8524</Z>
+            <R00>-0.44117737</R00>
+            <R01>0.23529053</R01>
+            <R02>0.86602783</R02>
+            <R10>0.47058105</R10>
+            <R11>0.88235474</R11>
+            <R12>0</R12>
+            <R20>-0.7641449</R20>
+            <R21>0.407547</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>0.21499634</X>
+            <Y>0.06500244</Y>
+            <Z>0.07499695</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="42">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="43">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">41</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="12">
+        <Properties>
+          <string name="Name">Left Arm</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.1981</X>
+            <Y>10.537857</Y>
+            <Z>-1369.6921</Z>
+            <R00>-0.493515</R00>
+            <R01>-0.11016846</R01>
+            <R02>0.86273193</R02>
+            <R10>-0.069488525</R10>
+            <R11>0.9937744</R11>
+            <R12>0.0871582</R12>
+            <R20>-0.8669586</R20>
+            <R21>-0.016937256</R21>
+            <R22>-0.49809265</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">15252371</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="14">
+        <Properties>
+          <string name="Name">Right Arm</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.7179</X>
+            <Y>10.539551</Y>
+            <Z>-1372.3564</Z>
+            <R00>-0.5061493</R00>
+            <R01>-0.07040405</R01>
+            <R02>0.85957336</R02>
+            <R10>0.069229126</R10>
+            <R11>0.99012756</R11>
+            <R12>0.12187195</R12>
+            <R20>-0.8596649</R20>
+            <R21>0.12120056</R21>
+            <R22>-0.49627686</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">15252371</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="16">
+        <Properties>
+          <string name="Name">Left Leg</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.7412</X>
+            <Y>8.491425</Y>
+            <Z>-1370.5519</Z>
+            <R00>-0.4999237</R00>
+            <R01>-0.008728027</R01>
+            <R02>0.86602783</R02>
+            <R10>-0.017456055</R10>
+            <R11>0.9998474</R11>
+            <R12>0</R12>
+            <R20>-0.8658905</R20>
+            <R21>-0.01512146</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="44">
+        <Properties>
+          <string name="Name">Boot</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.7771</X>
+            <Y>7.641556</Y>
+            <Z>-1370.514</Z>
+            <R00>-0.4999237</R00>
+            <R01>-0.008728027</R01>
+            <R02>0.86602783</R02>
+            <R10>-0.017456055</R10>
+            <R11>0.9998474</R11>
+            <R12>0</R12>
+            <R20>-0.8658905</R20>
+            <R21>-0.01512146</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">4405557</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0200043</X>
+            <Y>0.3600006</Y>
+            <Z>1.1199951</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="45">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">16</Ref>
+            <Ref name="Part1Internal">44</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="18">
+        <Properties>
+          <string name="Name">Right Leg</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.2588</X>
+            <Y>8.491425</Y>
+            <Z>-1371.4481</Z>
+            <R00>-0.4999237</R00>
+            <R01>0.008728027</R01>
+            <R02>0.86602783</R02>
+            <R10>0.017456055</R10>
+            <R11>0.9998474</R11>
+            <R12>0</R12>
+            <R20>-0.8658905</R20>
+            <R21>0.01512146</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1</X>
+            <Y>2</Y>
+            <Z>1</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+      </Item>
+      <Item class="Part" referent="46">
+        <Properties>
+          <string name="Name">Boot</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.3096</X>
+            <Y>7.641556</Y>
+            <Z>-1371.4359</Z>
+            <R00>-0.4999237</R00>
+            <R01>0.008728027</R01>
+            <R02>0.86602783</R02>
+            <R10>0.017456055</R10>
+            <R11>0.9998474</R11>
+            <R12>0</R12>
+            <R20>-0.8658905</R20>
+            <R21>0.01512146</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">4405557</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0200043</X>
+            <Y>0.3600006</Y>
+            <Z>1.1199951</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="47">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">18</Ref>
+            <Ref name="Part1Internal">46</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="48">
+        <Properties>
+          <string name="Name">ShirtSleeve</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.2609</X>
+            <Y>11.104309</Y>
+            <Z>-1369.7018</Z>
+            <R00>-0.493515</R00>
+            <R01>-0.11016846</R01>
+            <R02>0.86273193</R02>
+            <R10>-0.069488525</R10>
+            <R11>0.9937744</R11>
+            <R12>0.0871582</R12>
+            <R20>-0.8669586</R20>
+            <R21>-0.016937256</R21>
+            <R22>-0.49809265</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">14526811</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0399933</X>
+            <Y>0.8200073</Y>
+            <Z>1.0399933</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="49">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">12</Ref>
+            <Ref name="Part1Internal">48</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="50">
+        <Properties>
+          <string name="Name">SleeveCuff</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.2135</X>
+            <Y>10.676987</Y>
+            <Z>-1369.6945</Z>
+            <R00>-0.493515</R00>
+            <R01>-0.11016846</R01>
+            <R02>0.86273193</R02>
+            <R10>-0.069488525</R10>
+            <R11>0.9937744</R11>
+            <R12>0.0871582</R12>
+            <R20>-0.8669586</R20>
+            <R21>-0.016937256</R21>
+            <R22>-0.49809265</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">16774878</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0599976</X>
+            <Y>0.13000488</Y>
+            <Z>1.0599976</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="51">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">12</Ref>
+            <Ref name="Part1Internal">50</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="52">
+        <Properties>
+          <string name="Name">ShirtSleeve</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.758</X>
+            <Y>11.103928</Y>
+            <Z>-1372.2874</Z>
+            <R00>-0.5061493</R00>
+            <R01>-0.07040405</R01>
+            <R02>0.85957336</R02>
+            <R10>0.069229126</R10>
+            <R11>0.99012756</R11>
+            <R12>0.12187195</R12>
+            <R20>-0.8596649</R20>
+            <R21>0.12120056</R21>
+            <R22>-0.49627686</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">14526811</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0399933</X>
+            <Y>0.8200073</Y>
+            <Z>1.0399933</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="53">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">14</Ref>
+            <Ref name="Part1Internal">52</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="54">
+        <Properties>
+          <string name="Name">SleeveCuff</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.7278</X>
+            <Y>10.678162</Y>
+            <Z>-1372.3395</Z>
+            <R00>-0.5061493</R00>
+            <R01>-0.07040405</R01>
+            <R02>0.85957336</R02>
+            <R10>0.069229126</R10>
+            <R11>0.99012756</R11>
+            <R12>0.12187195</R12>
+            <R20>-0.8596649</R20>
+            <R21>0.12120056</R21>
+            <R22>-0.49627686</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">16774878</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.0599976</X>
+            <Y>0.13000488</Y>
+            <Z>1.0599976</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="55">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">14</Ref>
+            <Ref name="Part1Internal">54</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="56">
+        <Properties>
+          <string name="Name">WaistBelt</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>9.7599945</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">2437961</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>2.0299988</X>
+            <Y>0.22000122</Y>
+            <Z>1.0399933</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="57">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">8</Ref>
+            <Ref name="Part1Internal">56</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="58">
+        <Properties>
+          <string name="Name">BeltBuckle</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.4937</X>
+            <Y>9.7599945</Y>
+            <Z>-1370.715</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">16238425</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>0.30000305</X>
+            <Y>0.22000122</Y>
+            <Z>0.1000061</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="59">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">8</Ref>
+            <Ref name="Part1Internal">58</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="60">
+        <Properties>
+          <string name="Name">FisherApron</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.472</X>
+            <Y>10.430008</Y>
+            <Z>-1370.7275</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">5015165</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>1.550003</X>
+            <Y>1.449997</Y>
+            <Z>0.08000183</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="61">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">8</Ref>
+            <Ref name="Part1Internal">60</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="62">
+        <Properties>
+          <string name="Name">ApronPocket</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343.5326</X>
+            <Y>10.220001</Y>
+            <Z>-1370.6925</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">7383699</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <Vector3 name="size">
+            <X>0.8600006</X>
+            <Y>0.38000488</Y>
+            <Z>0.05999756</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="63">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">8</Ref>
+            <Ref name="Part1Internal">62</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="64">
+        <Properties>
+          <string name="Name">StrawHatBrim</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>13.074997</Y>
+            <Z>-1371</Z>
+            <R00>0</R00>
+            <R01>0.5</R01>
+            <R02>0.86602783</R02>
+            <R10>1</R10>
+            <R11>-0</R11>
+            <R12>0</R12>
+            <R20>0</R20>
+            <R21>0.86602783</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <bool name="CastShadow">true</bool>
+          <Color3uint8 name="Color3uint8">14596209</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">2</token>
+          <Vector3 name="size">
+            <X>0.1499939</X>
+            <Y>2.899994</Y>
+            <Z>2</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="WeldConstraint" referent="65">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">64</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="66">
+        <Properties>
+          <string name="Name">StrawHatCrown</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>13.354996</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">15452548</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>1.8500061</X>
+            <Y>0.7200012</Y>
+            <Z>1.3999939</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="67">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="68">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">66</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="69">
+        <Properties>
+          <string name="Name">HatRibbon</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1343</X>
+            <Y>13.164993</Y>
+            <Z>-1371</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">5015165</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>1.8800049</X>
+            <Y>0.17999268</Y>
+            <Z>1.4199982</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="70">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="71">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">69</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="72">
+        <Properties>
+          <string name="Name">FisherHairCrown</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.8961</X>
+            <Y>12.75499</Y>
+            <Z>-1371.06</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">6045229</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>1.7599945</X>
+            <Y>0.7200012</Y>
+            <Z>1.449997</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="73">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="74">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">72</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Part" referent="75">
+        <Properties>
+          <string name="Name">HairBack</string>
+          <bool name="Anchored">false</bool>
+          <token name="BottomSurface">0</token>
+          <CoordinateFrame name="CFrame">
+            <X>-1342.6017</X>
+            <Y>12.444992</Y>
+            <Z>-1371.23</Z>
+            <R00>-0.5</R00>
+            <R01>0</R01>
+            <R02>0.86602783</R02>
+            <R10>0</R10>
+            <R11>1</R11>
+            <R12>0</R12>
+            <R20>-0.86602783</R20>
+            <R21>0</R21>
+            <R22>-0.5</R22>
+          </CoordinateFrame>
+          <bool name="CanCollide">false</bool>
+          <bool name="CanQuery">false</bool>
+          <bool name="CanTouch">false</bool>
+          <Color3uint8 name="Color3uint8">6045229</Color3uint8>
+          <bool name="Massless">true</bool>
+          <token name="Material">272</token>
+          <token name="shape">1</token>
+          <Vector3 name="size">
+            <X>1.6699982</X>
+            <Y>1.2200012</Y>
+            <Z>0.91999817</Z>
+          </Vector3>
+          <token name="TopSurface">0</token>
+        </Properties>
+        <Item class="SpecialMesh" referent="76">
+          <Properties>
+            <string name="Name">SpecialMesh</string>
+            <token name="MeshType">3</token>
+            <Vector3 name="Scale">
+              <X>1</X>
+              <Y>1</Y>
+              <Z>1</Z>
+            </Vector3>
+          </Properties>
+        </Item>
+        <Item class="WeldConstraint" referent="77">
+          <Properties>
+            <string name="Name">OutfitWeld</string>
+            <Ref name="Part0Internal">10</Ref>
+            <Ref name="Part1Internal">75</Ref>
+          </Properties>
+        </Item>
+      </Item>
+      <Item class="Humanoid" referent="78">
+        <Properties>
+          <string name="Name">Humanoid</string>
+          <bool name="AutoRotate">false</bool>
+          <bool name="AutomaticScalingEnabled">false</bool>
+          <bool name="BreakJointsOnDeath">false</bool>
+          <token name="DisplayDistanceType">2</token>
+          <float name="Health">100</float>
+          <float name="MaxHealth">100</float>
+          <token name="RigType">0</token>
+          <float name="WalkSpeed">0</float>
+        </Properties>
+        <Item class="Animator" referent="79">
+          <Properties>
+            <string name="Name">Animator</string>
+          </Properties>
+        </Item>
+      </Item>
+    </Item>
+  </Item>
+</roblox>

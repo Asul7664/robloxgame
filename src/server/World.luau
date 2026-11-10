@@ -43,9 +43,80 @@ local function palm(parent, x, z, height)
         leaf.CanCollide = false
     end
 end
+-- Rojo may provide only the text-bearing skeleton of a saved map. Fill its
+-- missing native nodes without replacing mapped prompts, authored geometry or
+-- complete character replacements. Repeated native parts (planks, palms, etc.)
+-- match by nearest position, so saving only some of a group cannot duplicate it.
+local npcRoles={Merchant=true,Rodsmith=true,Captain=true,Buyer=true}
+local function authoredNPC(model)
+    if model:FindFirstChildOfClass("Humanoid") then return true end
+    for _,child in ipairs(model:GetChildren()) do if child:IsA("MeshPart") then return true end end
+    local rig=model:FindFirstChild("VisualRig")
+    return rig and not rig:GetAttribute("QCNPCVersion")
+end
+function World.FillMissing(target,baseline)
+    if target:IsA("Model") and npcRoles[target.Name] then
+        if authoredNPC(target) then return end
+        local body=target:FindFirstChild("Body")
+        local source=baseline:FindFirstChild("Body")
+        if not body then source.Parent=target
+        else World.FillMissing(body,source) end
+        -- The NPC factory owns the rig and aligns/rebuilds it after relocation.
+        return
+    end
+    local groups={}
+    local function key(object)
+        return (object:IsA("BasePart") and "BasePart" or object.ClassName)..":"..object.Name
+    end
+    for _,source in ipairs(baseline:GetChildren()) do
+        local name=key(source)
+        groups[name]=groups[name] or {Sources={},Saved={}}
+        table.insert(groups[name].Sources,source)
+    end
+    for _,saved in ipairs(target:GetChildren()) do
+        local group=groups[key(saved)]
+        if group then table.insert(group.Saved,saved) end
+    end
+    for _,group in pairs(groups) do
+        local matches,used={},{ }
+        if #group.Sources>1 and group.Sources[1]:IsA("BasePart") then
+            local pairsByDistance={}
+            for _,source in ipairs(group.Sources) do
+                for _,saved in ipairs(group.Saved) do
+                    table.insert(pairsByDistance,{Source=source,Saved=saved,
+                        Distance=(source.Position-saved.Position).Magnitude})
+                end
+            end
+            table.sort(pairsByDistance,function(a,b)return a.Distance<b.Distance end)
+            for _,pair in ipairs(pairsByDistance) do
+                if not matches[pair.Source] and not used[pair.Saved] then
+                    matches[pair.Source]=pair.Saved;used[pair.Saved]=true
+                end
+            end
+        else
+            for index,source in ipairs(group.Sources) do matches[source]=group.Saved[index] end
+        end
+        for _,source in ipairs(group.Sources) do
+            local saved=matches[source]
+            if saved then World.FillMissing(saved,source)
+            else source.Parent=target end
+        end
+    end
+end
+-- Source-mapped nodes are already at current Config coordinates, even when
+-- their surrounding saved island still needs an older-position migration.
+function World.PositionPinned(object,scope)
+    local current=object
+    while current do
+        if current:GetAttribute("QCWorldPositionPinned")==true then return true end
+        if current==scope then break end
+        current=current.Parent
+    end
+    return false
+end
 local function refs(model)
-    NPCModels.Upgrade(model.Merchant, "Merchant")
-    NPCModels.Upgrade(model.Rodsmith, "Rodsmith")
+    NPCModels.Upgrade(model.Merchant, "Merchant",nil,CFrame.new(-20,9.2,-25))
+    NPCModels.Upgrade(model.Rodsmith, "Rodsmith",nil,CFrame.new(20,9.2,-25))
     local reef = Config.IslandById.Reef
     return {
         Model = model,
@@ -93,7 +164,8 @@ local function syncReef(model)
         for _, object in ipairs(model:GetDescendants()) do
             if object:IsA("BasePart") then
                 local relative = object.Position - origin
-                if Vector3.new(relative.X, 0, relative.Z).Magnitude <= 120 then
+                if Vector3.new(relative.X, 0, relative.Z).Magnitude <= 120
+                    and not World.PositionPinned(object,model) then
                     object.CFrame = object.CFrame + offset
                 end
             end
@@ -104,23 +176,9 @@ local function syncReef(model)
     local text = gui and gui:FindFirstChildOfClass("TextLabel")
     if text then text.Text = "CORAL REEF\n" .. reef.Target end
 end
-function World.Build()
+local function baseline()
     local reef = Config.IslandById.Reef
-    local waterSize = (Config.Ocean.HalfExtent + 100) * 2
-    Workspace.Terrain:FillBlock(CFrame.new(0, -14, 0), Vector3.new(waterSize, 28, waterSize), Enum.Material.Water)
-    Visuals.ApplyEnvironment()
-    local oceanPreview = Workspace:FindFirstChild("QuietCoveOceanPreview")
-    if oceanPreview then oceanPreview:Destroy() end
-    local existing = Workspace:FindFirstChild("QuietCoveMap")
-    if existing then
-        syncLabels(existing)
-        syncReef(existing)
-        Visuals.ApplyMap(existing)
-        return refs(existing)
-    end
-    local preview = Workspace:FindFirstChild("StartHere")
-    if preview then preview:Destroy() end
-    local model = Instance.new("Model"); model.Name = "QuietCoveMap"; model.Parent = Workspace
+    local model = Instance.new("Model"); model.Name = "QuietCoveMap"
     part(model, "IslandRock", Vector3.new(124, 16, 94), Vector3.new(0, -3, 0), {118, 139, 136}, Enum.Material.Rock)
     part(model, "IslandSand", Vector3.new(119, 2, 89), Vector3.new(0, 5, 0), {231, 215, 168}, Enum.Material.Sand)
     part(model, "IslandGrass", Vector3.new(99, 1, 68), Vector3.new(0, 6.5, 5), {89, 153, 108}, Enum.Material.Grass)
@@ -182,6 +240,27 @@ function World.Build()
     for i = 0, 7 do
         part(model, "BeachStep", Vector3.new(5, 1, 14), Vector3.new(77 - i * 3, i - 1, 7), {215, 202, 161}, Enum.Material.Sand)
     end
+    return model
+end
+function World.Build()
+    local waterSize = (Config.Ocean.HalfExtent + 100) * 2
+    Workspace.Terrain:FillBlock(CFrame.new(0, -14, 0), Vector3.new(waterSize, 28, waterSize), Enum.Material.Water)
+    Visuals.ApplyEnvironment()
+    local oceanPreview = Workspace:FindFirstChild("QuietCoveOceanPreview")
+    if oceanPreview then oceanPreview:Destroy() end
+    local model = Workspace:FindFirstChild("QuietCoveMap")
+    if model then
+        -- Move old reef geometry before matching it to the current baseline.
+        syncReef(model)
+        local generated=baseline()
+        World.FillMissing(model,generated)
+        generated:Destroy()
+    else
+        local preview = Workspace:FindFirstChild("StartHere")
+        if preview then preview:Destroy() end
+        model=baseline();model.Parent=Workspace
+    end
+    syncLabels(model)
     Visuals.ApplyMap(model)
     return refs(model)
 end

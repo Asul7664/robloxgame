@@ -1,7 +1,7 @@
 -- Classic Roblox characters, authored locally without downloaded avatar assets.
 -- Body remains the stable interaction anchor used by shops, boats and dialogues.
 local NPCModels = {}
-local VERSION = 3
+local VERSION = 4
 local rgb = Color3.fromRGB
 local UP = Vector3.new(0, 1, 0)
 local ROLES = {
@@ -26,13 +26,20 @@ local function part(parent,name,size,frame,color)
     p.TopSurface=Enum.SurfaceType.Smooth; p.BottomSurface=Enum.SurfaceType.Smooth
     p.Parent=parent; return p
 end
+local function sphere(p)
+    -- Block-sized built-in spheres preserve ellipsoid proportions in Studio.
+    p.Shape=Enum.PartType.Block
+    local mesh=Instance.new("SpecialMesh");mesh.MeshType=Enum.MeshType.Sphere
+    mesh.Scale=Vector3.new(1,1,1);mesh.Parent=p
+end
 local function attachment(part0,part1)
     local weld=Instance.new("WeldConstraint")
     weld.Name="OutfitWeld"; weld.Part0=part0; weld.Part1=part1; weld.Parent=part1
 end
 local function accessory(rig,bone,name,size,offset,color,shape)
     local p=part(rig,name,size,bone.CFrame*offset,color)
-    if shape then p.Shape=shape end
+    if shape==Enum.PartType.Ball then sphere(p)
+    elseif shape then p.Shape=shape end
     attachment(bone,p); return p
 end
 local function joint(parent,name,part0,part1,c0,c1)
@@ -46,7 +53,8 @@ local function hide(p)
     if p:GetAttribute("QCOriginalCanCollide")==nil then p:SetAttribute("QCOriginalCanCollide",p.CanCollide) end
     if p:GetAttribute("QCOriginalCanQuery")==nil then p:SetAttribute("QCOriginalCanQuery",p.CanQuery) end
     if p:GetAttribute("QCOriginalCanTouch")==nil then p:SetAttribute("QCOriginalCanTouch",p.CanTouch) end
-    p.Transparency=1; p.CanCollide=false; p.CanQuery=false; p.CanTouch=false
+    if p:GetAttribute("QCOriginalAnchored")==nil then p:SetAttribute("QCOriginalAnchored",p.Anchored) end
+    p.Anchored=true; p.Transparency=1; p.CanCollide=false; p.CanQuery=false; p.CanTouch=false
 end
 local function label(body,info)
     local gui=body:FindFirstChild("Label")
@@ -69,7 +77,7 @@ local function interaction(model,body,info)
     label(body,info)
 end
 local function face(rig,head)
-    -- Actual welded geometry, not a texture or a SpecialMesh-dependent surface.
+    -- Built-in sphere geometry and welded facial marks need no external assets.
     -- Each mark follows the front of the ellipsoid and remains visible at low quality.
     local function front(x,y)
         return -HEAD_SIZE.Z*0.5*math.sqrt(math.max(0.05,1-(x/(HEAD_SIZE.X*0.5))^2-(y/(HEAD_SIZE.Y*0.5))^2))-0.025
@@ -138,39 +146,84 @@ local function clothes(rig,torso,head,left,right,role,info)
     end
 end
 
-function NPCModels.Upgrade(model,role,theme)
+local function rootFrame(frame,role)
+    local height=(role=="Captain" or role=="Buyer") and 1.2 or 0.8
+    return frame*CFrame.new(0,height,0)*CFrame.Angles(0,math.rad(FACING[role]),0)
+end
+local function validRig(rig,role)
+    if not rig:IsA("Model") or rig:GetAttribute("QCNPC")~=true or rig:GetAttribute("NPCRole")~=role then return false end
+    local bones={}
+    for _,name in ipairs({"HumanoidRootPart","Torso","Head","Left Arm","Right Arm","Left Leg","Right Leg"}) do
+        local bone=rig:FindFirstChild(name)
+        if not bone or not bone:IsA("BasePart") then return false end
+        bones[name]=bone
+    end
+    local root,torso=bones.HumanoidRootPart,bones.Torso
+    if rig.PrimaryPart~=root then return false end
+    local humanoid=rig:FindFirstChildOfClass("Humanoid")
+    if not humanoid or not humanoid:FindFirstChildOfClass("Animator") then return false end
+    local expected={
+        {root,"RootJoint",root,torso},
+        {torso,"Neck",torso,bones.Head},
+        {torso,"Left Shoulder",torso,bones["Left Arm"]},
+        {torso,"Right Shoulder",torso,bones["Right Arm"]},
+        {torso,"Left Hip",torso,bones["Left Leg"]},
+        {torso,"Right Hip",torso,bones["Right Leg"]},
+    }
+    for _,info in ipairs(expected) do
+        local motor=info[1]:FindFirstChild(info[2])
+        if not motor or not motor:IsA("Motor6D") or motor.Part0~=info[3] or motor.Part1~=info[4] then return false end
+    end
+    return true
+end
+local function alignRig(rig,target)
+    local root=rig.HumanoidRootPart
+    local delta=target*root.CFrame:Inverse()
+    -- Snapshot every target before moving connected parts. This also works in
+    -- native model generators where physics and Model:PivotTo do not run.
+    local targets={}
+    for _,p in ipairs(rig:GetDescendants()) do
+        if p:IsA("BasePart") then table.insert(targets,{p,delta*p.CFrame}) end
+    end
+    for _,info in ipairs(targets) do
+        local p=info[1];p.CFrame=info[2]
+        p.Anchored=p==root;p.Massless=p~=root
+        p.CanCollide=false;p.CanTouch=false;p.CanQuery=false
+    end
+end
+function NPCModels.Upgrade(model,role,theme,anchorFrame)
     local body=model:FindFirstChild("Body")
     if not body or not body:IsA("BasePart") then return nil end
     role=ROLES[role] and role or model.Name
     local source=ROLES[role]
     if not source then return body end
-    -- A hand-authored replacement is not an old block NPC to overwrite.
+    -- Keep hand-authored replacements intact, including their placement.
     if model:FindFirstChildOfClass("Humanoid") then return body end
     for _,child in ipairs(model:GetChildren()) do
         if child:IsA("MeshPart") then return body end
     end
     local old=model:FindFirstChild("VisualRig")
+    if old and old:GetAttribute("QCNPCVersion")==nil then return body end
+    if anchorFrame then body.CFrame=anchorFrame end
     local frame=body.CFrame
-    if old and old:GetAttribute("QCNPCVersion")==VERSION then
+    if old and old:GetAttribute("QCNPCVersion")==VERSION and validRig(old,role) then
+        alignRig(old,rootFrame(frame,role))
         for _,child in ipairs(model:GetChildren()) do
             if child:IsA("BasePart") and (child==body or OLD[child.Name]) then hide(child) end
         end
         interaction(model,body,source)
         return body
     end
-    if old and old:GetAttribute("QCNPCVersion") then old:Destroy()
-    elseif old then return body end
+    if old then old:Destroy() end
     local info=table.clone(source)
     if theme and theme.UI then info.Shirt=role=="Rodsmith" and theme.UI.Aqua or info.Shirt end
     local rig=Instance.new("Model"); rig.Name="VisualRig"; rig:SetAttribute("QCNPCVersion",VERSION)
     rig:SetAttribute("QCNPC",true); rig:SetAttribute("NPCRole",role)
-    local heightOffset=(role=="Captain" or role=="Buyer") and 1.2 or 0.8
-    local root=part(rig,"HumanoidRootPart",Vector3.new(2,2,1),
-        frame*CFrame.new(0,heightOffset,0)*CFrame.Angles(0,math.rad(FACING[role]),0),INK)
+    local root=part(rig,"HumanoidRootPart",Vector3.new(2,2,1),rootFrame(frame,role),INK)
     root.Transparency=1; root.Anchored=true; root.Massless=false
     local torso=part(rig,"Torso",Vector3.new(2,2,1),root.CFrame,info.Shirt)
     joint(root,"RootJoint",root,torso,ROOT_BASIS,ROOT_BASIS)
-    local head=part(rig,"Head",HEAD_SIZE,torso.CFrame,info.Skin);head.Shape=Enum.PartType.Ball
+    local head=part(rig,"Head",HEAD_SIZE,torso.CFrame,info.Skin);sphere(head)
     joint(torso,"Neck",torso,head,CFrame.new(0,1,0)*ROOT_BASIS,CFrame.new(0,-HEAD_SIZE.Y/2,0)*ROOT_BASIS)
     face(rig,head)
     local left=part(rig,"Left Arm",Vector3.new(1,2,1),torso.CFrame,info.Skin)
